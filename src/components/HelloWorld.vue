@@ -1,16 +1,19 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { storeToRefs } from "pinia";
+import { useCounterStore } from "../store";
 
-defineProps<{ msg: string }>()
+defineProps<{ msg: string }>();
+const store = useCounterStore();
+const { count } = storeToRefs(store);
 
-const count = ref(0)
+const { increment } = store;
 </script>
 
 <template>
   <h1>{{ msg }}</h1>
 
   <div class="card">
-    <button type="button" @click="count++">count is {{ count }}</button>
+    <button type="button" @click="increment">count is {{ count }}</button>
     <p>
       Edit
       <code>components/HelloWorld.vue</code> to test HMR
