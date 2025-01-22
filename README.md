@@ -86,7 +86,7 @@ hamlog/
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under both the [GNU General Public License v3.0](LICENSE) and [Creative Commons Attribution 4.0 International License](LICENSE).
 
 ## Acknowledgments
 
