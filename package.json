@@ -13,7 +13,9 @@
     "lint": "eslint -c .eslintrc --ext .ts ./src",
     "app:dev": "tsc && concurrently vite \" electron .\" \"tsc -w\"",
     "app:build": "npm run vite:build && tsc && electron-builder",
-    "app:preview": "npm run vite:build && tsc && electron ."
+    "app:preview": "npm run vite:build && tsc && electron .",
+    "test": "vitest",
+    "test:coverage": "vitest run --coverage"
   },
   "build": {
     "appId": "vite-vue3-electron-ts-template",
@@ -55,11 +57,14 @@
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^2.3.3",
+    "@vue/test-utils": "^2.4.3",
     "concurrently": "^7.2.2",
     "electron": "^30.1.0",
     "electron-builder": "^25.0.0-alpha.9",
+    "jsdom": "^24.0.0",
     "typescript": "^4.5.4",
     "vite": "^2.9.9",
+    "vitest": "^1.2.1",
     "vue-tsc": "^0.34.7"
   }
 }
