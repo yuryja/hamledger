@@ -1,28 +1,58 @@
-<script setup lang="ts">
+<script lang="ts">
 import { useQsoStore } from '../store/qso'
-import { storeToRefs } from 'pinia'
 
-const qsoStore = useQsoStore()
-const { currentSession, allQsos } = storeToRefs(qsoStore)
-const { sessionCount, totalCount } = storeToRefs(qsoStore)
-
-const prefixMap = {
-  F: 'fr',
-  HB9: 'ch',
-  OK: 'cz',
-  DL: 'de',
-  G: 'gb',
-  EA: 'es'
-}
-const getCountryCodeForCallsign = (callsign: string): string => {
-  callsign = callsign.toUpperCase()
-  const knownPrefixes = Object.keys(prefixMap).sort((a, b) => b.length - a.length)
-  for (const prefix of knownPrefixes) {
-    if (callsign.startsWith(prefix)) {
-      return prefixMap[prefix as keyof typeof prefixMap]
+export default {
+  name: 'LogArea',
+  data() {
+    const store = useQsoStore()
+    return {
+      qsoStore: store,
+      currentSession: store.currentSession,
+      allQsos: store.allQsos,
+      sessionCount: store.sessionCount,
+      totalCount: store.totalCount,
+      prefixMap: {
+        F: 'fr',
+        HB9: 'ch',
+        OK: 'cz',
+        DL: 'de',
+        G: 'gb',
+        EA: 'es'
+      }
+    }
+  },
+  methods: {
+    getCountryCodeForCallsign(callsign: string): string {
+      callsign = callsign.toUpperCase()
+      const knownPrefixes = Object.keys(this.prefixMap).sort((a, b) => b.length - a.length)
+      for (const prefix of knownPrefixes) {
+        if (callsign.startsWith(prefix)) {
+          return this.prefixMap[prefix as keyof typeof this.prefixMap]
+        }
+      }
+      return 'xx'
+    }
+  },
+  watch: {
+    'qsoStore.currentSession': {
+      handler(newSession) {
+        this.currentSession = newSession
+      },
+      deep: true
+    },
+    'qsoStore.allQsos': {
+      handler(newQsos) {
+        this.allQsos = newQsos
+      },
+      deep: true
+    },
+    'qsoStore.sessionCount'(newCount) {
+      this.sessionCount = newCount
+    },
+    'qsoStore.totalCount'(newCount) {
+      this.totalCount = newCount
     }
   }
-  return 'xx'
 }
 </script>
 

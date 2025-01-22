@@ -1,6 +1,43 @@
-<script setup lang="ts">
+<script lang="ts">
 import { useRigStore } from '../../store/rig'
-const rigStore = useRigStore()
+
+export default {
+  name: 'RigControl',
+  data() {
+    const store = useRigStore()
+    return {
+      rigStore: store,
+      modes: store.modes,
+      selectedMode: store.selectedMode,
+      rigModel: store.rigModel
+    }
+  },
+  methods: {
+    handleReconnect() {
+      this.rigStore.handleReconnect()
+    },
+    handleDisconnect() {
+      this.rigStore.handleDisconnect()
+    }
+  },
+  watch: {
+    'rigStore.modes': {
+      handler(newModes) {
+        this.modes = newModes
+      },
+      deep: true
+    },
+    'rigStore.selectedMode'(newMode) {
+      this.selectedMode = newMode
+    },
+    'selectedMode'(newMode) {
+      this.rigStore.setMode(newMode)
+    },
+    'rigStore.rigModel'(newModel) {
+      this.rigModel = newModel
+    }
+  }
+}
 </script>
 
 <template>
@@ -8,21 +45,21 @@ const rigStore = useRigStore()
     <h2 class="section-title">RIG CONTROL</h2>
     <div class="rig-control-content">
       <div class="rig-info">
-        <div class="rig-title">{{ rigStore.rigModel }}</div>
+        <div class="rig-title">{{ rigModel }}</div>
       </div>
 
       <div class="rig-buttons">
-        <button class="reconnect" @click="rigStore.handleReconnect">Reconnect</button>
-        <button class="stop-btn" @click="rigStore.handleDisconnect">Disconnect</button>
+        <button class="reconnect" @click="handleReconnect">Reconnect</button>
+        <button class="stop-btn" @click="handleDisconnect">Disconnect</button>
       </div>
 
       <div class="rig-mode-badges">
-        <template v-for="mode in rigStore.modes" :key="mode.value">
+        <template v-for="mode in modes" :key="mode.value">
           <input 
             type="radio" 
             :id="'mode-' + mode.value.toLowerCase()" 
             :value="mode.value"
-            v-model="rigStore.selectedMode"
+            v-model="selectedMode"
             name="rig-mode"
           />
           <label 
