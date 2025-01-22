@@ -1,6 +1,14 @@
-<script setup lang="ts">
+<script lang="ts">
 import Sidebar from './components/Sidebar.vue'
 import MainContent from './components/MainContent.vue'
+
+export default {
+  name: 'App',
+  components: {
+    Sidebar,
+    MainContent
+  }
+}
 </script>
 
 <template>
