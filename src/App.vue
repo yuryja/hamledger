@@ -19,7 +19,7 @@ export default {
 </template>
 
 <style>
-@import '../styles.css';
+@import './assets/styles.css';
 
 .app-container {
   display: flex;

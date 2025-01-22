@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Hamledger - the Logger by HA5XB</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <nav>
+        <ul>
+          <!-- Logging -->
+          <li class="sidebar-item active" data-view="logging">
+            <svg class="sidebar-icon" viewBox="0 0 192 192">
+              <path
+                d="M103.844 89.068C106.385 86.868 108 83.625 108 80c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 3.625 1.615 6.868 4.156 9.068L54.14 176h15.07L96 158.14 122.79 176h15.07l-34.016-86.932zM66.789 168h-.929l9.296-23.755 13.633 9.088-22 14.667zm11.43-31.328l-.241.36 17.63-45.052c.13.004.26.02.392.02s.261-.016.393-.02l17.629 45.053-.24-.361L96 148.526l-17.781-11.854zm24.992 16.661l13.633-9.088L126.14 168h-.93l-22-14.667zM56 80c0-22.056 17.944-40 40-40s40 17.944 40 40c0 12.57-5.834 23.799-14.93 31.137l-3.095-7.908C124.142 97.392 128 89.14 128 80c0-17.645-14.355-32-32-32S64 62.355 64 80c0 9.14 3.858 17.392 10.025 23.229l-3.095 7.908C61.834 103.799 56 92.57 56 80zm-5.255 45.255C38.657 113.167 32 97.095 32 80s6.657-33.167 18.745-45.255S78.905 16 96 16s33.167 6.657 45.255 18.745S160 62.905 160 80s-6.657 33.167-18.745 45.255a64.491 64.491 0 0 1-11.17 8.919l-2.972-7.594a56.573 56.573 0 0 0 8.485-6.982C146.175 109.02 152 94.958 152 80s-5.825-29.021-16.402-39.598C125.02 29.825 110.958 24 96 24s-29.021 5.825-39.598 16.402C45.825 50.98 40 65.042 40 80s5.825 29.021 16.402 39.598a56.573 56.573 0 0 0 8.485 6.982l-2.971 7.594a64.491 64.491 0 0 1-11.17-8.92z"
+              />
+            </svg>
+          </li>
+
+          <!-- Logbook -->
+          <li class="sidebar-item" data-view="logbook">
+            <svg class="sidebar-icon" viewBox="0 0 192 192">
+              <path
+                d="M108 32c-4.8 0-9.1 2.1-12 5.5-2.9-3.3-7.2-5.5-12-5.5H16v120h68c4.4 0 8 3.6 8 8h8c0-4.4 3.6-8 8-8h68V32h-68zM92 146.1c-2.4-1.4-5.1-2.1-8-2.1H24V40h60c4.4 0 8 3.6 8 8v98.1zm76-2.1h-60c-2.9 0-5.6.8-8 2.1V48c0-4.4 3.6-8 8-8h60v104z"
+              />
+            </svg>
+          </li>
+
+          <!-- DX Cluster -->
+          <li class="sidebar-item" data-view="dx-cluster">
+            <svg class="sidebar-icon" viewBox="0 0 192 192">
+              <path
+                d="M60 56h8v8h-8v-8zm16 8h8v-8h-8v8zm-8 40h-8v8h8v-8zm16 0h-8v8h8v-8zm-16 48h-8v8h8v-8zm16 0h-8v8h8v-8zM16 48c0-4.411 3.589-8 8-8 4.248 0 7.723 3.33 7.975 7.516L44 53.528V40h48v-9.082c-2.387-1.386-4-3.965-4-6.918 0-4.411 3.589-8 8-8s8 3.589 8 8c0 2.953-1.613 5.532-4 6.918V40h48v13.528l12.025-6.012C160.277 43.33 163.752 40 168 40c4.411 0 8 3.589 8 8s-3.589 8-8 8a7.95 7.95 0 0 1-4.402-1.327L148 62.473V80H44V62.472l-15.598-7.799A7.95 7.95 0 0 1 24 56c-4.411 0-8-3.589-8-8zm36 24h88V48H52v24zm124 96c0 4.411-3.589 8-8 8-4.248 0-7.723-3.33-7.975-7.516L148 162.472V176H44v-13.528l-12.025 6.012C31.723 172.67 28.248 176 24 176c-4.411 0-8-3.589-8-8s3.589-8 8-8a7.95 7.95 0 0 1 4.402 1.327l15.598-7.8V136h104v17.528l15.598 7.799A7.95 7.95 0 0 1 168 160c4.411 0 8 3.589 8 8zm-36-24H52v24h88v-24zm36-36c0 4.411-3.589 8-8 8-2.953 0-5.532-1.613-6.918-4H148v16H44v-12H30.918c-1.386 2.387-3.965 4-6.918 4-4.411 0-8-3.589-8-8s3.589-8 8-8c2.953 0 5.532 1.613 6.918 4H44V88h104v16h13.082c1.386-2.387 3.965-4 6.918-4 4.411 0 8 3.589 8 8zm-36-12H52v24h88V96z"
+              />
+            </svg>
+          </li>
+
+          <!-- Awards -->
+          <li class="sidebar-item" data-view="awards">
+            <svg class="sidebar-icon" viewBox="0 0 192 192">
+              <path
+                d="M36 16v51.358l54.707 30.284L81.527 116H50.344l24.914 24.914-14.873 34.702L96 160.352l35.616 15.264-14.873-34.702L141.657 116h-31.185l-9.179-18.358L156 67.358V16H36zm8 8h104v32H44V24zm78.343 100l-15.086 15.086 9.127 21.298L96 151.648l-20.384 8.736 9.127-21.298L69.657 124h16.815L96 104.944 105.528 124h16.815zm-24.63-33.52L96 87.056l-1.712 3.424L46.453 64h99.094L97.712 90.48z"
+              />
+            </svg>
+          </li>
+
+          <!-- Settings -->
+          <li class="sidebar-item" data-view="settings">
+            <svg class="sidebar-icon" viewBox="0 0 192 192">
+              <path
+                d="M170.7,81.3c-7-7-18.4-7-25.4,0l0,0l0,0l-55,55l-12.7,38.1l38.1-12.7l55-55l0,0C177.7,99.7,177.7,88.3,170.7,81.3z   M90.3,161.7l5.3-15.9l10.6,10.6L90.3,161.7z M165.1,101L165.1,101l-51.5,51.5l-14.1-14.1L151,86.9c3.9-3.8,10.2-3.8,14.1,0  C169,90.8,169,97.1,165.1,101z M170.7,81.3c-7-7-18.4-7-25.4,0l-55,55l-12.7,38.1l38.1-12.7l55-55l0,0  C177.7,99.7,177.7,88.3,170.7,81.3z M90.3,161.7l5.3-15.9l10.6,10.6L90.3,161.7z M165.1,101L165.1,101l-51.5,51.5l-14.1-14.1  L151,86.9c3.9-3.8,10.2-3.8,14.1,0C169,90.8,169,97.1,165.1,101z M67,153.1l-15.8,9.3l-2.1-1.5c-6.9-5-12.9-11-17.9-17.9l-1.5-2.1  l9.3-15.8c-1.5-3-2.8-6-3.8-9.2l-17.7-4.6l-0.4-2.6c-0.7-4.2-1-8.4-1-12.6s0.3-8.4,1-12.6l0.4-2.6l17.7-4.6c1-3.1,2.3-6.2,3.8-9.1  l-9.3-15.8l1.5-2.1c5-6.9,11-12.9,17.9-17.9l2.1-1.5L67,38.9c3-1.5,6-2.8,9.2-3.8l4.6-17.7l2.6-0.4c8.4-1.3,16.9-1.3,25.3,0l2.6,0.4  l4.6,17.7c3.1,1,6.2,2.3,9.1,3.8l15.8-9.3l2.1,1.5c6.9,5,12.9,11,17.9,17.9l1.5,2.1L153.1,67c0.2,0.5,0.4,0.9,0.7,1.4  c-2.7,0.4-5.3,1.3-7.7,2.6c-0.3-0.7-0.7-1.4-1.1-2.1l-1.1-2l8.9-15.2c-3.6-4.6-7.8-8.8-12.5-12.5l-15.2,8.9l-2-1.1  c-3.7-2.1-7.6-3.7-11.7-4.9l-2.2-0.6l-4.4-17c-5.9-0.7-11.7-0.7-17.6,0l-4.4,17l-2.2,0.6c-4.1,1.2-8,2.8-11.7,4.9l-2,1.1l-15.2-8.9  c-4.6,3.6-8.8,7.8-12.5,12.5l8.9,15.2l-1.1,2c-2.1,3.7-3.7,7.6-4.9,11.7l-0.6,2.2l-17,4.4C24.2,90.1,24,93.1,24,96  c0,2.9,0.2,5.9,0.5,8.8l17,4.4l0.6,2.2c1.2,4.1,2.8,8,4.9,11.7l1.1,2l-8.9,15.2c3.6,4.6,7.8,8.8,12.5,12.5l15.2-8.9l2,1.1  c2.8,1.6,5.8,2.9,8.8,4l-2.5,7.6C72.4,155.6,69.6,154.4,67,153.1z M64,96c0-17.6,14.4-32,32-32c15,0,27.6,10.3,31,24.2l-7.1,7.1  C119.6,82.4,109,72,96,72c-13.2,0-24,10.8-24,24c0,13,10.4,23.6,23.3,24l-7.1,7.1C74.3,123.6,64,111,64,96z"
+              />
+            </svg>
+          </li>
+        </ul>
+      </nav>
+    </aside>
+
+    <!-- MAIN CONTENT (shifted right of sidebar) -->
+    <div class="main-content">
+      <!-- TOP BAR -->
+      <header class="app-header">
+        <!-- LEFT: RIG CONTROL -->
+        <div class="header-left rig-control-section">
+          <h2 class="section-title">RIG CONTROL</h2>
+          <!-- Wrap the content so the title is separate -->
+          <div class="rig-control-content">
+            <!-- Rig info -->
+            <div class="rig-info">
+              <div class="rig-title">YAESU FT-450A</div>
+            </div>
+
+            <!-- Reconnect + Disconnect -->
+            <div class="rig-buttons">
+              <span class="reconnect">Reconnect</span>
+              <span class="stop-btn">Disconnect</span>
+            </div>
+
+            <!-- Mode badges -->
+            <div class="rig-mode-badges">
+              <input type="radio" name="rig-mode" value="CW" id="mode-cw" />
+              <label for="mode-cw" class="mode-badge">CW</label>
+
+              <input type="radio" name="rig-mode" value="LSB" id="mode-lsb" />
+              <label for="mode-lsb" class="mode-badge">LSB</label>
+
+              <input type="radio" name="rig-mode" value="USB" id="mode-usb" />
+              <label for="mode-usb" class="mode-badge">USB</label>
+
+              <input type="radio" name="rig-mode" value="AM" id="mode-am" />
+              <label for="mode-am" class="mode-badge">AM</label>
+
+              <input type="radio" name="rig-mode" value="FM" id="mode-fm" />
+              <label for="mode-fm" class="mode-badge">FM</label>
+
+              <input type="radio" name="rig-mode" value="DATA" id="mode-data" />
+              <label for="mode-data" class="mode-badge">DATA</label>
+            </div>
+          </div>
+        </div>
+
+        <!-- CENTER: Frequency + S-meter -->
+        <div class="header-center freq-s-meter">
+          <div class="freq-s-meter-content">
+            <div class="rig-frequency">7.093 kHz</div>
+            <!-- S-meter -->
+            <div class="s-meter">
+              <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+              <script>
+                $(document).ready(function () {
+                  const majorTicks = [
+                    { label: "S1", color: "white" },
+                    { label: "S3", color: "white" },
+                    { label: "S5", color: "white" },
+                    { label: "S7", color: "white" },
+                    { label: "S9", color: "gray" },
+                    { label: "+10", color: "#ffa500" },
+                    { label: "+20", color: "#ffa500" },
+                    { label: "+30", color: "#ffa500" },
+                  ];
+
+                  const $meter = $(".s-meter");
+                  $meter.append('<div class="s-meter-inner"></div>');
+                  const $inner = $meter.find(".s-meter-inner");
+
+                  function getMinorColorFromIndex(majorIndex) {
+                    return majorTicks[majorIndex].color;
+                  }
+
+                  for (let i = 0; i < majorTicks.length; i++) {
+                    const mt = majorTicks[i];
+                    const $maj = $(`
+                      <div class="tick major-tick">
+                        <div class="tick-label">${mt.label}</div>
+                        <div class="tick-line"></div>
+                      </div>
+                    `);
+                    $inner.append($maj);
+
+                    if (i < majorTicks.length - 1) {
+                      for (let j = 0; j < 4; j++) {
+                        const color = getMinorColorFromIndex(i);
+                        const $minor = $(`
+                          <div class="tick minor-tick">
+                            <div class="tick-box"></div>
+                          </div>
+                        `);
+                        $minor.find(".tick-box").css("background", color);
+                        $inner.append($minor);
+                      }
+                    }
+                  }
+                });
+              </script>
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT: Propagation + Clock + Weather -->
+        <div class="header-right prop-clock-weather">
+          <h2 class="section-title">Propagation, Clock & WX</h2>
+          <div class="prop-clock-weather-content">
+            <!-- Propagation Info -->
+            <div class="propagation-info">
+              <div class="prop-item">
+                <span class="prop-label">SFI</span>
+                <span class="prop-value" id="sfi-value">153</span>
+              </div>
+              <div class="prop-item">
+                <span class="prop-label">A</span>
+                <span class="prop-value" id="a-index-value">6</span>
+              </div>
+              <div class="prop-item">
+                <span class="prop-label">K</span>
+                <span class="prop-value" id="k-index-value">2</span>
+              </div>
+            </div>
+
+            <!-- Clock + Weather -->
+            <div class="clock-weather-block">
+              <div class="utc-clock">
+                <span class="clock-label">UTC:</span>
+                <span class="clock-value" id="utc-clock">13:24:56</span>
+              </div>
+              <div class="local-weather">
+                <span class="weather-label">Local WX:</span>
+                <span class="weather-value" id="weather-info">28°C Sunny</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- Real-time UTC clock -->
+      <script>
+        function updateUTCClock() {
+          const now = new Date();
+          const utcHours = String(now.getUTCHours()).padStart(2, "0");
+          const utcMinutes = String(now.getUTCMinutes()).padStart(2, "0");
+          const utcSeconds = String(now.getUTCSeconds()).padStart(2, "0");
+          document.getElementById(
+            "utc-clock"
+          ).textContent = `${utcHours}:${utcMinutes}:${utcSeconds} UTC`;
+        }
+        setInterval(updateUTCClock, 1000);
+        updateUTCClock();
+      </script>
+
+      <!-- QSO PANEL -->
+      <div class="qso-panel">
+        <!-- LEFT: QSO Input Area -->
+        <section class="qso_input_area">
+          <h2 class="section-title">QSO Input</h2>
+          <div class="qso-input-content">
+            <div class="qso-input-group">
+              <label for="callsign">Callsign</label>
+              <input type="text" id="callsign" placeholder="HA5XB" />
+            </div>
+            <div class="qso-input-group">
+              <label for="band">Band</label>
+              <select id="band">
+                <option value="10m">10 m</option>
+                <option value="20m">20 m</option>
+                <option value="40m" selected>40 m</option>
+              </select>
+            </div>
+            <div class="qso-input-group">
+              <label for="mode">Mode</label>
+              <select id="mode">
+                <option value="CW" selected>CW</option>
+                <option value="SSB">SSB</option>
+              </select>
+            </div>
+            <div class="qso-input-group small">
+              <label for="rstr">RSTr</label>
+              <input type="text" id="rstr" placeholder="59" />
+            </div>
+            <div class="qso-input-group small">
+              <label for="rstr2">RSTr</label>
+              <input type="text" id="rstr2" placeholder="59" />
+            </div>
+            <div class="qso-input-group small">
+              <label for="date">Date</label>
+              <input type="text" id="date" placeholder="22/12/2022" />
+            </div>
+            <div class="qso-input-group small">
+              <label for="utc">UTC</label>
+              <input type="text" id="utc" placeholder="13:33:12" />
+            </div>
+            <div class="qso-input-group">
+              <label for="remark">Remark</label>
+              <input type="text" id="remark" placeholder="e.g. CQ Test" />
+            </div>
+            <div class="qso-input-group">
+              <label for="notes">Notes</label>
+              <textarea
+                id="notes"
+                rows="2"
+                placeholder="Additional info"
+              ></textarea>
+            </div>
+
+            <button class="add-qso-btn">Add QSO</button>
+          </div>
+        </section>
+
+        <!-- RIGHT: Remote Station (two boxes side by side) -->
+        <section class="remote-station-section">
+          <h2 class="section-title">Remote Station</h2>
+          <div class="remote-station-boxes">
+            <!-- Box 1: Station details -->
+            <div class="station-block station-remote">
+              <img
+                src="https://flagcdn.com/h80/hu.png"
+                alt="Remote Station Flag"
+                class="station-flag"
+              />
+              <div class="station-info">
+                <p class="station-name">Remote: ZOLTAN (Zoli) JUHASZ</p>
+                <p class="station-weather">Weather: 19°C, Cloudy</p>
+                <p class="station-qth">QTH: H-5932, Gadoros</p>
+                <p class="station-time">Local time: 22:15</p>
+              </div>
+            </div>
+
+            <!-- Box 2: Basic greetings info -->
+            <div class="station-block station-greeting-block">
+              <div class="station-info">
+                <p class="station-greeting-line">
+                  <strong>Appropriate greeting:</strong><br />
+                  “Jó estét!” — IPA: “joː ɛʃteːt”
+                </p>
+                <p class="station-greeting-line">
+                  <strong>Thank you:</strong><br />
+                  “Köszönöm” — IPA: “køsønom”
+                </p>
+                <p class="station-greeting-line">
+                  <strong>Good luck:</strong><br />
+                  “Sok szerencsét” — IPA: “ʃok sɛrɛnt͡ʃeːt”
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+      <!-- END QSO PANEL -->
+
+      <!-- LOG AREA -->
+      <main class="log-container">
+        <h2 class="section-title">Log Area</h2>
+        <nav class="tab-nav">
+          <button class="tab-btn active">New session</button>
+          <div class="qso-count">
+            <span>This session: 3 QSO</span>
+            <span>All: 5615 QSO</span>
+          </div>
+        </nav>
+
+        <!-- Table of QSOs -->
+        <script>
+          $(document).ready(function () {
+            const prefixMap = {
+              F: "fr",
+              HB9: "ch",
+              OK: "cz",
+              DL: "de",
+              G: "gb",
+              EA: "es",
+              // etc...
+            };
+
+            function getCountryCodeForCallsign(callsign) {
+              callsign = callsign.toUpperCase();
+              const knownPrefixes = Object.keys(prefixMap).sort(
+                (a, b) => b.length - a.length
+              );
+              for (const prefix of knownPrefixes) {
+                if (callsign.startsWith(prefix)) {
+                  return prefixMap[prefix];
+                }
+              }
+              return "xx";
+            }
+
+            $("table.qso-table tbody tr").each(function () {
+              const $row = $(this);
+              const $callsignTd = $row.find("td").eq(0);
+              const callsign = $callsignTd.text().trim();
+              if (callsign) {
+                const countryCode = getCountryCodeForCallsign(callsign);
+                if (countryCode !== "xx") {
+                  const $flag = $(`<img
+                     src="https://flagcdn.com/h40/${countryCode}.png"
+                     alt="${countryCode}"
+                     class="callsign-flag"
+                   />`);
+                  $callsignTd.prepend($flag);
+                }
+              }
+            });
+          });
+        </script>
+
+        <table class="qso-table">
+          <thead>
+            <tr>
+              <th>Callsign</th>
+              <th>Band</th>
+              <th>Freq. RX</th>
+              <th>Freq. TX</th>
+              <th>Mode</th>
+              <th>RSTr</th>
+              <th>RSTr</th>
+              <th>Date/Time</th>
+              <th>Remark</th>
+              <th>Notes</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>F5FHB</td>
+              <td>15 m</td>
+              <td>21.170</td>
+              <td>21.170</td>
+              <td>SSB</td>
+              <td>59</td>
+              <td>599</td>
+              <td>22/12/2022 08:18:03 UTC</td>
+              <td>BE</td>
+              <td>--</td>
+            </tr>
+            <tr>
+              <td>HB9CPQ</td>
+              <td>15 m</td>
+              <td>21.170</td>
+              <td>21.170</td>
+              <td>SSB</td>
+              <td>59</td>
+              <td>599</td>
+              <td>22/12/2022 08:13:50 UTC</td>
+              <td>BP</td>
+              <td>--</td>
+            </tr>
+            <tr>
+              <td>OK5FF</td>
+              <td>20 m</td>
+              <td>14.170</td>
+              <td>14.170</td>
+              <td>SSB</td>
+              <td>59</td>
+              <td>599</td>
+              <td>22/12/2022 07:48:19 UTC</td>
+              <td>BP</td>
+              <td>--</td>
+            </tr>
+            <!-- Additional rows as needed... -->
+          </tbody>
+        </table>
+      </main>
+    </div>
+  </body>
+</html>
