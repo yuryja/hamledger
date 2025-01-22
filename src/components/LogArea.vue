@@ -1,6 +1,4 @@
-<script setup lang="ts">
-import { ref } from 'vue'
-
+<script lang="ts">
 interface QsoEntry {
   callsign: string;
   band: string;
@@ -14,67 +12,73 @@ interface QsoEntry {
   notes: string;
 }
 
-const qsoEntries = ref<QsoEntry[]>([
-  {
-    callsign: 'F5FHB',
-    band: '15 m',
-    freqRx: '21.170',
-    freqTx: '21.170',
-    mode: 'SSB',
-    rstr1: '59',
-    rstr2: '599',
-    datetime: '22/12/2022 08:18:03 UTC',
-    remark: 'BE',
-    notes: '--'
+export default {
+  name: 'LogArea',
+  data() {
+    return {
+      qsoEntries: [
+        {
+          callsign: 'F5FHB',
+          band: '15 m',
+          freqRx: '21.170',
+          freqTx: '21.170',
+          mode: 'SSB',
+          rstr1: '59',
+          rstr2: '599',
+          datetime: '22/12/2022 08:18:03 UTC',
+          remark: 'BE',
+          notes: '--'
+        },
+        {
+          callsign: 'HB9CPQ',
+          band: '15 m',
+          freqRx: '21.170',
+          freqTx: '21.170',
+          mode: 'SSB',
+          rstr1: '59',
+          rstr2: '599',
+          datetime: '22/12/2022 08:13:50 UTC',
+          remark: 'BP',
+          notes: '--'
+        },
+        {
+          callsign: 'OK5FF',
+          band: '20 m',
+          freqRx: '14.170',
+          freqTx: '14.170',
+          mode: 'SSB',
+          rstr1: '59',
+          rstr2: '599',
+          datetime: '22/12/2022 07:48:19 UTC',
+          remark: 'BP',
+          notes: '--'
+        }
+      ] as QsoEntry[],
+      prefixMap: {
+        F: 'fr',
+        HB9: 'ch',
+        OK: 'cz',
+        DL: 'de',
+        G: 'gb',
+        EA: 'es'
+      },
+      sessionCount: 3,
+      totalCount: 5615
+    }
   },
-  {
-    callsign: 'HB9CPQ',
-    band: '15 m',
-    freqRx: '21.170',
-    freqTx: '21.170',
-    mode: 'SSB',
-    rstr1: '59',
-    rstr2: '599',
-    datetime: '22/12/2022 08:13:50 UTC',
-    remark: 'BP',
-    notes: '--'
-  },
-  {
-    callsign: 'OK5FF',
-    band: '20 m',
-    freqRx: '14.170',
-    freqTx: '14.170',
-    mode: 'SSB',
-    rstr1: '59',
-    rstr2: '599',
-    datetime: '22/12/2022 07:48:19 UTC',
-    remark: 'BP',
-    notes: '--'
-  }
-]);
-
-const prefixMap = {
-  F: 'fr',
-  HB9: 'ch',
-  OK: 'cz',
-  DL: 'de',
-  G: 'gb',
-  EA: 'es'
-};
-
-const getCountryCodeForCallsign = (callsign: string): string => {
-  callsign = callsign.toUpperCase();
-  const knownPrefixes = Object.keys(prefixMap).sort((a, b) => b.length - a.length);
-  for (const prefix of knownPrefixes) {
-    if (callsign.startsWith(prefix)) {
-      return prefixMap[prefix as keyof typeof prefixMap];
+  methods: {
+    getCountryCodeForCallsign(callsign: string): string {
+      callsign = callsign.toUpperCase();
+      const knownPrefixes = Object.keys(this.prefixMap).sort((a, b) => b.length - a.length);
+      for (const prefix of knownPrefixes) {
+        if (callsign.startsWith(prefix)) {
+          return this.prefixMap[prefix as keyof typeof this.prefixMap];
+        }
+      }
+      return 'xx';
     }
   }
-  return 'xx';
-};
-
-const sessionCount = ref(3);
-const totalCount = ref(5615);
+}
 </script>
 
 <template>
