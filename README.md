@@ -1,10 +1,11 @@
-# HamLog
+# Hamledger
 
 A modern amateur radio logging application built with Vue 3, TypeScript, and Electron.
+It just works.
 
 ## Description
 
-HamLog is a feature-rich amateur radio logging application designed for ham radio operators. It provides a modern, intuitive interface for logging QSOs (radio contacts), managing station information, and tracking various operating achievements.
+Hamledger is a feature-rich amateur radio logging application designed for ham radio operators. It provides a modern, intuitive interface for logging QSOs (radio contacts), managing station information, and tracking various operating achievements.
 
 ## Features
 
@@ -38,8 +39,7 @@ HamLog is a feature-rich amateur radio logging application designed for ham radi
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/your-username/hamlog.git
-   ```
+   git clone https://github.com/valibali/hamledger.git
 
 2. Install dependencies:
    ```bash
