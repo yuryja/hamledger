@@ -31,7 +31,7 @@ HamLog is a feature-rich amateur radio logging application designed for ham radi
 ### Prerequisites
 
 - Node.js (v16 or later)
-- pnpm package manager
+- npm package manager
 - Git
 
 ### Installation
@@ -43,24 +43,24 @@ HamLog is a feature-rich amateur radio logging application designed for ham radi
 
 2. Install dependencies:
    ```bash
-   pnpm install
+   npm install
    ```
 
 3. Start the development server:
    ```bash
-   pnpm run app:dev
+   npm run app:dev
    ```
 
 ### Building for Production
 
 1. Build the application:
    ```bash
-   pnpm run app:build
+   npm run app:build
    ```
 
 2. Preview the production build:
    ```bash
-   pnpm run app:preview
+   npm run app:preview
    ```
 
 ## Development
