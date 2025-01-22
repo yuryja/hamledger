@@ -1,7 +1,14 @@
-<script setup lang="ts">
-import { ref } from 'vue'
+<script lang="ts">
 import QsoInput from './qso/QsoInput.vue'
 import RemoteStation from './qso/RemoteStation.vue'
+
+export default {
+  name: 'QsoPanel',
+  components: {
+    QsoInput,
+    RemoteStation
+  }
+}
 </script>
 
 <template>

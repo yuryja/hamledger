@@ -1,9 +1,16 @@
-<script setup lang="ts">
-import { ref, onMounted } from 'vue'
+<script lang="ts">
 import RigControl from './header/RigControl.vue'
 import FreqSMeter from './header/FreqSMeter.vue'
 import PropClockWeather from './header/PropClockWeather.vue'
 
+export default {
+  name: 'AppHeader',
+  components: {
+    RigControl,
+    FreqSMeter,
+    PropClockWeather
+  }
+}
 </script>
 
 <template>
