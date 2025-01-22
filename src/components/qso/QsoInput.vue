@@ -1,6 +1,4 @@
-<script setup lang="ts">
-import { ref } from 'vue'
-
+<script lang="ts">
 interface QsoForm {
   callsign: string;
   band: string;
@@ -13,33 +11,39 @@ interface QsoForm {
   notes: string;
 }
 
-const qsoForm = ref<QsoForm>({
-  callsign: '',
-  band: '40m',
-  mode: 'CW',
-  rstr: '',
-  rstr2: '',
-  date: '',
-  utc: '',
-  remark: '',
-  notes: ''
-});
-
-const bands = [
-  { value: '10m', label: '10 m' },
-  { value: '20m', label: '20 m' },
-  { value: '40m', label: '40 m' }
-];
-
-const modes = [
-  { value: 'CW', label: 'CW' },
-  { value: 'SSB', label: 'SSB' }
-];
-
-const handleAddQso = () => {
-  console.log('Adding QSO:', qsoForm.value);
-  // Implement QSO addition logic
-};
+export default {
+  name: 'QsoInput',
+  data() {
+    return {
+      qsoForm: {
+        callsign: '',
+        band: '40m',
+        mode: 'CW',
+        rstr: '',
+        rstr2: '',
+        date: '',
+        utc: '',
+        remark: '',
+        notes: ''
+      } as QsoForm,
+      bands: [
+        { value: '10m', label: '10 m' },
+        { value: '20m', label: '20 m' },
+        { value: '40m', label: '40 m' }
+      ],
+      modes: [
+        { value: 'CW', label: 'CW' },
+        { value: 'SSB', label: 'SSB' }
+      ]
+    }
+  },
+  methods: {
+    handleAddQso() {
+      console.log('Adding QSO:', this.qsoForm);
+      // Implement QSO addition logic
+    }
+  }
+}
 </script>
 
 <template>

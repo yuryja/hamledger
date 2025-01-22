@@ -1,30 +1,35 @@
-<script setup lang="ts">
-import { ref } from 'vue'
+<script lang="ts">
 interface Mode {
   value: string;
   label: string;
 }
 
-const modes: Mode[] = [
-  { value: 'CW', label: 'CW' },
-  { value: 'LSB', label: 'LSB' },
-  { value: 'USB', label: 'USB' },
-  { value: 'AM', label: 'AM' },
-  { value: 'FM', label: 'FM' },
-  { value: 'DATA', label: 'DATA' }
-];
-
-const selectedMode = ref('CW');
-
-const handleReconnect = () => {
-  // Implement reconnect logic
-  console.log('Reconnecting...');
-};
-
-const handleDisconnect = () => {
-  // Implement disconnect logic
-  console.log('Disconnecting...');
-};
+export default {
+  name: 'RigControl',
+  data() {
+    return {
+      modes: [
+        { value: 'CW', label: 'CW' },
+        { value: 'LSB', label: 'LSB' },
+        { value: 'USB', label: 'USB' },
+        { value: 'AM', label: 'AM' },
+        { value: 'FM', label: 'FM' },
+        { value: 'DATA', label: 'DATA' }
+      ] as Mode[],
+      selectedMode: 'CW'
+    }
+  },
+  methods: {
+    handleReconnect() {
+      // Implement reconnect logic
+      console.log('Reconnecting...');
+    },
+    handleDisconnect() {
+      // Implement disconnect logic
+      console.log('Disconnecting...');
+    }
+  }
+}
 </script>
 
 <template>
