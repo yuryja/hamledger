@@ -14,8 +14,8 @@
     "app:dev": "tsc && concurrently vite \" electron .\" \"tsc -w\"",
     "app:build": "npm run vite:build && tsc && electron-builder",
     "app:preview": "npm run vite:build && tsc && electron .",
-    "test": "vitest",
-    "test:coverage": "vitest run --coverage"
+    "test": "vitest --environment jsdom",
+    "test:coverage": "vitest run --coverage --environment jsdom"
   },
   "build": {
     "appId": "vite-vue3-electron-ts-template",
