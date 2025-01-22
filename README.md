@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="src/assets/logo.svg" width="200" height="200" alt="Hamledger Logo">
+  <img src="src/assets/logo.png" width="200" height="200" alt="Hamledger Logo">
 </p>
 
 # Hamledger
