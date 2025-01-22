@@ -1,31 +1,95 @@
-# Project Name
+# HamLog
+
+A modern amateur radio logging application built with Vue 3, TypeScript, and Electron.
 
 ## Description
 
-This is a template repository for creating a Vite + Vue 3 + Pinia + Electron + TypeScript project.
+HamLog is a feature-rich amateur radio logging application designed for ham radio operators. It provides a modern, intuitive interface for logging QSOs (radio contacts), managing station information, and tracking various operating achievements.
 
 ## Features
 
-- Vite for fast development and hot module replacement
-- Vue 3 for building modern and reactive user interfaces
-- Pinia for state management with composition API
-- Electron for building cross-platform desktop applications
-- TypeScript for type-safe development
+- **Real-time Rig Control**: Interface with popular amateur radio transceivers
+- **QSO Logging**: Easy and efficient contact logging with auto-fill capabilities
+- **Band & Mode Tracking**: Support for all amateur radio bands and modes
+- **S-Meter Display**: Real-time signal strength visualization
+- **Propagation Data**: Current solar and propagation condition monitoring
+- **UTC Clock**: Integrated UTC time display for accurate logging
+- **Weather Information**: Local weather conditions display
+- **Remote Station Info**: Quick access to contacted station details
+- **Modern UI**: Clean, intuitive interface built with Vue 3
+
+## Technical Stack
+
+- **Frontend**: Vue 3 with TypeScript
+- **State Management**: Pinia
+- **Build Tool**: Vite
+- **Desktop Runtime**: Electron
+- **Styling**: Custom CSS with modern design principles
 
 ## Getting Started
 
-To get started with this template, follow these steps:
+### Prerequisites
 
-1. Clone the repository: `git clone https://github.com/your-username/your-repo.git`
-2. Install dependencies: `pnpm install`
-3. Start the development server: `pnpm run app:dev`
-4. Build the application: `pnpm run app:build`
-5. Run the application: `pnpm run app:preview`
+- Node.js (v16 or later)
+- pnpm package manager
+- Git
 
-## Contributing
+### Installation
 
-Contributions are welcome! If you have any ideas, suggestions, or bug reports, please open an issue or submit a pull request.
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/your-username/hamlog.git
+   ```
+
+2. Install dependencies:
+   ```bash
+   pnpm install
+   ```
+
+3. Start the development server:
+   ```bash
+   pnpm run app:dev
+   ```
+
+### Building for Production
+
+1. Build the application:
+   ```bash
+   pnpm run app:build
+   ```
+
+2. Preview the production build:
+   ```bash
+   pnpm run app:preview
+   ```
+
+## Development
+
+### Project Structure
+
+```
+hamlog/
+├── src/
+│   ├── components/     # Vue components
+│   ├── store/         # Pinia stores
+│   ├── electron/      # Electron main and preload scripts
+│   └── assets/        # Static assets
+```
+
+### Contributing
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
 ## License
 
-This project is licensed under the [MIT License](LICENSE).
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Acknowledgments
+
+- The Vue.js team for the amazing framework
+- The Electron team for making cross-platform desktop apps possible
+- The amateur radio community for inspiration and feedback
