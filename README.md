@@ -17,10 +17,10 @@ This is a template repository for creating a Vite + Vue 3 + Pinia + Electron + T
 To get started with this template, follow these steps:
 
 1. Clone the repository: `git clone https://github.com/your-username/your-repo.git`
-2. Install dependencies: `npm install`
-3. Start the development server: `npm run app:dev`
-4. Build the application: `npm run app:build`
-5. Run the application: `npm run app:preview`
+2. Install dependencies: `pnpm install`
+3. Start the development server: `pnpm run app:dev`
+4. Build the application: `pnpm run app:build`
+5. Run the application: `pnpm run app:preview`
 
 ## Contributing
 
