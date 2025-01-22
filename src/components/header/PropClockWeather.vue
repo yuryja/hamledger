@@ -1,41 +1,43 @@
-<script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
-
+<script lang="ts">
 interface PropData {
   sfi: number;
   aIndex: number;
   kIndex: number;
 }
 
-const propData = ref<PropData>({
-  sfi: 153,
-  aIndex: 6,
-  kIndex: 2
-});
-
-const utcTime = ref('00:00:00');
-const weatherInfo = ref('28°C Sunny');
-
-const updateUTCClock = () => {
-  const now = new Date();
-  const utcHours = String(now.getUTCHours()).padStart(2, "0");
-  const utcMinutes = String(now.getUTCMinutes()).padStart(2, "0");
-  const utcSeconds = String(now.getUTCSeconds()).padStart(2, "0");
-  utcTime.value = `${utcHours}:${utcMinutes}:${utcSeconds}`;
-};
-
-let clockInterval: number;
-
-onMounted(() => {
-  updateUTCClock();
-  clockInterval = window.setInterval(updateUTCClock, 1000);
-});
-
-onUnmounted(() => {
-  if (clockInterval) {
-    clearInterval(clockInterval);
+export default {
+  name: 'PropClockWeather',
+  data() {
+    return {
+      propData: {
+        sfi: 153,
+        aIndex: 6,
+        kIndex: 2
+      } as PropData,
+      utcTime: '00:00:00',
+      weatherInfo: '28°C Sunny',
+      clockInterval: 0
+    }
+  },
+  methods: {
+    updateUTCClock() {
+      const now = new Date();
+      const utcHours = String(now.getUTCHours()).padStart(2, "0");
+      const utcMinutes = String(now.getUTCMinutes()).padStart(2, "0");
+      const utcSeconds = String(now.getUTCSeconds()).padStart(2, "0");
+      this.utcTime = `${utcHours}:${utcMinutes}:${utcSeconds}`;
+    }
+  },
+  mounted() {
+    this.updateUTCClock();
+    this.clockInterval = window.setInterval(this.updateUTCClock, 1000);
+  },
+  beforeUnmount() {
+    if (this.clockInterval) {
+      clearInterval(this.clockInterval);
+    }
   }
-});
+}
 </script>
 
 <template>

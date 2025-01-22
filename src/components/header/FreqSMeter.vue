@@ -1,35 +1,39 @@
-<script setup lang="ts">
-import { ref, onMounted } from 'vue'
-
+<script lang="ts">
 interface MajorTick {
   label: string;
   color: string;
 }
 
-const frequency = ref('7.093 kHz')
-
-const majorTicks: MajorTick[] = [
-  { label: "S1", color: "white" },
-  { label: "S3", color: "white" },
-  { label: "S5", color: "white" },
-  { label: "S7", color: "white" },
-  { label: "S9", color: "gray" },
-  { label: "+10", color: "#ffa500" },
-  { label: "+20", color: "#ffa500" },
-  { label: "+30", color: "#ffa500" },
-];
-
-const getMinorColorFromIndex = (majorIndex: number): string => {
-  return majorTicks[majorIndex].color;
-};
-
-const generateMinorTicks = (majorIndex: number) => {
-  if (majorIndex >= majorTicks.length - 1) return [];
-  
-  return Array(4).fill(null).map(() => ({
-    color: getMinorColorFromIndex(majorIndex)
-  }));
-};
+export default {
+  name: 'FreqSMeter',
+  data() {
+    return {
+      frequency: '7.093 kHz',
+      majorTicks: [
+        { label: "S1", color: "white" },
+        { label: "S3", color: "white" },
+        { label: "S5", color: "white" },
+        { label: "S7", color: "white" },
+        { label: "S9", color: "gray" },
+        { label: "+10", color: "#ffa500" },
+        { label: "+20", color: "#ffa500" },
+        { label: "+30", color: "#ffa500" }
+      ] as MajorTick[]
+    }
+  },
+  methods: {
+    getMinorColorFromIndex(majorIndex: number): string {
+      return this.majorTicks[majorIndex].color;
+    },
+    generateMinorTicks(majorIndex: number) {
+      if (majorIndex >= this.majorTicks.length - 1) return [];
+      
+      return Array(4).fill(null).map(() => ({
+        color: this.getMinorColorFromIndex(majorIndex)
+      }));
+    }
+  }
+}
 </script>
 
 <template>
