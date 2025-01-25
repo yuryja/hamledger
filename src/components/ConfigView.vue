@@ -210,6 +210,7 @@ export default {
   flex-direction: column;
   width: 100%;
   margin-right: 1rem;
+  flex: 1;
 }
 
 .config-header {
@@ -285,8 +286,6 @@ export default {
   display: flex;
   flex-direction: column;
   gap: 1rem;
-  max-width: 800px;
-  margin: 0 auto;
   width: 100%;
 }
 
@@ -298,6 +297,7 @@ export default {
   background: #333;
   border-radius: 4px;
   border: 1px solid #444;
+  width: 100%;
 }
 
 .field-header {
