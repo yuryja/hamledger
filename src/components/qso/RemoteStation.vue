@@ -46,6 +46,9 @@ export default {
           <p class="station-name">Remote: {{ getStationName }}</p>
           <p class="station-qth">QTH: {{ stationInfo?.qrzData?.qth || 'Loading...' }}</p>
           <p class="station-country">Country: {{ stationInfo?.country || 'Loading...' }}</p>
+          <p class="station-coords-text">Lat: {{ stationInfo.qrzData.lat.toFixed(4) }}°</p>
+          <p class="station-coords-text">Lon: {{ stationInfo.qrzData.lon.toFixed(4) }}°</p>
+          <p v-if="stationInfo.qrzData.grid" class="station-coords-text">Grid: {{ stationInfo.qrzData.grid }}</p>
         </div>
       </div>
 
@@ -53,9 +56,7 @@ export default {
       <div v-if="stationInfo?.qrzData?.lat && stationInfo?.qrzData?.lon" class="station-block station-coords">
         <div class="station-info">
           <p class="station-coords-title">Location</p>
-          <p class="station-coords-text">Lat: {{ stationInfo.qrzData.lat.toFixed(4) }}°</p>
-          <p class="station-coords-text">Lon: {{ stationInfo.qrzData.lon.toFixed(4) }}°</p>
-          <p v-if="stationInfo.qrzData.grid" class="station-coords-text">Grid: {{ stationInfo.qrzData.grid }}</p>
+
         </div>
       </div>
 
