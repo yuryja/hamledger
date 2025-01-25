@@ -500,12 +500,13 @@ input:hover {
 /* Station blocks */
 .station-block {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 0.5rem;
   border: 1px solid var(--main-color);
   padding: 0.5rem;
   border-radius: 4px;
   background: #2b2b2b;
+  min-width: 200px;
 }
 .station-flag {
   height: 50px;
@@ -525,8 +526,17 @@ input:hover {
   color: var(--main-color);
 }
 .station-weather,
-.station-qth {
+.station-qth,
+.station-coords-text,
+.station-weather-text {
   color: var(--gray-color);
+}
+
+.station-coords-title,
+.station-weather-title {
+  font-weight: bold;
+  color: var(--main-color);
+  margin-bottom: 0.2rem;
 }
 .station-time {
   color: var(--gray-color);
