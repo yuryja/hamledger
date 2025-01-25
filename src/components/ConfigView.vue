@@ -244,10 +244,13 @@ export default {
   gap: 1rem;
   flex: 1;
   overflow: hidden;
+  width: 100%;
+  height: 100%;
 }
 
 .config-sidebar {
   flex: 0 0 200px;
+  min-width: 200px;
   background: #2b2b2b;
   border-radius: 4px;
   overflow-y: auto;
@@ -282,6 +285,7 @@ export default {
   border-radius: 4px;
   padding: 1rem;
   width: 100%;
+  min-width: 0; /* Prevents flex item from overflowing */
 }
 
 .config-fields {
