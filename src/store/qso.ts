@@ -3,6 +3,8 @@ import { useRigStore } from "./rig";
 import { StationData, QRZData } from "../types/station";
 import { fetchQRZData } from "../utils/qrz";
 import { getCountryCodeForCallsign } from "../utils/callsign";
+import { geocodeLocation } from "../utils/geocoding";
+import { getWeather } from "../utils/weather";
 
 declare global {
   interface Window {
@@ -174,6 +176,30 @@ export const useQsoStore = defineStore("qso", {
             localTime: "",
             greetings: [],
           };
+
+          // Get coordinates from QTH if available
+          if (qrzData.qth) {
+            const geoData = await geocodeLocation(qrzData.qth);
+            if (geoData) {
+              // Get weather data using coordinates
+              const weatherData = await getWeather(geoData.lat, geoData.lon);
+              if (weatherData) {
+                stationData.weather = `${weatherData.temperature}°C, ${weatherData.description}`;
+              }
+
+              // Calculate local time using timezone offset
+              if (qrzData.gmtOffset !== undefined) {
+                const localTime = new Date();
+                localTime.setHours(localTime.getHours() + qrzData.gmtOffset);
+                stationData.localTime = localTime.toLocaleTimeString('en-US', {
+                  hour12: false,
+                  hour: '2-digit',
+                  minute: '2-digit'
+                });
+              }
+            }
+          }
+
           this.stationInfo = stationData;
           return stationData;
         }
