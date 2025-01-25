@@ -1,6 +1,8 @@
 import { defineStore } from "pinia";
 import { useRigStore } from "./rig";
 import { StationData, QRZData } from "../types/station";
+import { fetchQRZData } from "../utils/qrz";
+import { getCountryCodeForCallsign } from "../utils/callsign";
 
 declare global {
   interface Window {
@@ -18,18 +20,6 @@ export function isValidCallsign(callsign: string): boolean {
   return CALLSIGN_REGEX.test(callsign.toUpperCase());
 }
 
-interface StationInfo {
-  flag: string;
-  name: string;
-  weather: string;
-  qth: string;
-  localTime: string;
-  greetings: {
-    greeting: string;
-    ipa: string;
-    label: string;
-  }[];
-}
 
 interface QsoEntry {
   _id?: string;
@@ -53,28 +43,14 @@ export const useQsoStore = defineStore("qso", {
     currentUTCTime: "",
     initialized: false,
     stationInfo: {
+      callsign: "",
       flag: "",
       country: "",
-      weather: "19°C, Cloudy",
-      localTime: "22:15",
-      greetings: [
-        {
-          label: "Appropriate greeting",
-          greeting: "Hello",
-          ipa: "həˈləʊ",
-        },
-        {
-          label: "Thank you",
-          greeting: "Thanks",
-          ipa: "θæŋks",
-        },
-        {
-          label: "Good luck",
-          greeting: "Good luck",
-          ipa: "ɡʊd lʌk",
-        },
-      ],
-    } as StationInfo,
+      weather: "",
+      localTime: "",
+      greetings: [],
+      qrzData: undefined
+    } as StationData,
     qsoForm: {
       callsign: "",
       band: "40m",
