@@ -182,8 +182,28 @@ export const useQsoStore = defineStore("qso", {
         second: "2-digit",
       });
     },
-    updateStationInfo(updates: Partial<StationData>) {
-      this.stationInfo = { ...this.stationInfo, ...updates };
+    async fetchStationInfo(callsign: string) {
+      try {
+        const qrzData = await fetchQRZData(callsign);
+        if (!(qrzData instanceof Error)) {
+          const countryCode = getCountryCodeForCallsign(callsign);
+          const stationData: StationData = {
+            callsign,
+            flag: countryCode !== 'xx' ? `https://flagcdn.com/h80/${countryCode}.png` : '',
+            country: qrzData.country,
+            qrzData,
+            weather: '',
+            localTime: '',
+            greetings: []
+          };
+          this.stationInfo = stationData;
+          return stationData;
+        }
+        return null;
+      } catch (error) {
+        console.error('Error fetching station info:', error);
+        return null;
+      }
     },
   },
   getters: {

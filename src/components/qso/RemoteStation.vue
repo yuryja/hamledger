@@ -1,15 +1,12 @@
 <script lang="ts">
 import { useQsoStore } from '../../store/qso'
-import { fetchQRZData } from '../../utils/qrz'
-import { QRZData, StationData } from '../../types/station'
+import { StationData } from '../../types/station'
 
 export default {
   name: 'RemoteStation',
-  data() {
-    return {
-      qsoStore: useQsoStore(),
-      qrzDataCache: null as QRZData | null
-    }
+  setup() {
+    const qsoStore = useQsoStore()
+    return { qsoStore }
   },
   computed: {
     callsign() {
@@ -18,29 +15,14 @@ export default {
     isValid() {
       return this.qsoStore.isCallsignValid
     },
-    stationData() {
+    stationInfo(): StationData | null {
       return this.qsoStore.stationInfo
-    },
-    qrzData(): QRZData {
-      if (!this.qrzDataCache) {
-        return {
-          name: '',
-          qth: ''
-        }
-      }
-      return this.qrzDataCache
     }
   },
   watch: {
-    async callsign() {
-      // Reset cache and fetch new data when callsign changes
-      this.qrzDataCache = null
-      if (this.isValid && this.callsign) {
-        const qrzData = await fetchQRZData(this.callsign)
-        if (!(qrzData instanceof Error)) {
-          this.qrzDataCache = qrzData
-          this.qsoStore.updateStationInfo({ qrzData })
-        }
+    async callsign(newCallsign: string) {
+      if (this.isValid && newCallsign) {
+        await this.qsoStore.fetchStationInfo(newCallsign)
       }
     }
   }
@@ -50,14 +32,14 @@ export default {
 <template>
   <section class="remote-station-section">
     <h2 class="section-title">Remote Station</h2>
-    <div v-if="isValid && callsign" class="remote-station-boxes">
+    <div v-if="isValid && callsign && stationInfo" class="remote-station-boxes">
       <!-- Box 1: Station details -->
       <div class="station-block station-remote">
-        <img v-if="stationData.flag" :src="stationData.flag" :alt="stationData.country" class="station-flag" />
+        <img v-if="stationInfo.flag" :src="stationInfo.flag" :alt="stationInfo.country" class="station-flag" />
         <div class="station-info">
-          <p class="station-name">Remote: {{ qrzData.name || callsign }}</p>
-          <p class="station-qth">QTH: {{ qrzData.qth || 'Loading...' }}</p>
-          <p class="station-country">Country: {{ stationData.country || 'Loading...' }}</p>
+          <p class="station-name">Remote: {{ stationInfo.qrzData?.name || callsign }}</p>
+          <p class="station-qth">QTH: {{ stationInfo.qrzData?.qth || 'Loading...' }}</p>
+          <p class="station-country">Country: {{ stationInfo.country || 'Loading...' }}</p>
         </div>
       </div>
     </div>
