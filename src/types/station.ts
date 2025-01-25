@@ -1,9 +1,3 @@
-export interface OnlineStationData {
-  name: string;
-  qth: string;
-  country: string;
-}
-
 export interface QRZData {
   call: string;
   aliases?: string;
@@ -30,9 +24,9 @@ export interface QRZData {
   qth: string;
 }
 
-export interface QRZResponse {
+export interface QRZSessionResponse {
   version: string;
-  callsign: QRZData;
+  callsign: string;
   session: {
     key: string;
     count: number;
@@ -44,6 +38,7 @@ export interface QRZResponse {
 export interface StationData {
   flag: string;
   country: string;
+  callsign: string;
   qrzData?: QRZData;
   weather: string;
   localTime: string;

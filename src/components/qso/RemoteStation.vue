@@ -20,9 +20,9 @@ export default {
     },
     getStationName(): string {
       if (!this.stationInfo?.qrzData) return this.callsign;
-      
+
       const { name, nickname, fname } = this.stationInfo.qrzData;
-      return name || nickname || fname || this.callsign;
+      return [name, (nickname || ""), fname || this.callsign].join(" ")
     }
   },
   watch: {

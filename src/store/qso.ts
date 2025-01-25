@@ -14,12 +14,11 @@ declare global {
 }
 
 const CALLSIGN_REGEX =
-  /^(([A-Z]{1,2}[0-9]{1,4}[A-Z]{1,3})|([0-9]{1,2}[A-Z]{1,4}))$/;
+  /((2[A-Z]{1,2}|[BFGIKMNRW][A-Z]{0,2}|3[A-CE-Z][A-Z]{0,1}|4[A-MO-Z][A-Z]{0,1}|[5-9OUX][A-Z][A-Z]{0,1})([0-9][0-9A-Z]{0,3}[A-Z])|([ACDLP][2-9A-Z][A-Z]{0,1}|E[2-7A-Z][A-Z]{0,1}|H[2-46-9A-Z][A-Z]{0,1}|[JTV][2-8A-Z][A-Z]{0,1}|S[2-35-9A-RT-Z][A-Z]{0,1}|Y[2-9A-Y][A-Z]{0,1}|Z[238A-Z][A-Z]{0,1})([0-9A-Z]{0,3}[A-Z]))/;
 
 export function isValidCallsign(callsign: string): boolean {
   return CALLSIGN_REGEX.test(callsign.toUpperCase());
 }
-
 
 interface QsoEntry {
   _id?: string;
@@ -49,7 +48,7 @@ export const useQsoStore = defineStore("qso", {
       weather: "",
       localTime: "",
       greetings: [],
-      qrzData: undefined
+      qrzData: undefined as QRZData | undefined,
     } as StationData,
     qsoForm: {
       callsign: "",
@@ -165,19 +164,22 @@ export const useQsoStore = defineStore("qso", {
           const countryCode = getCountryCodeForCallsign(callsign);
           const stationData: StationData = {
             callsign,
-            flag: countryCode !== 'xx' ? `https://flagcdn.com/h80/${countryCode}.png` : '',
+            flag:
+              countryCode !== "xx"
+                ? `https://flagcdn.com/h80/${countryCode}.png`
+                : "",
             country: qrzData.country,
             qrzData,
-            weather: '',
-            localTime: '',
-            greetings: []
+            weather: "",
+            localTime: "",
+            greetings: [],
           };
           this.stationInfo = stationData;
           return stationData;
         }
         return null;
       } catch (error) {
-        console.error('Error fetching station info:', error);
+        console.error("Error fetching station info:", error);
         return null;
       }
     },
