@@ -53,3 +53,9 @@ export interface StationData {
     label: string;
   }[];
 }
+
+export interface GeoData {
+  lat: number;
+  lon: number;
+  display_name?: string;
+}

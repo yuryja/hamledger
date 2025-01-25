@@ -7,9 +7,9 @@ interface QRZConfig {
 }
 
 export class QRZClient {
-  private baseUrl = 'https://xmldata.qrz.com/xml/current';
+  private baseUrl = "https://xmldata.qrz.com/xml/current";
   private config: QRZConfig;
-  
+
   constructor(config: QRZConfig) {
     this.config = config;
   }
@@ -22,7 +22,7 @@ export class QRZClient {
     const params = new URLSearchParams({
       username: this.config.username,
       password: this.config.password,
-      agent: 'hamlogger-1.0'
+      agent: "hamlogger-1.0",
     });
 
     const response = await fetch(`${this.baseUrl}/?${params}`);
@@ -46,10 +46,10 @@ export class QRZClient {
 
   async lookupCallsign(callsign: string): Promise<QRZData> {
     const key = await this.getSessionKey();
-    
+
     const params = new URLSearchParams({
       s: key,
-      callsign: callsign
+      callsign: callsign,
     });
 
     const response = await fetch(`${this.baseUrl}/?${params}`);
@@ -71,20 +71,22 @@ export class QRZClient {
       call: callsignElem.querySelector("call")?.textContent || "",
       fname: callsignElem.querySelector("fname")?.textContent || "",
       name: callsignElem.querySelector("name")?.textContent || "",
-      addr1: callsignElem.querySelector("addr1")?.textContent,
-      addr2: callsignElem.querySelector("addr2")?.textContent,
-      state: callsignElem.querySelector("state")?.textContent,
-      zip: callsignElem.querySelector("zip")?.textContent,
+      addr1: callsignElem.querySelector("addr1")?.textContent || "",
+      addr2: callsignElem.querySelector("addr2")?.textContent || "",
+      state: callsignElem.querySelector("state")?.textContent || "",
+      zip: callsignElem.querySelector("zip")?.textContent || "",
       country: callsignElem.querySelector("country")?.textContent || "Unknown",
       lat: parseFloat(callsignElem.querySelector("lat")?.textContent || "0"),
       lon: parseFloat(callsignElem.querySelector("lon")?.textContent || "0"),
-      grid: callsignElem.querySelector("grid")?.textContent,
-      county: callsignElem.querySelector("county")?.textContent,
+      grid: callsignElem.querySelector("grid")?.textContent || "",
+      county: callsignElem.querySelector("county")?.textContent || "",
       qth: callsignElem.querySelector("addr2")?.textContent || "",
-      class: callsignElem.querySelector("class")?.textContent,
-      email: callsignElem.querySelector("email")?.textContent,
-      timezone: callsignElem.querySelector("TimeZone")?.textContent,
-      gmtOffset: parseInt(callsignElem.querySelector("GMTOffset")?.textContent || "0"),
+      class: callsignElem.querySelector("class")?.textContent || "",
+      email: callsignElem.querySelector("email")?.textContent || "",
+      timezone: callsignElem.querySelector("TimeZone")?.textContent || "",
+      gmtOffset: parseInt(
+        callsignElem.querySelector("GMTOffset")?.textContent || "0"
+      ),
     };
   }
 }
