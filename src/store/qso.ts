@@ -177,27 +177,36 @@ export const useQsoStore = defineStore("qso", {
             greetings: [],
           };
 
-          // Get coordinates from QTH if available
-          if (qrzData.qth) {
+          // Get weather data using coordinates from QRZ or geocoding
+          let lat: number | undefined = qrzData.lat;
+          let lon: number | undefined = qrzData.lon;
+
+          // If QRZ doesn't provide coordinates, try geocoding
+          if ((!lat || !lon) && qrzData.qth) {
             const geoData = await geocodeLocation(qrzData.qth);
             if (geoData) {
-              // Get weather data using coordinates
-              const weatherData = await getWeather(geoData.lat, geoData.lon);
-              if (weatherData) {
-                stationData.weather = `${weatherData.temperature}°C, ${weatherData.description}`;
-              }
-
-              // Calculate local time using timezone offset
-              if (qrzData.gmtOffset !== undefined) {
-                const localTime = new Date();
-                localTime.setHours(localTime.getHours() + qrzData.gmtOffset);
-                stationData.localTime = localTime.toLocaleTimeString('en-US', {
-                  hour12: false,
-                  hour: '2-digit',
-                  minute: '2-digit'
-                });
-              }
+              lat = geoData.lat;
+              lon = geoData.lon;
             }
+          }
+
+          // Get weather if we have coordinates
+          if (lat && lon) {
+            const weatherData = await getWeather(lat, lon);
+            if (weatherData) {
+              stationData.weather = `${weatherData.temperature}°C, ${weatherData.description}`;
+            }
+          }
+
+          // Calculate local time using timezone offset
+          if (qrzData.gmtOffset !== undefined) {
+            const localTime = new Date();
+            localTime.setHours(localTime.getHours() + qrzData.gmtOffset);
+            stationData.localTime = localTime.toLocaleTimeString('en-US', {
+              hour12: false,
+              hour: '2-digit',
+              minute: '2-digit'
+            });
           }
 
           this.stationInfo = stationData;
