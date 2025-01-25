@@ -17,6 +17,12 @@ export default {
     },
     stationInfo(): StationData | null {
       return this.qsoStore.stationInfo
+    },
+    getStationName(): string {
+      if (!this.stationInfo?.qrzData) return this.callsign;
+      
+      const { name, nickname, fname } = this.stationInfo.qrzData;
+      return name || nickname || fname || this.callsign;
     }
   },
   watch: {
@@ -37,8 +43,7 @@ export default {
       <div class="station-block station-remote">
         <img v-if="stationInfo.flag" :src="stationInfo.flag" :alt="stationInfo.country" class="station-flag" />
         <div class="station-info">
-          <p class="station-name">Remote: {{ stationInfo.qrzData?.name ? "" + stationInfo.qrzData?.nickname ? "" +
-            stationInfo.qrzData?.fname || callsign }}</p>
+          <p class="station-name">Remote: {{ getStationName }}</p>
           <p class="station-qth">QTH: {{ stationInfo.qrzData?.qth || 'Loading...' }}</p>
           <p class="station-country">Country: {{ stationInfo.country || 'Loading...' }}</p>
         </div>
