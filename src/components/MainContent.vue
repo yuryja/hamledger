@@ -4,6 +4,7 @@ import AppHeader from './AppHeader.vue'
 import QsoPanel from './QsoPanel.vue'
 import LogArea from './LogArea.vue'
 import LogBook from './LogBook.vue'
+import ConfigView from './ConfigView.vue'
 
 export default {
   name: 'MainContent',
@@ -11,7 +12,8 @@ export default {
     AppHeader,
     QsoPanel,
     LogArea,
-    LogBook
+    LogBook,
+    ConfigView
   },
   setup() {
     const currentView = ref('qso')
@@ -33,5 +35,6 @@ export default {
       <LogArea />
     </template>
     <LogBook v-else-if="currentView === 'logbook'" />
+    <ConfigView v-else-if="currentView === 'settings'" />
   </div>
 </template>
