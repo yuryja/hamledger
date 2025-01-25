@@ -161,21 +161,47 @@ export const useQsoStore = defineStore("qso", {
     },
     async fetchStationInfo(callsign: string) {
       try {
+        // Reset station info first to avoid showing stale data
+        this.stationInfo = {
+          callsign: "",
+          flag: "",
+          country: "",
+          weather: "",
+          localTime: "",
+          greetings: [],
+        };
+
+        const countryCode = getCountryCodeForCallsign(callsign);
         const qrzData = await fetchQRZData(callsign);
-        if (!(qrzData instanceof Error)) {
-          const countryCode = getCountryCodeForCallsign(callsign);
+
+        // If QRZ lookup failed, try to find info in existing QSOs
+        if (qrzData instanceof Error) {
+          const existingQso = this.allQsos.find(qso => qso.callsign === callsign);
+          
+          // Create basic station data with just country and flag
           const stationData: StationData = {
             callsign,
-            flag:
-              countryCode !== "xx"
-                ? `https://flagcdn.com/h80/${countryCode}.png`
-                : "",
-            country: qrzData.country,
-            qrzData,
+            flag: countryCode !== "xx" ? `https://flagcdn.com/h80/${countryCode}.png` : "",
+            country: existingQso?.country || "Unknown",
             weather: "",
             localTime: "",
             greetings: [],
           };
+
+          this.stationInfo = stationData;
+          return stationData;
+        }
+
+        // If QRZ lookup succeeded, create full station data
+        const stationData: StationData = {
+          callsign,
+          flag: countryCode !== "xx" ? `https://flagcdn.com/h80/${countryCode}.png` : "",
+          country: qrzData.country,
+          qrzData,
+          weather: "",
+          localTime: "",
+          greetings: [],
+        };
 
           // Get coordinates from QRZ or geocoding
           let geodata: GeoData | undefined =
