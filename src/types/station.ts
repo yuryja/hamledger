@@ -1,3 +1,9 @@
+export interface OnlineStationData {
+  name: string;
+  qth: string;
+  country: string;
+}
+
 export interface QRZData {
   name: string;
   qth: string;
