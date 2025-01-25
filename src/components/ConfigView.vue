@@ -40,8 +40,6 @@ export default {
     }
 
     function getFieldDescription(field: ConfigField): string {
-      import schema from '../settings.schema.json'
-      
       // Navigate the schema to find the field's description
       let current = schema
       for (const pathPart of field.path) {
