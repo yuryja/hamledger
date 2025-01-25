@@ -215,6 +215,8 @@ export default {
   height: calc(100vh - 100px);
   display: flex;
   flex-direction: column;
+  width: 100%;
+  margin-right: 1rem;
 }
 
 .config-header {
@@ -279,12 +281,16 @@ export default {
   background: #2b2b2b;
   border-radius: 4px;
   padding: 1rem;
+  width: 100%;
 }
 
 .config-fields {
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  max-width: 800px;
+  margin: 0 auto;
+  width: 100%;
 }
 
 .config-field {
