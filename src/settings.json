@@ -1,0 +1,62 @@
+{
+  "station": {
+    "callsign": "HA5XB",
+    "operator": "Balazs",
+    "qth": "Budapest, Hungary",
+    "grid": "JN97MM",
+    "timezone": "Europe/Budapest"
+  },
+  "rig": {
+    "model": "YAESU FT-450D",
+    "port": "COM5",
+    "baudRate": 38400,
+    "dataBits": 8,
+    "stopBits": 2,
+    "parity": "none",
+    "flowControl": "none",
+    "pollInterval": 250
+  },
+  "qrz": {
+    "username": "",
+    "password": "",
+    "sessionTimeout": 3600
+  },
+  "apis": {
+    "nominatim": {
+      "userAgent": "HamLogger/1.0",
+      "baseUrl": "https://nominatim.openstreetmap.org",
+      "rateLimit": 1000
+    },
+    "openMeteo": {
+      "baseUrl": "https://api.open-meteo.com/v1",
+      "rateLimit": 1000
+    }
+  },
+  "database": {
+    "path": "hamlogger.db",
+    "backup": {
+      "enabled": true,
+      "path": "hamlogger.json",
+      "interval": 3600
+    }
+  },
+  "ui": {
+    "theme": "dark",
+    "defaultBand": "40m",
+    "defaultMode": "SSB",
+    "defaultRst": "59",
+    "dateFormat": "DD/MM/YYYY",
+    "timeFormat": "HH:mm:ss",
+    "refreshRates": {
+      "clock": 1000,
+      "smeter": 250,
+      "propData": 300000
+    }
+  },
+  "logging": {
+    "level": "info",
+    "file": "hamlogger.log",
+    "maxSize": 5242880,
+    "maxFiles": 5
+  }
+}
