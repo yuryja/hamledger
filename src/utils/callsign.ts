@@ -316,8 +316,13 @@ const prefixMap: PrefixMap = {
 export function getCountryCodeForCallsign(callsign: string): string {
   callsign = callsign.toUpperCase();
   const knownPrefixes = Object.keys(prefixMap).sort((a, b) => b.length - a.length);
+  
   for (const prefix of knownPrefixes) {
-    if (callsign.startsWith(prefix)) {
+    // Convert prefix pattern to regex
+    const regexStr = prefix.replace(/\[([A-Z])-([A-Z])\]/g, '[$1-$2]');
+    const regex = new RegExp(`^${regexStr}`);
+    
+    if (regex.test(callsign)) {
       return prefixMap[prefix];
     }
   }
