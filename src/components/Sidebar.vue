@@ -52,3 +52,60 @@ export default {
     </nav>
   </aside>
 </template>
+
+<style scoped>
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 60px;
+  background: #1b1b1b;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1rem 0;
+  z-index: 999;
+}
+
+.sidebar nav {
+  width: 100%;
+}
+
+.sidebar nav ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.sidebar-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 0;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+  color: var(--gray-color);
+}
+
+.sidebar-item:hover {
+  background: #2b2b2b;
+}
+
+.sidebar-item.active {
+  background: transparent;
+}
+
+.sidebar-icon {
+  width: 30px;
+  height: 30px;
+  transition: transform 0.2s ease;
+  fill: var(--gray-color);
+}
+
+.sidebar-item:hover .sidebar-icon {
+  transform: scale(1.1);
+  fill: var(--main-color);
+}
+</style>
