@@ -1,6 +1,7 @@
 <script lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import settings from '../settings.json'
+import schema from '../settings.schema.json'
 import { useRigStore } from '../store/rig'
 
 interface ConfigField {
@@ -39,7 +40,7 @@ export default {
     }
 
     function getFieldDescription(field: ConfigField): string {
-      const schema = require('../settings.schema.json')
+      import schema from '../settings.schema.json'
       
       // Navigate the schema to find the field's description
       let current = schema
