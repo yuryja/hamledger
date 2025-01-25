@@ -203,54 +203,53 @@ export const useQsoStore = defineStore("qso", {
           greetings: [],
         };
 
-          // Get coordinates from QRZ or geocoding
-          let geodata: GeoData | undefined =
-            qrzData.lat && qrzData.lon
-              ? {
-                  lat: qrzData.lat,
-                  lon: qrzData.lon,
-                  display_name: "",
-                }
-              : undefined;
+        // Get coordinates from QRZ or geocoding
+        let geodata: GeoData | undefined =
+          qrzData.lat && qrzData.lon
+            ? {
+                lat: qrzData.lat,
+                lon: qrzData.lon,
+                display_name: "",
+              }
+            : undefined;
 
-          // If QRZ doesn't provide coordinates, try geocoding
-          if (!geodata && qrzData.qth) {
-            const geoData = await geocodeLocation(qrzData.qth);
-            if (geoData) {
-              geodata = {
-                lat: geoData.lat,
-                lon: geoData.lon,
-                display_name: geoData.display_name,
-              };
-            }
+        // If QRZ doesn't provide coordinates, try geocoding
+        if (!geodata && qrzData.qth) {
+          const geoData = await geocodeLocation(qrzData.qth);
+          if (geoData) {
+            geodata = {
+              lat: geoData.lat,
+              lon: geoData.lon,
+              display_name: geoData.display_name,
+            };
           }
-
-          // Save geodata to station info
-          stationData.geodata = geodata;
-
-          // Get weather if we have coordinates
-          if (geodata) {
-            const weatherData = await getWeather(geodata.lat, geodata.lon);
-            if (weatherData) {
-              stationData.weather = `${weatherData.temperature}°C, ${weatherData.description}`;
-            }
-          }
-
-          // Calculate local time using timezone offset
-          if (qrzData.gmtOffset !== undefined) {
-            const localTime = new Date();
-            localTime.setHours(localTime.getHours() + qrzData.gmtOffset);
-            stationData.localTime = localTime.toLocaleTimeString("en-US", {
-              hour12: false,
-              hour: "2-digit",
-              minute: "2-digit",
-            });
-          }
-
-          this.stationInfo = stationData;
-          return stationData;
         }
-        return null;
+
+        // Save geodata to station info
+        stationData.geodata = geodata;
+
+        // Get weather if we have coordinates
+        if (geodata) {
+          const weatherData = await getWeather(geodata.lat, geodata.lon);
+          if (weatherData) {
+            stationData.weather = `${weatherData.temperature}°C, ${weatherData.description}`;
+          }
+        }
+
+        // Calculate local time using timezone offset
+        if (qrzData.gmtOffset !== undefined) {
+          const localTime = new Date();
+          localTime.setHours(localTime.getHours() + qrzData.gmtOffset);
+          stationData.localTime = localTime.toLocaleTimeString("en-US", {
+            hour12: false,
+            hour: "2-digit",
+            minute: "2-digit",
+          });
+        }
+
+        this.stationInfo = stationData;
+        return stationData;
+
       } catch (error) {
         console.error("Error fetching station info:", error);
         return null;
