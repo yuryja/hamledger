@@ -1,6 +1,6 @@
 import { defineStore } from "pinia";
 import { useRigStore } from "./rig";
-import { StationData, QRZData } from "../types/station";
+import { StationData, QRZData, GeoData } from "../types/station";
 import { fetchQRZData } from "../utils/qrz";
 import { getCountryCodeForCallsign } from "../utils/callsign";
 import { geocodeLocation } from "../utils/geocoding";
@@ -178,10 +178,14 @@ export const useQsoStore = defineStore("qso", {
           };
 
           // Get coordinates from QRZ or geocoding
-          let geodata = qrzData.lat && qrzData.lon ? {
-            lat: qrzData.lat,
-            lon: qrzData.lon
-          } : undefined;
+          let geodata: GeoData | undefined =
+            qrzData.lat && qrzData.lon
+              ? {
+                  lat: qrzData.lat,
+                  lon: qrzData.lon,
+                  display_name: "",
+                }
+              : undefined;
 
           // If QRZ doesn't provide coordinates, try geocoding
           if (!geodata && qrzData.qth) {
@@ -190,7 +194,7 @@ export const useQsoStore = defineStore("qso", {
               geodata = {
                 lat: geoData.lat,
                 lon: geoData.lon,
-                display_name: geoData.display_name
+                display_name: geoData.display_name,
               };
             }
           }
@@ -210,10 +214,10 @@ export const useQsoStore = defineStore("qso", {
           if (qrzData.gmtOffset !== undefined) {
             const localTime = new Date();
             localTime.setHours(localTime.getHours() + qrzData.gmtOffset);
-            stationData.localTime = localTime.toLocaleTimeString('en-US', {
+            stationData.localTime = localTime.toLocaleTimeString("en-US", {
               hour12: false,
-              hour: '2-digit',
-              minute: '2-digit'
+              hour: "2-digit",
+              minute: "2-digit",
             });
           }
 
