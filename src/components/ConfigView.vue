@@ -33,33 +33,27 @@ export default {
           path,
           value,
           type: Array.isArray(value) ? 'array' : typeof value,
-          description: getFieldDescription(key)
+          description: getFieldDescription({key, path, value, type: typeof value})
         }]
       }, [])
     }
 
-    function getFieldDescription(key: string): string {
-      const descriptions: { [key: string]: string } = {
-        callsign: 'Your station callsign',
-        operator: 'Name of the operator',
-        qth: 'Your station location',
-        grid: 'Maidenhead grid locator',
-        timezone: 'Your local timezone',
-        model: 'Radio model',
-        port: 'Serial port for rig control',
-        baudRate: 'Serial port baud rate',
-        pollInterval: 'Rig polling interval in ms',
-        username: 'QRZ.com username',
-        password: 'QRZ.com password',
-        theme: 'UI color theme',
-        defaultBand: 'Default band for new QSOs',
-        defaultMode: 'Default mode for new QSOs',
-        defaultRst: 'Default RST report',
-        level: 'Logging detail level',
-        maxSize: 'Maximum log file size in bytes',
-        maxFiles: 'Number of log files to keep'
+    function getFieldDescription(field: ConfigField): string {
+      const schema = require('../settings.schema.json')
+      
+      // Navigate the schema to find the field's description
+      let current = schema
+      for (const pathPart of field.path) {
+        if (current.properties && current.properties[pathPart]) {
+          current = current.properties[pathPart]
+        }
       }
-      return descriptions[key] || ''
+      
+      if (current.properties && current.properties[field.key]) {
+        return current.properties[field.key].description || ''
+      }
+      
+      return ''
     }
 
     const categories = computed(() => {

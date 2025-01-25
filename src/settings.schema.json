@@ -1,0 +1,224 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "station": {
+      "type": "object",
+      "description": "Station configuration settings",
+      "properties": {
+        "callsign": {
+          "type": "string",
+          "description": "Your amateur radio callsign"
+        },
+        "operator": {
+          "type": "string",
+          "description": "Name of the station operator"
+        },
+        "qth": {
+          "type": "string",
+          "description": "Station location (city, country)"
+        },
+        "grid": {
+          "type": "string",
+          "description": "Maidenhead grid locator"
+        },
+        "timezone": {
+          "type": "string",
+          "description": "Local timezone in IANA format (e.g. Europe/London)"
+        }
+      }
+    },
+    "rig": {
+      "type": "object",
+      "description": "Radio equipment settings",
+      "properties": {
+        "model": {
+          "type": "string",
+          "description": "Radio model name"
+        },
+        "port": {
+          "type": "string",
+          "description": "Serial port for CAT control"
+        },
+        "baudRate": {
+          "type": "integer",
+          "description": "Serial port baud rate"
+        },
+        "dataBits": {
+          "type": "integer",
+          "description": "Serial port data bits"
+        },
+        "stopBits": {
+          "type": "integer",
+          "description": "Serial port stop bits"
+        },
+        "parity": {
+          "type": "string",
+          "description": "Serial port parity setting"
+        },
+        "flowControl": {
+          "type": "string",
+          "description": "Serial port flow control"
+        },
+        "pollInterval": {
+          "type": "integer",
+          "description": "Rig polling interval in milliseconds"
+        }
+      }
+    },
+    "qrz": {
+      "type": "object",
+      "description": "QRZ.com API settings",
+      "properties": {
+        "username": {
+          "type": "string",
+          "description": "QRZ.com username"
+        },
+        "password": {
+          "type": "string",
+          "description": "QRZ.com password"
+        },
+        "sessionTimeout": {
+          "type": "integer",
+          "description": "Session timeout in seconds"
+        }
+      }
+    },
+    "apis": {
+      "type": "object",
+      "description": "External API configurations",
+      "properties": {
+        "nominatim": {
+          "type": "object",
+          "description": "OpenStreetMap Nominatim API settings",
+          "properties": {
+            "userAgent": {
+              "type": "string",
+              "description": "User agent string for API requests"
+            },
+            "baseUrl": {
+              "type": "string",
+              "description": "Base URL for Nominatim API"
+            },
+            "rateLimit": {
+              "type": "integer",
+              "description": "API rate limit in milliseconds"
+            }
+          }
+        },
+        "openMeteo": {
+          "type": "object",
+          "description": "Open-Meteo weather API settings",
+          "properties": {
+            "baseUrl": {
+              "type": "string",
+              "description": "Base URL for Open-Meteo API"
+            },
+            "rateLimit": {
+              "type": "integer",
+              "description": "API rate limit in milliseconds"
+            }
+          }
+        }
+      }
+    },
+    "database": {
+      "type": "object",
+      "description": "Database configuration",
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "Path to the database file"
+        },
+        "backup": {
+          "type": "object",
+          "description": "Database backup settings",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "description": "Enable automatic backups"
+            },
+            "path": {
+              "type": "string",
+              "description": "Path to backup file"
+            },
+            "interval": {
+              "type": "integer",
+              "description": "Backup interval in seconds"
+            }
+          }
+        }
+      }
+    },
+    "ui": {
+      "type": "object",
+      "description": "User interface settings",
+      "properties": {
+        "theme": {
+          "type": "string",
+          "description": "UI color theme (light/dark)"
+        },
+        "defaultBand": {
+          "type": "string",
+          "description": "Default band for new QSOs"
+        },
+        "defaultMode": {
+          "type": "string",
+          "description": "Default mode for new QSOs"
+        },
+        "defaultRst": {
+          "type": "string",
+          "description": "Default RST report"
+        },
+        "dateFormat": {
+          "type": "string",
+          "description": "Date display format"
+        },
+        "timeFormat": {
+          "type": "string",
+          "description": "Time display format"
+        },
+        "refreshRates": {
+          "type": "object",
+          "description": "UI refresh intervals",
+          "properties": {
+            "clock": {
+              "type": "integer",
+              "description": "Clock update interval in milliseconds"
+            },
+            "smeter": {
+              "type": "integer",
+              "description": "S-meter update interval in milliseconds"
+            },
+            "propData": {
+              "type": "integer",
+              "description": "Propagation data update interval in milliseconds"
+            }
+          }
+        }
+      }
+    },
+    "logging": {
+      "type": "object",
+      "description": "Application logging settings",
+      "properties": {
+        "level": {
+          "type": "string",
+          "description": "Log level (debug/info/warn/error)"
+        },
+        "file": {
+          "type": "string",
+          "description": "Log file path"
+        },
+        "maxSize": {
+          "type": "integer",
+          "description": "Maximum log file size in bytes"
+        },
+        "maxFiles": {
+          "type": "integer",
+          "description": "Maximum number of log files to keep"
+        }
+      }
+    }
+  }
+}
