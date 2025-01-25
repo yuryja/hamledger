@@ -37,7 +37,8 @@ export default {
       <div class="station-block station-remote">
         <img v-if="stationInfo.flag" :src="stationInfo.flag" :alt="stationInfo.country" class="station-flag" />
         <div class="station-info">
-          <p class="station-name">Remote: {{ stationInfo.qrzData?.name || callsign }}</p>
+          <p class="station-name">Remote: {{ stationInfo.qrzData?.name ? "" + stationInfo.qrzData?.nickname ? "" +
+            stationInfo.qrzData?.fname || callsign }}</p>
           <p class="station-qth">QTH: {{ stationInfo.qrzData?.qth || 'Loading...' }}</p>
           <p class="station-country">Country: {{ stationInfo.country || 'Loading...' }}</p>
         </div>
