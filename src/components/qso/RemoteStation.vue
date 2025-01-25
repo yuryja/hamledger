@@ -46,9 +46,10 @@ export default {
           <p class="station-name">Remote: {{ getStationName }}</p>
           <p class="station-qth">QTH: {{ stationInfo?.qrzData?.qth || 'Loading...' }}</p>
           <p class="station-country">Country: {{ stationInfo?.country || 'Loading...' }}</p>
-          <template v-if="stationInfo?.qrzData?.lat && stationInfo?.qrzData?.lon">
-            <p class="station-coords-text">Lat: {{ stationInfo.qrzData.lat.toFixed(4) }}°</p>
-            <p class="station-coords-text">Lon: {{ stationInfo.qrzData.lon.toFixed(4) }}°</p>
+          <template v-if="stationInfo?.geodata">
+            <p class="station-coords-text">Lat: {{ stationInfo.geodata.lat.toFixed(4) }}°</p>
+            <p class="station-coords-text">Lon: {{ stationInfo.geodata.lon.toFixed(4) }}°</p>
+            <p v-if="stationInfo.geodata.display_name" class="station-coords-text">Location: {{ stationInfo.geodata.display_name }}</p>
           </template>
           <p v-if="stationInfo?.qrzData?.grid" class="station-coords-text">Grid: {{ stationInfo.qrzData.grid }}</p>
         </div>

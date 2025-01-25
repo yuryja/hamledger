@@ -42,6 +42,11 @@ export interface StationData {
   qrzData?: QRZData;
   weather: string;
   localTime: string;
+  geodata?: {
+    lat: number;
+    lon: number;
+    display_name?: string;
+  };
   greetings: {
     greeting: string;
     ipa: string;

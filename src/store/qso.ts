@@ -177,22 +177,30 @@ export const useQsoStore = defineStore("qso", {
             greetings: [],
           };
 
-          // Get weather data using coordinates from QRZ or geocoding
-          let lat: number | undefined = qrzData.lat;
-          let lon: number | undefined = qrzData.lon;
+          // Get coordinates from QRZ or geocoding
+          let geodata = qrzData.lat && qrzData.lon ? {
+            lat: qrzData.lat,
+            lon: qrzData.lon
+          } : undefined;
 
           // If QRZ doesn't provide coordinates, try geocoding
-          if ((!lat || !lon) && qrzData.qth) {
+          if (!geodata && qrzData.qth) {
             const geoData = await geocodeLocation(qrzData.qth);
             if (geoData) {
-              lat = geoData.lat;
-              lon = geoData.lon;
+              geodata = {
+                lat: geoData.lat,
+                lon: geoData.lon,
+                display_name: geoData.display_name
+              };
             }
           }
 
+          // Save geodata to station info
+          stationData.geodata = geodata;
+
           // Get weather if we have coordinates
-          if (lat && lon) {
-            const weatherData = await getWeather(lat, lon);
+          if (geodata) {
+            const weatherData = await getWeather(geodata.lat, geodata.lon);
             if (weatherData) {
               stationData.weather = `${weatherData.temperature}°C, ${weatherData.description}`;
             }
