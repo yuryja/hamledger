@@ -34,7 +34,7 @@ export default {
           path,
           value,
           type: Array.isArray(value) ? 'array' : typeof value,
-          description: getFieldDescription({key, path, value, type: typeof value})
+          description: getFieldDescription({ key, path, value, type: typeof value })
         }]
       }, [])
     }
@@ -47,11 +47,11 @@ export default {
           current = current.properties[pathPart]
         }
       }
-      
+
       if (current.properties && current.properties[field.key]) {
         return current.properties[field.key].description || ''
       }
-      
+
       return ''
     }
 
@@ -96,8 +96,8 @@ export default {
     function handleChange(field: ConfigField, event: Event) {
       const target = event.target as HTMLInputElement
       let value: any = target.value
-      
-      switch(field.type) {
+
+      switch (field.type) {
         case 'number':
           value = Number(value)
           break
@@ -123,76 +123,59 @@ export default {
 </script>
 
 <template>
-  <main class="config-container">
-    <div class="config-header">
-      <h2 class="section-title">Configuration</h2>
-      <div class="search-box">
-        <input 
-          type="text" 
-          v-model="searchQuery"
-          placeholder="Search settings..."
-          class="search-input"
-        >
+  <main class="config-panel">
+    <div class="config-container">
+      <div class="config-header">
+        <h2 class="section-title">Configuration</h2>
+        <div class="search-box">
+          <input type="text" v-model="searchQuery" placeholder="Search settings..." class="search-input">
+        </div>
       </div>
-    </div>
-    
-    <div class="config-layout">
-      <!-- Categories sidebar -->
-      <nav class="config-sidebar">
-        <ul class="category-list">
-          <li v-for="category in categories" 
-              :key="category.name"
+
+      <div class="config-layout">
+        <!-- Categories sidebar -->
+        <nav class="config-sidebar">
+          <ul class="category-list">
+            <li v-for="category in categories" :key="category.name"
               :class="['category-item', { active: category.name === selectedCategory }]"
               @click="selectedCategory = category.name">
-            {{ category.name.charAt(0).toUpperCase() + category.name.slice(1) }}
-          </li>
-        </ul>
-      </nav>
+              {{ category.name.charAt(0).toUpperCase() + category.name.slice(1) }}
+            </li>
+          </ul>
+        </nav>
 
-      <!-- Main config area -->
-      <div class="config-main">
-        <div class="config-fields">
-          <div v-for="field in filteredFields" 
-               :key="getFieldId(field)" 
-               class="config-field">
-            <div class="field-header">
-              <label :for="getFieldId(field)">{{ getFieldLabel(field) }}</label>
-              <span v-if="field.description" class="field-description">{{ field.description }}</span>
+        <!-- Main config area -->
+        <div class="config-main">
+          <div class="config-fields">
+            <div v-for="field in filteredFields" :key="getFieldId(field)" class="config-field">
+              <div class="field-header">
+                <label :for="getFieldId(field)">{{ getFieldLabel(field) }}</label>
+                <span v-if="field.description" class="field-description">{{ field.description }}</span>
+              </div>
+
+              <!-- Boolean -->
+              <div v-if="field.type === 'boolean'" class="toggle-switch">
+                <input type="checkbox" :id="getFieldId(field)" :checked="field.value"
+                  @change="handleChange(field, $event)">
+                <span class="slider"></span>
+              </div>
+
+              <!-- Number -->
+              <input v-else-if="field.type === 'number'" type="number" :id="getFieldId(field)" :value="field.value"
+                @input="handleChange(field, $event)">
+
+              <!-- Array (as select) -->
+              <select v-else-if="field.type === 'array' && field.value.every((v: any) => typeof v !== 'object')"
+                :id="getFieldId(field)" @change="handleChange(field, $event)">
+                <option v-for="option in field.value" :key="option" :value="option">
+                  {{ option }}
+                </option>
+              </select>
+
+              <!-- String -->
+              <input v-else type="text" :id="getFieldId(field)" :value="field.value"
+                @input="handleChange(field, $event)">
             </div>
-            
-            <!-- Boolean -->
-            <div v-if="field.type === 'boolean'" class="toggle-switch">
-              <input type="checkbox"
-                     :id="getFieldId(field)"
-                     :checked="field.value"
-                     @change="handleChange(field, $event)">
-              <span class="slider"></span>
-            </div>
-
-            <!-- Number -->
-            <input v-else-if="field.type === 'number'"
-                   type="number"
-                   :id="getFieldId(field)"
-                   :value="field.value"
-                   @input="handleChange(field, $event)">
-
-            <!-- Array (as select) -->
-            <select v-else-if="field.type === 'array' && field.value.every((v: any) => typeof v !== 'object')"
-                    :id="getFieldId(field)"
-                    @change="handleChange(field, $event)">
-              <option v-for="option in field.value" 
-                      :key="option" 
-                      :value="option">
-                {{ option }}
-              </option>
-            </select>
-
-            <!-- String -->
-            <input v-else
-                   type="text"
-                   :id="getFieldId(field)"
-                   :value="field.value"
-                   @input="handleChange(field, $event)">
           </div>
         </div>
       </div>
@@ -201,6 +184,11 @@ export default {
 </template>
 
 <style scoped>
+.config-panel {
+  display: flex;
+  width: 100%;
+}
+
 .config-container {
   background: #333;
   border-radius: 5px;
@@ -208,9 +196,7 @@ export default {
   height: calc(100vh - 100px);
   display: flex;
   flex-direction: column;
-  width: 100%;
   margin-right: 1rem;
-  flex: 1;
 }
 
 .config-header {
@@ -279,7 +265,8 @@ export default {
   border-radius: 4px;
   padding: 1rem;
   width: 100%;
-  min-width: 0; /* Prevents flex item from overflowing */
+  min-width: 0;
+  /* Prevents flex item from overflowing */
 }
 
 .config-fields {
@@ -365,12 +352,11 @@ export default {
   border-radius: 50%;
 }
 
-input:checked + .slider {
+input:checked+.slider {
   background-color: var(--main-color);
 }
 
-input:checked + .slider:before {
+input:checked+.slider:before {
   transform: translateX(26px);
 }
 </style>
-
