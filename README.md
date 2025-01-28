@@ -5,6 +5,8 @@
 
 # Hamledger
 
+_If you find my work valuable, please consider Sponsoring or Donating!_
+
 ![image](./public/gui.jpg)
 
 A modern amateur radio logging application built with Vue 3, TypeScript, and Electron.
