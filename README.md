@@ -5,7 +5,7 @@
 
 # Hamledger
 
-_If you find my work valuable, please consider Sponsoring or Donating!_
+_If you find my work valuable, please consider to Sponsor or Donate!_
 
 ![image](./public/gui.jpg)
 
