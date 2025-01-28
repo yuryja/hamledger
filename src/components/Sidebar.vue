@@ -60,11 +60,11 @@ export default {
   left: 0;
   bottom: 0;
   width: 60px;
-  background: #1b1b1b;
+  background: var(--bg-darker);
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 1rem 0;
+  padding: var(--spacing-md) 0;
   z-index: 999;
 }
 
@@ -90,7 +90,7 @@ export default {
 }
 
 .sidebar-item:hover {
-  background: #2b2b2b;
+  background: var(--bg-dark);
 }
 
 .sidebar-item.active {
