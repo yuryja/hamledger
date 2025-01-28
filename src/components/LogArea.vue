@@ -93,7 +93,7 @@ export default {
   </main>
 </template>
 
-<style scoped>
+<style>
 .log-container {
   background: #333;
   border-radius: 5px;
@@ -164,7 +164,7 @@ export default {
   width: 20px;
   height: auto;
   margin-right: 0.3rem;
-  vertical-align: middle;
+  vertical-align: baseline;
   border: 1px solid #555;
   border-radius: 2px;
 }

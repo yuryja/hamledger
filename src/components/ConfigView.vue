@@ -207,7 +207,7 @@ export default {
 }
 
 .search-box {
-  flex: 0 0 300px;
+  flex: 0 1 300px;
 }
 
 .search-input {
@@ -222,7 +222,6 @@ export default {
 .config-layout {
   display: flex;
   gap: 1rem;
-  flex: 1;
   overflow: hidden;
   width: 100%;
   height: 100%;
@@ -259,7 +258,6 @@ export default {
 }
 
 .config-main {
-  flex: 1;
   overflow-y: auto;
   background: #2b2b2b;
   border-radius: 4px;

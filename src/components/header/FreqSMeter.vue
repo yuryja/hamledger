@@ -147,7 +147,6 @@ export default {
 
 /* Center: freq + s-meter */
 .header-center.freq-s-meter {
-  flex: 1;
   display: flex;
   flex-direction: column;
   text-align: center;

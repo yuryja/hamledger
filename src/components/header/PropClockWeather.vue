@@ -80,7 +80,6 @@ export default {
   flex-direction: column;
   gap: 0.5rem;
   align-items: flex-end;
-  flex: 1;
 }
 
 /* Additional container to keep content below the title */
