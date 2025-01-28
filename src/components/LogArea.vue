@@ -92,3 +92,80 @@ export default {
     </table>
   </main>
 </template>
+
+<style scoped>
+.log-container {
+  background: #333;
+  border-radius: 5px;
+  padding: 1rem;
+}
+
+.log-header {
+  display: flex;
+  justify-content: flex-start;
+  margin-bottom: 1rem;
+}
+
+.qso-count {
+  background: #444;
+  border: 1px solid #777;
+  padding: 0.5rem 1rem;
+  border-radius: 3px;
+  line-height: 1.3;
+  font-size: 0.9rem;
+  color: var(--gray-color);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-left: auto;
+}
+
+.tab-btn {
+  background: #444;
+  border: none;
+  color: var(--gray-color);
+  padding: 0.6rem 1rem;
+  cursor: pointer;
+  border-radius: 3px;
+  margin-left: 1rem;
+}
+
+.tab-btn.active {
+  background: var(--main-color);
+  color: #000;
+}
+
+/* QSO Table */
+.qso-table {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
+  margin-top: 1rem;
+  color: var(--gray-color);
+}
+
+.qso-table thead th {
+  background: #444;
+  padding: 0.7rem;
+  text-align: left;
+  font-weight: normal;
+}
+
+.qso-table tbody td {
+  border-top: 1px solid #555;
+  padding: 0.7rem;
+}
+
+.qso-table tr:hover {
+  background: #3c3c3c;
+}
+
+.callsign-flag {
+  width: 20px;
+  height: auto;
+  margin-right: 0.3rem;
+  vertical-align: middle;
+  border: 1px solid #555;
+  border-radius: 2px;
+}
+</style>

@@ -20,3 +20,24 @@ export default {
     <PropClockWeather />
   </header>
 </template>
+
+<style scoped>
+.app-header {
+  display: grid;
+  grid-template-columns: 1fr minmax(400px, 1fr) 1fr;
+  background: #333;
+  padding: 1rem;
+  border-radius: 5px;
+  margin-bottom: 1rem;
+  gap: 1rem;
+}
+
+/* Left side: rig control */
+.header-left.rig-control-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex: 1;
+  align-items: flex-start;
+}
+</style>

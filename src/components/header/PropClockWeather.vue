@@ -72,3 +72,77 @@ export default {
     </div>
   </div>
 </template>
+
+<style scoped>
+/* Right: Prop, clock & WX */
+.header-right.prop-clock-weather {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  align-items: flex-end;
+  flex: 1;
+}
+
+/* Additional container to keep content below the title */
+.prop-clock-weather-content {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 1rem;
+}
+
+/* Prop info */
+.propagation-info {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.prop-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.prop-label {
+  font-size: 0.75rem;
+  color: #ccc;
+}
+
+.prop-value {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: var(--main-color);
+}
+
+/* Clock & weather */
+.clock-weather-block {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.5rem;
+}
+
+.utc-clock,
+.local-weather {
+  display: flex;
+  gap: 0.3rem;
+  align-items: baseline;
+}
+
+.clock-label,
+.weather-label {
+  font-size: 0.8rem;
+  color: #ccc;
+}
+
+.clock-value {
+  font-size: 1.3rem;
+  font-weight: bold;
+  color: #fff;
+}
+
+.weather-value {
+  font-size: 0.9rem;
+  color: #eee;
+}
+</style>

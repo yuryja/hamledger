@@ -79,3 +79,5 @@ export default {
     </table>
   </main>
 </template>
+
+<style scoped></style>

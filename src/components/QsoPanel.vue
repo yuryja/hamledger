@@ -17,3 +17,12 @@ export default {
     <RemoteStation />
   </div>
 </template>
+
+<style scoped>
+.qso-panel {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+</style>

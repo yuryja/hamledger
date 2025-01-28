@@ -56,3 +56,61 @@ export default {
     </div>
   </div>
 </template>
+
+<style scoped>
+/* Just a container to keep the content below the title */
+.rig-control-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.rig-info {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.rig-title {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: white;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.port-badge {
+  font-size: 0.8rem;
+  background: #555;
+  padding: 0.1rem 0.4rem;
+  border-radius: 3px;
+  color: var(--gray-color);
+}
+
+.rig-buttons {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Reconnect (orange) */
+.reconnect {
+  background: orange;
+  border: none;
+  padding: 0.2rem 0.5rem;
+  color: #fff;
+  cursor: pointer;
+  border-radius: 3px;
+}
+
+/* Disconnect (red) */
+.stop-btn {
+  background: #d83838;
+  border: none;
+  padding: 0.2rem 0.5rem;
+  color: #fff;
+  cursor: pointer;
+  border-radius: 3px;
+}
+</style>

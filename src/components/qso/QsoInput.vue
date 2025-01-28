@@ -149,3 +149,78 @@ export default {
     </div>
   </section>
 </template>
+
+<style scoped>
+/* Left: QSO input */
+.qso_input_area {
+  flex: 1;
+  background: #333;
+  padding: 1rem;
+  border-radius: 5px;
+  display: flex;
+  flex-direction: column;
+  /* so the title is above the content */
+  gap: 0.5rem;
+}
+
+.qso-input-content {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+/* QSO inputs */
+.qso-input-group {
+  display: flex;
+  flex-direction: column;
+  min-width: 100px;
+}
+
+.qso-input-group label {
+  font-size: 0.8rem;
+  margin-bottom: 0.3rem;
+  color: var(--gray-color);
+}
+
+.qso-input-group input,
+.qso-input-group select,
+#notes {
+  background: #444;
+  border: 1px solid #555;
+  padding: 0.3rem;
+  color: #fff;
+  border-radius: 3px;
+}
+
+.qso-input-group input {
+  text-transform: uppercase;
+  font-weight: 700;
+  color: lightgreen;
+}
+
+.qso-input-group input.invalid-callsign {
+  background-color: rgba(255, 0, 0, 0.1);
+  border-color: rgba(255, 0, 0, 0.3);
+}
+
+.qso-input-group.small {
+  width: 80px;
+}
+
+#notes {
+  width: 160px;
+  resize: vertical;
+}
+
+.add-qso-btn {
+  background: var(--main-color);
+  border: none;
+  padding: 0.7rem 1rem;
+  color: #000;
+  cursor: pointer;
+  border-radius: 3px;
+  text-transform: uppercase;
+  font-weight: bold;
+  align-self: flex-end;
+}
+</style>

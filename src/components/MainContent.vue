@@ -38,3 +38,9 @@ export default {
     <ConfigView v-else-if="currentView === 'settings'" />
   </div>
 </template>
+
+<style scoped>
+.main-content {
+  margin-left: 60px;
+}
+</style>

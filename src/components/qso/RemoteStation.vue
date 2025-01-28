@@ -49,7 +49,8 @@ export default {
           <template v-if="stationInfo?.geodata">
             <p class="station-coords-text">Lat: {{ stationInfo.geodata.lat.toFixed(4) }}°</p>
             <p class="station-coords-text">Lon: {{ stationInfo.geodata.lon.toFixed(4) }}°</p>
-            <p v-if="stationInfo.geodata.display_name" class="station-coords-text">Location: {{ stationInfo.geodata.display_name }}</p>
+            <p v-if="stationInfo.geodata.display_name" class="station-coords-text">Location: {{
+              stationInfo.geodata.display_name }}</p>
           </template>
           <p v-if="stationInfo?.qrzData?.grid" class="station-coords-text">Grid: {{ stationInfo.qrzData.grid }}</p>
         </div>
@@ -66,3 +67,83 @@ export default {
     </div>
   </section>
 </template>
+
+<style scoped>
+/* Right: Remote Station side-by-side boxes */
+.remote-station-section {
+  flex: 1;
+  background: #333;
+  padding: 1rem;
+  border-radius: 5px;
+  display: flex;
+  flex-direction: column;
+  /* Title above the row of boxes */
+  gap: 0.5rem;
+}
+
+/* The row of boxes side by side */
+.remote-station-boxes {
+  display: flex;
+  flex-direction: row;
+  gap: 1rem;
+}
+
+/* Station blocks */
+.station-block {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  border: 1px solid var(--main-color);
+  padding: 0.5rem;
+  border-radius: 4px;
+  background: #2b2b2b;
+  min-width: 200px;
+}
+
+.station-flag {
+  height: 50px;
+  width: auto;
+  border: 1px solid #555;
+  border-radius: 3px;
+}
+
+.station-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  font-size: 0.85rem;
+  line-height: 1.2;
+}
+
+.station-name {
+  font-weight: bold;
+  color: var(--main-color);
+}
+
+.station-weather,
+.station-qth,
+.station-coords-text,
+.station-weather-text {
+  color: var(--gray-color);
+}
+
+.station-coords-title,
+.station-weather-title {
+  font-weight: bold;
+  color: var(--main-color);
+  margin-bottom: 0.2rem;
+}
+
+.station-time {
+  color: var(--gray-color);
+  margin-top: 0.3rem;
+  font-style: italic;
+  font-weight: bold;
+}
+
+.station-greeting-line {
+  margin-top: 0.3rem;
+  color: var(--main-color);
+  font-style: italic;
+}
+</style>
