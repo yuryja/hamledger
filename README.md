@@ -5,6 +5,8 @@
 
 # Hamledger
 
+_If you find my work valuable, please consider to Sponsor or Donate!_
+
 ![image](./public/gui.jpg)
 
 A modern amateur radio logging application built with Vue 3, TypeScript, and Electron.
@@ -34,7 +36,21 @@ Hamledger is a feature-rich amateur radio logging application designed for ham r
 - **Desktop Runtime**: Electron
 - **Styling**: Custom CSS with modern design principles
 
-## Getting Started
+## Installation
+- Download the .deb or .rpm file from the [Releases](https://github.com/valibali/hamledger/releases).
+- In Debian/Ubuntu-based OS:
+  ```bash
+  sudo dpkg -i hamledger_*_amd64.deb
+  ```
+- In CentOS/Fedora-bases OS:
+  ```bash
+  sudo sudo rpm -i hamledger_*_amd64.rpm
+  ```
+- Windows: upcoming
+- MacOS: upcoming
+- iOS/Android: upcoming
+
+## Getting Started with Development
 
 ### Prerequisites
 
