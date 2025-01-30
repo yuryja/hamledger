@@ -1,21 +1,14 @@
 <script lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import settings from '../settings.json'
-import schema from '../settings.schema.json'
-import { useRigStore } from '../store/rig'
-
-interface ConfigField {
-  key: string
-  path: string[]
-  value: any
-  type: string
-  description?: string
-}
-
-interface ConfigCategory {
-  name: string
-  fields: ConfigField[]
-}
+import { ConfigField } from '../types/config'
+import { 
+  flattenConfig, 
+  getFieldId, 
+  getFieldLabel, 
+  processConfigValue,
+  getCategorizedFields
+} from '../utils/configHelper'
 
 export default {
   name: 'ConfigView',
@@ -24,50 +17,8 @@ export default {
     const searchQuery = ref('')
     const configFields = ref<ConfigField[]>([])
 
-    function flattenConfig(obj: any, path: string[] = []): ConfigField[] {
-      return Object.entries(obj).reduce((acc: ConfigField[], [key, value]) => {
-        if (value && typeof value === 'object' && !Array.isArray(value)) {
-          return [...acc, ...flattenConfig(value, [...path, key])]
-        }
-        return [...acc, {
-          key,
-          path,
-          value,
-          type: Array.isArray(value) ? 'array' : typeof value,
-          description: getFieldDescription({ key, path, value, type: typeof value })
-        }]
-      }, [])
-    }
-
-    function getFieldDescription(field: ConfigField): string {
-      // Navigate the schema to find the field's description
-      let current = schema
-      for (const pathPart of field.path) {
-        if (current.properties && current.properties[pathPart]) {
-          current = current.properties[pathPart]
-        }
-      }
-
-      if (current.properties && current.properties[field.key]) {
-        return current.properties[field.key].description || ''
-      }
-
-      return ''
-    }
-
     const categories = computed(() => {
-      const cats = new Map<string, ConfigField[]>()
-      configFields.value.forEach(field => {
-        const category = field.path[0]
-        if (!cats.has(category)) {
-          cats.set(category, [])
-        }
-        cats.get(category)?.push(field)
-      })
-      return Array.from(cats.entries()).map(([name, fields]) => ({
-        name,
-        fields
-      }))
+      return getCategorizedFields(configFields.value)
     })
 
     const filteredFields = computed(() => {
@@ -85,27 +36,9 @@ export default {
       configFields.value = flattenConfig(settings)
     })
 
-    function getFieldId(field: ConfigField): string {
-      return [...field.path, field.key].join('-')
-    }
-
-    function getFieldLabel(field: ConfigField): string {
-      return field.key.charAt(0).toUpperCase() + field.key.slice(1).replace(/([A-Z])/g, ' $1')
-    }
-
     function handleChange(field: ConfigField, event: Event) {
       const target = event.target as HTMLInputElement
-      let value: any = target.value
-
-      switch (field.type) {
-        case 'number':
-          value = Number(value)
-          break
-        case 'boolean':
-          value = target.checked
-          break
-      }
-
+      const value = processConfigValue(field, target.type === 'checkbox' ? String(target.checked) : target.value)
       console.log(`Updating ${[...field.path, field.key].join('.')} to:`, value)
     }
 
