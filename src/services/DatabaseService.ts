@@ -5,7 +5,7 @@ import { join } from 'path';
 import fs from 'fs';
 
 export class DatabaseService {
-  private db: PouchDB.Database;
+  private db!: PouchDB.Database;
   private dbPath: string;
 
   constructor() {

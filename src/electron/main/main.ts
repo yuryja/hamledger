@@ -4,7 +4,7 @@ import { app, BrowserWindow, ipcMain, dialog } from "electron";
 import fs from "fs";
 import { parseAdif } from "../../utils/adif";
 import { QsoEntry } from "../../types/qso";
-import { db, saveQso } from "../../utils/db";
+import { databaseService } from "../../utils/db";
 
 const isDev = process.env.npm_lifecycle_event === "app:dev" ? true : false;
 
@@ -37,12 +37,13 @@ function createWindow() {
 
 // Set up IPC handlers for database operations
 ipcMain.handle("qso:add", async (_, qso) => {
-  return await saveQso(qso);
+  return await databaseService.saveQso(qso);
 });
 
 ipcMain.handle("qso:getAllDocs", async () => {
   try {
-    return await db.allDocs({ include_docs: true });
+    const qsos = await databaseService.getAllQsos();
+    return { rows: qsos.map(doc => ({ doc })) };
   } catch (error) {
     console.error("Failed to get all docs:", error);
     return { rows: [] };
@@ -81,7 +82,7 @@ ipcMain.handle("adif:import", async () => {
         notes: record.notes || "--",
       };
 
-      await saveQso(qso);
+      await databaseService.saveQso(qso);
     }
 
     return { imported: true, count: records.length };
