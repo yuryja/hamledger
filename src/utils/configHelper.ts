@@ -1,14 +1,77 @@
 import { ConfigField, ConfigCategory } from "../types/config";
-import settings from "../settings.json";
 import schema from "../settings.schema.json";
+import { join } from 'path';
+import { app } from '@electron/remote';
+import fs from 'fs';
 
 export class ConfigHelper {
   private schema: any;
   private settings: any;
+  private settingsPath: string;
 
-  constructor(settings = settings, schema = schema) {
-    this.settings = settings;
+  constructor(schema = schema) {
     this.schema = schema;
+    this.settingsPath = join(app.getPath('userData'), 'settings.json');
+    this.settings = this.loadSettings();
+  }
+
+  private loadSettings(): any {
+    try {
+      // First try to load from user data directory
+      if (fs.existsSync(this.settingsPath)) {
+        const userSettings = JSON.parse(fs.readFileSync(this.settingsPath, 'utf8'));
+        return userSettings;
+      }
+
+      // If no user settings exist, load default settings from the app
+      const defaultSettings = JSON.parse(fs.readFileSync(join(__dirname, '../settings.json'), 'utf8'));
+      // Save default settings to user directory
+      this.saveSettings(defaultSettings);
+      return defaultSettings;
+    } catch (error) {
+      console.error('Error loading settings:', error);
+      return {};
+    }
+  }
+
+  public saveSettings(newSettings: any): void {
+    try {
+      fs.writeFileSync(this.settingsPath, JSON.stringify(newSettings, null, 2));
+      this.settings = newSettings;
+    } catch (error) {
+      console.error('Error saving settings:', error);
+    }
+  }
+
+  public updateSetting(path: string[], key: string, value: any): void {
+    let current = this.settings;
+    
+    // Navigate to the correct nested object
+    for (const pathPart of path) {
+      if (!current[pathPart]) {
+        current[pathPart] = {};
+      }
+      current = current[pathPart];
+    }
+
+    // Update the value
+    current[key] = value;
+
+    // Save the entire settings object
+    this.saveSettings(this.settings);
+  }
+
+  public getSetting(path: string[], key: string): any {
+    let current = this.settings;
+    
+    for (const pathPart of path) {
+      if (!current[pathPart]) {
+        return undefined;
+      }
+      current = current[pathPart];
+    }
+
+    return current[key];
   }
 
   public flattenConfig(
@@ -93,3 +156,8 @@ export class ConfigHelper {
 }
 
 export const configHelper = new ConfigHelper();
+
+// Get the entire settings object
+public getSettings(): any {
+  return this.settings;
+}
