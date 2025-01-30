@@ -30,9 +30,11 @@ export default {
 <template>
   <div class="main-content">
     <template v-if="currentView === 'qso'">
-      <AppHeader />
-      <QsoPanel />
-      <LogArea />
+      <div class="qso-layout">
+        <AppHeader />
+        <QsoPanel />
+        <LogArea />
+      </div>
     </template>
     <LogBook v-else-if="currentView === 'logbook'" />
     <ConfigView v-else-if="currentView === 'settings'" />
@@ -42,5 +44,18 @@ export default {
 <style scoped>
 .main-content {
   margin-left: 60px;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.qso-layout {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.qso-layout :deep(> *:last-child) {
+  flex: 1;
+  min-height: 0;
 }
 </style>
