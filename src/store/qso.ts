@@ -129,14 +129,12 @@ export const useQsoStore = defineStore("qso", {
       this.qsoForm[field] = value;
     },
     async initializeStore() {
-      if (!this.initialized) {
-        try {
-          const result = await window.electronAPI.getAllDocs();
-          this.allQsos = result.rows.map((row) => row.doc as QsoEntry);
-          this.initialized = true;
-        } catch (error) {
-          console.error("Failed to initialize QSO store:", error);
-        }
+      try {
+        const result = await window.electronAPI.getAllDocs();
+        this.allQsos = result.rows.map((row) => row.doc as QsoEntry);
+        this.initialized = true;
+      } catch (error) {
+        console.error("Failed to initialize QSO store:", error);
       }
     },
 

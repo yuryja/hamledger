@@ -5,8 +5,6 @@ interface AdifRecord {
 }
 
 export function parseAdif(content: string): AdifRecord[] {
-  console.log("parser");
-
   const records: AdifRecord[] = [];
   const headerEnd = content.toUpperCase().indexOf("<EOH>");
 
