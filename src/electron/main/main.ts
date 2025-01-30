@@ -70,30 +70,36 @@ ipcMain.handle("qso:getAllDocs", async () => {
 });
 
 // ADIF Import handler
-ipcMain.handle('adif:import', async () => {
+ipcMain.handle("adif:import", async () => {
   try {
     const { filePaths } = await dialog.showOpenDialog({
-      properties: ['openFile'],
-      filters: [{ name: 'ADIF Files', extensions: ['adi', 'adif'] }]
+      properties: ["openFile"],
+      filters: [{ name: "ADIF Files", extensions: ["adi", "adif"] }],
     });
 
     if (filePaths.length === 0) return { imported: false };
 
-    const content = fs.readFileSync(filePaths[0], 'utf8');
+    const content = fs.readFileSync(filePaths[0], "utf8");
+    console.log(content);
     const records = parseAdif(content);
 
     // Convert ADIF records to QSO format and save to DB
     for (const record of records) {
       const qso: QsoEntry = {
         callsign: record.call,
-        datetime: new Date(`${record.qso_date.replace(/(\d{4})(\d{2})(\d{2})/, '$1-$2-$3')}T${record.time_on.replace(/(\d{2})(\d{2})(\d{2})/, '$1:$2:$3')}Z`).toISOString(),
+        datetime: new Date(
+          `${record.qso_date.replace(
+            /(\d{4})(\d{2})(\d{2})/,
+            "$1-$2-$3"
+          )}T${record.time_on.replace(/(\d{2})(\d{2})(\d{2})/, "$1:$2:$3")}Z`
+        ).toISOString(),
         band: record.band,
         freqRx: parseFloat(record.freq) || 0,
         mode: record.mode,
-        rstr: record.rst_rcvd || '59',
-        rstt: record.rst_sent || '59',
-        remark: record.comment || '--',
-        notes: record.notes || '--'
+        rstr: record.rst_rcvd || "59",
+        rstt: record.rst_sent || "59",
+        remark: record.comment || "--",
+        notes: record.notes || "--",
       };
 
       await db.post(qso);
@@ -101,7 +107,7 @@ ipcMain.handle('adif:import', async () => {
 
     return { imported: true, count: records.length };
   } catch (error) {
-    console.error('ADIF import error:', error);
+    console.error("ADIF import error:", error);
     return { imported: false, error };
   }
 });

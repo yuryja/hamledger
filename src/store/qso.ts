@@ -12,6 +12,11 @@ declare global {
     electronAPI: {
       addQso: (qso: any) => Promise<any>;
       getAllDocs: () => Promise<any>;
+      importAdif: () => Promise<{
+        imported: boolean;
+        count?: number;
+        error?: any;
+      }>;
     };
   }
 }
