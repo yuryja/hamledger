@@ -40,7 +40,8 @@ export default {
       </div>
     </div>
 
-    <table class="qso-table">
+    <div class="table-container">
+      <table class="qso-table">
       <thead>
         <tr>
           <th>Date</th>
@@ -88,5 +89,6 @@ export default {
         </tr>
       </tbody>
     </table>
+    </div>
   </main>
 </template>

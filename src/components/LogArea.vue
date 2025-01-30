@@ -156,8 +156,15 @@ export default {
   color: #000;
 }
 
+.table-container {
+  flex: 1;
+  overflow-y: auto;
+  margin-top: 1rem;
+}
+
 /* QSO Table */
 .qso-table {
+  position: relative;
   width: 100%;
   table-layout: fixed;
   border-collapse: collapse;
