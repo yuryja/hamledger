@@ -95,7 +95,7 @@ export default {
   </main>
 </template>
 
-<style>
+<style scoped>
 .log-container {
   background: #333;
   border-radius: 5px;
@@ -107,8 +107,8 @@ export default {
 
 .log-header {
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  gap: 1rem;
   margin-bottom: 1rem;
 }
 
@@ -118,57 +118,6 @@ export default {
   min-height: 0;
 }
 
-.log-actions {
-  display: flex;
-  gap: 0.5rem;
-}
-
-.action-btn {
-  background: var(--main-color);
-  border: none;
-  padding: 0.5rem 1rem;
-  color: #000;
-  cursor: pointer;
-  border-radius: 3px;
-  font-weight: bold;
-}
-
-.log-header {
-  display: flex;
-  justify-content: flex-start;
-  margin-bottom: 1rem;
-}
-
-.qso-count {
-  background: #444;
-  border: 1px solid #777;
-  padding: 0.5rem 1rem;
-  border-radius: 3px;
-  line-height: 1.3;
-  font-size: 0.9rem;
-  color: var(--gray-color);
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  margin-left: auto;
-}
-
-.tab-btn {
-  background: #444;
-  border: none;
-  color: var(--gray-color);
-  padding: 0.6rem 1rem;
-  cursor: pointer;
-  border-radius: 3px;
-  margin-left: 1rem;
-}
-
-.tab-btn.active {
-  background: var(--main-color);
-  color: #000;
-}
-
-/* QSO Table */
 .qso-table {
   width: 100%;
   table-layout: fixed;
@@ -202,5 +151,44 @@ export default {
   vertical-align: baseline;
   border: 1px solid #555;
   border-radius: 2px;
+}
+
+.qso-count {
+  background: #444;
+  border: 1px solid #777;
+  padding: 0.5rem 1rem;
+  border-radius: 3px;
+  line-height: 1.3;
+  font-size: 0.9rem;
+  color: var(--gray-color);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-left: auto;
+}
+
+.tab-btn {
+  background: #444;
+  border: none;
+  color: var(--gray-color);
+  padding: 0.6rem 1rem;
+  cursor: pointer;
+  border-radius: 3px;
+  margin-left: 1rem;
+}
+
+.tab-btn.active {
+  background: var(--main-color);
+  color: #000;
+}
+
+.action-btn {
+  background: var(--main-color);
+  border: none;
+  padding: 0.5rem 1rem;
+  color: #000;
+  cursor: pointer;
+  border-radius: 3px;
+  font-weight: bold;
 }
 </style>
