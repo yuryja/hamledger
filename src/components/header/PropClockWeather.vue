@@ -1,23 +1,38 @@
 <script lang="ts">
 import { usePropagationStore } from '../../store/propagation'
 import { useWeatherStore } from '../../store/weather'
-import { useTimeStore } from '../../store/time'
 
 export default {
   name: 'PropClockWeather',
   setup() {
     const propStore = usePropagationStore()
     const weatherStore = useWeatherStore()
-    const timeStore = useTimeStore()
-    
-    return { propStore, weatherStore, timeStore }
+    return { propStore, weatherStore }
+  },
+  data() {
+    return {
+      utcTime: '00:00:00',
+      clockInterval: 0
+    }
   },
   mounted() {
-    this.timeStore.startClock()
+    this.updateUTCClock()
+    this.clockInterval = window.setInterval(this.updateUTCClock, 1000)
     this.propStore.updatePropagationData()
   },
   beforeUnmount() {
-    this.timeStore.stopClock()
+    if (this.clockInterval) {
+      clearInterval(this.clockInterval)
+    }
+  },
+  methods: {
+    updateUTCClock() {
+      const now = new Date()
+      const utcHours = String(now.getUTCHours()).padStart(2, "0")
+      const utcMinutes = String(now.getUTCMinutes()).padStart(2, "0")
+      const utcSeconds = String(now.getUTCSeconds()).padStart(2, "0")
+      this.utcTime = `${utcHours}:${utcMinutes}:${utcSeconds}`
+    }
   }
 }
 </script>
@@ -44,7 +59,7 @@ export default {
       <div class="clock-weather-block">
         <div class="utc-clock">
           <span class="clock-label">UTC:</span>
-          <span class="clock-value">{{ timeStore.utcTime }}</span>
+          <span class="clock-value">{{ utcTime }}</span>
         </div>
         <div class="local-weather">
           <span class="weather-label">Local WX:</span>
