@@ -33,7 +33,7 @@ export class ConfigHelper {
     }
   }
 
-  public updateSetting(path: string[], key: string, value: any): void {
+  public async updateSetting(path: string[], key: string, value: any): Promise<void> {
     let current = this.settings;
 
     // Navigate to the correct nested object

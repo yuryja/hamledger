@@ -26,7 +26,8 @@ export default {
       })
     }
   },
-  mounted() {
+  async mounted() {
+    await configHelper.initSettings()
     this.configFields = configHelper.flattenConfig()
   },
   methods: {
@@ -36,13 +37,13 @@ export default {
     getFieldLabel(field: ConfigField): string {
       return configHelper.getFieldLabel(field)
     },
-    handleChange(field: ConfigField, event: Event) {
+    async handleChange(field: ConfigField, event: Event) {
       const target = event.target as HTMLInputElement
       const value = configHelper.processConfigValue(
         field,
         target.type === 'checkbox' ? String(target.checked) : target.value
       )
-      configHelper.updateSetting(field.path, field.key, value)
+      await configHelper.updateSetting(field.path, field.key, value)
     }
   }
 }
