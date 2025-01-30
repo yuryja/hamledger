@@ -1,7 +1,6 @@
 <script lang="ts">
 import { ConfigField } from '../types/config'
 import { configHelper } from '../utils/configHelper'
-import settings from '../settings.json'
 
 export default {
   name: 'ConfigView',
@@ -10,12 +9,11 @@ export default {
       selectedCategory: 'station',
       searchQuery: '',
       configFields: [] as ConfigField[],
-      configHelper
     }
   },
   computed: {
     categories() {
-      return this.configHelper.getCategorizedFields(this.configFields)
+      return configHelper.getCategorizedFields(this.configFields)
     },
     filteredFields() {
       if (!this.searchQuery) {
@@ -29,23 +27,22 @@ export default {
     }
   },
   mounted() {
-    this.configFields = this.configHelper.flattenConfig(settings)
+    this.configFields = configHelper.flattenConfig()
   },
   methods: {
     getFieldId(field: ConfigField): string {
-      return this.configHelper.getFieldId(field)
+      return configHelper.getFieldId(field)
     },
     getFieldLabel(field: ConfigField): string {
-      return this.configHelper.getFieldLabel(field)
+      return configHelper.getFieldLabel(field)
     },
     handleChange(field: ConfigField, event: Event) {
       const target = event.target as HTMLInputElement
-      const value = this.configHelper.processConfigValue(
+      const value = configHelper.processConfigValue(
         field, 
         target.type === 'checkbox' ? String(target.checked) : target.value
       )
-      console.log(`Updating ${[...field.path, field.key].join('.')} to:`, value)
-    }
+      configHelper.updateSetting(field.path, field.key, value)
   }
 }
 </script>
