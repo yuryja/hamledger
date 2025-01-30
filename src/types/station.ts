@@ -1,4 +1,14 @@
-export interface QRZData {
+export interface BaseStationData {
+  call: string;
+  name: string;
+  country: string;
+  lat?: number;
+  lon?: number;
+  grid?: string;
+  qth: string;
+}
+
+export interface QRZData extends BaseStationData {
   call: string;
   aliases?: string;
   fname: string;
