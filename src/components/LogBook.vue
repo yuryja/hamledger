@@ -2,14 +2,20 @@
 import { useQsoStore } from '../store/qso'
 import { getCountryCodeForCallsign } from '../utils/callsign'
 import { DateHelper } from '../utils/dateHelper'
+import QsoEditDialog from './qso/QsoEditDialog.vue'
 
 export default {
+  components: {
+    QsoEditDialog
+  },
   name: 'LogBook',
   data() {
     return {
       DateHelper,
       sortKey: 'datetime',
-      sortOrder: 'desc'
+      sortOrder: 'desc',
+      selectedQso: null,
+      showEditDialog: false
     }
   },
   name: 'LogBook',
@@ -116,7 +122,9 @@ export default {
           </tr>
         </thead>
         <tbody>
-          <tr v-for="entry in getSortedQsos()" :key="entry._id">
+          <tr v-for="entry in getSortedQsos()" 
+              :key="entry._id"
+              @click="selectedQso = entry; showEditDialog = true">
             <td>{{ this.DateHelper.formatUTCDate(new Date(entry.datetime)) }}</td>
             <td>{{ this.DateHelper.formatUTCTime(new Date(entry.datetime)) }}</td>
             <td>
@@ -137,6 +145,13 @@ export default {
         </tbody>
       </table>
     </div>
+
+    <QsoEditDialog 
+      v-if="selectedQso"
+      :qso="selectedQso"
+      :show="showEditDialog"
+      @close="showEditDialog = false"
+    />
   </main>
 </template>
 

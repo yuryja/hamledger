@@ -139,6 +139,32 @@ export const useQsoStore = defineStore("qso", {
       }
     },
 
+    async updateQso(updatedQso: QsoEntry) {
+      try {
+        const response = await window.electronAPI.updateQso(updatedQso);
+        if (response.ok) {
+          // Update in current session if present
+          const sessionIndex = this.currentSession.findIndex(
+            qso => qso._id === updatedQso._id
+          );
+          if (sessionIndex !== -1) {
+            this.currentSession[sessionIndex] = updatedQso;
+          }
+          
+          // Update in all QSOs
+          const allIndex = this.allQsos.findIndex(
+            qso => qso._id === updatedQso._id
+          );
+          if (allIndex !== -1) {
+            this.allQsos[allIndex] = updatedQso;
+          }
+        }
+      } catch (error) {
+        console.error("Failed to update QSO:", error);
+        throw error;
+      }
+    },
+
     async importAdif() {
       try {
         const result = await window.electronAPI.importAdif();
