@@ -1,6 +1,8 @@
 // src/electron/main/main.ts
 import { join } from "path";
 import { app, BrowserWindow, ipcMain, dialog } from "electron";
+import { parseAdif } from "../../utils/adif";
+import { QsoEntry } from "../../types/qso";
 import PouchDB from "pouchdb";
 import fs from "fs";
 
