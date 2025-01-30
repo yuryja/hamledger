@@ -46,17 +46,11 @@ export interface QRZSessionResponse {
 }
 
 export interface StationData {
+  baseData: BaseStationData;
   flag: string;
-  country: string;
-  callsign: string;
-  qrzData?: QRZData;
   weather: string;
   localTime: string;
-  geodata?: {
-    lat: number;
-    lon: number;
-    display_name?: string;
-  };
+  qrzData?: QRZData;
   greetings: {
     greeting: string;
     ipa: string;

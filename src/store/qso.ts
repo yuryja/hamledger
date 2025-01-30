@@ -37,14 +37,21 @@ export const useQsoStore = defineStore("qso", {
     currentUTCTime: "",
     initialized: false,
     stationInfo: {
-      callsign: "",
+      baseData: {
+        call: "",
+        name: "",
+        country: "",
+        lat: undefined,
+        lon: undefined,
+        grid: "",
+        qth: ""
+      } as BaseStationData,
       flag: "",
-      country: "",
       weather: "",
       localTime: "",
-      greetings: [],
-      qrzData: undefined as QRZData | undefined,
-    } as StationData,
+      qrzData: undefined,
+      greetings: []
+    } satisfies StationData,
     qsoForm: {
       callsign: "",
       band: "40m",
@@ -168,12 +175,20 @@ export const useQsoStore = defineStore("qso", {
       try {
         // Reset station info first to avoid showing stale data
         this.stationInfo = {
-          callsign: "",
+          baseData: {
+            call: "",
+            name: "",
+            country: "",
+            lat: undefined,
+            lon: undefined,
+            grid: "",
+            qth: ""
+          },
           flag: "",
-          country: "",
           weather: "",
           localTime: "",
-          greetings: [],
+          qrzData: undefined,
+          greetings: []
         };
 
         const countryCode = getCountryCodeForCallsign(callsign);
@@ -186,16 +201,21 @@ export const useQsoStore = defineStore("qso", {
           );
 
           // Create basic station data with just country and flag
-          const stationData: StationData = {
-            callsign,
-            flag:
-              countryCode !== "xx"
-                ? `https://flagcdn.com/h80/${countryCode}.png`
-                : "",
-            country: existingQso?.country || "Unknown",
+          this.stationInfo = {
+            baseData: {
+              call: callsign,
+              name: "",
+              country: existingQso?.country || "Unknown",
+              lat: undefined,
+              lon: undefined,
+              grid: "",
+              qth: ""
+            },
+            flag: countryCode !== "xx" ? `https://flagcdn.com/h80/${countryCode}.png` : "",
             weather: "",
             localTime: "",
-            greetings: [],
+            qrzData: undefined,
+            greetings: []
           };
 
           this.stationInfo = stationData;
@@ -203,17 +223,21 @@ export const useQsoStore = defineStore("qso", {
         }
 
         // If QRZ lookup succeeded, create full station data
-        const stationData: StationData = {
-          callsign,
-          flag:
-            countryCode !== "xx"
-              ? `https://flagcdn.com/h80/${countryCode}.png`
-              : "",
-          country: qrzData.country,
-          qrzData,
+        this.stationInfo = {
+          baseData: {
+            call: callsign,
+            name: qrzData.name,
+            country: qrzData.country,
+            lat: qrzData.lat,
+            lon: qrzData.lon,
+            grid: qrzData.grid,
+            qth: qrzData.qth
+          },
+          flag: countryCode !== "xx" ? `https://flagcdn.com/h80/${countryCode}.png` : "",
           weather: "",
           localTime: "",
-          greetings: [],
+          qrzData,
+          greetings: []
         };
 
         // Get coordinates from QRZ or geocoding
