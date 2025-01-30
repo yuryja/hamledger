@@ -1,55 +1,50 @@
 <script lang="ts">
-import { ref, computed, onMounted } from 'vue'
-import settings from '../settings.json'
 import { ConfigField } from '../types/config'
-import { 
-  flattenConfig, 
-  getFieldId, 
-  getFieldLabel, 
-  processConfigValue,
-  getCategorizedFields
-} from '../utils/configHelper'
+import { configHelper } from '../utils/configHelper'
+import settings from '../settings.json'
 
 export default {
   name: 'ConfigView',
-  setup() {
-    const selectedCategory = ref('station')
-    const searchQuery = ref('')
-    const configFields = ref<ConfigField[]>([])
-
-    const categories = computed(() => {
-      return getCategorizedFields(configFields.value)
-    })
-
-    const filteredFields = computed(() => {
-      if (!searchQuery.value) {
-        return categories.value.find(cat => cat.name === selectedCategory.value)?.fields || []
+  data() {
+    return {
+      selectedCategory: 'station',
+      searchQuery: '',
+      configFields: [] as ConfigField[],
+      configHelper
+    }
+  },
+  computed: {
+    categories() {
+      return this.configHelper.getCategorizedFields(this.configFields)
+    },
+    filteredFields() {
+      if (!this.searchQuery) {
+        return this.categories.find(cat => cat.name === this.selectedCategory)?.fields || []
       }
-      return configFields.value.filter(field => {
-        const searchStr = searchQuery.value.toLowerCase()
+      return this.configFields.filter(field => {
+        const searchStr = this.searchQuery.toLowerCase()
         const fieldPath = [...field.path, field.key].join(' ').toLowerCase()
         return fieldPath.includes(searchStr)
       })
-    })
-
-    onMounted(() => {
-      configFields.value = flattenConfig(settings)
-    })
-
-    function handleChange(field: ConfigField, event: Event) {
-      const target = event.target as HTMLInputElement
-      const value = processConfigValue(field, target.type === 'checkbox' ? String(target.checked) : target.value)
-      console.log(`Updating ${[...field.path, field.key].join('.')} to:`, value)
     }
-
-    return {
-      selectedCategory,
-      searchQuery,
-      categories,
-      filteredFields,
-      getFieldId,
-      getFieldLabel,
-      handleChange
+  },
+  mounted() {
+    this.configFields = this.configHelper.flattenConfig(settings)
+  },
+  methods: {
+    getFieldId(field: ConfigField): string {
+      return this.configHelper.getFieldId(field)
+    },
+    getFieldLabel(field: ConfigField): string {
+      return this.configHelper.getFieldLabel(field)
+    },
+    handleChange(field: ConfigField, event: Event) {
+      const target = event.target as HTMLInputElement
+      const value = this.configHelper.processConfigValue(
+        field, 
+        target.type === 'checkbox' ? String(target.checked) : target.value
+      )
+      console.log(`Updating ${[...field.path, field.key].join('.')} to:`, value)
     }
   }
 }
