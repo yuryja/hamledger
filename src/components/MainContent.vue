@@ -53,6 +53,6 @@ export default {
   height: 100%;
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: var(--spacing-md);
 }
 </style>
