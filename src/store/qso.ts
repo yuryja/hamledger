@@ -177,7 +177,7 @@ export const useQsoStore = defineStore("qso", {
         };
 
         const countryCode = getCountryCodeForCallsign(callsign);
-        const qrzData = await qrzService.lookupCallsign(callsign);
+        const qrzData = await qrzService.lookupStationByCallsign(callsign);
 
         // If QRZ lookup failed, try to find info in existing QSOs
         if (qrzData instanceof Error) {
