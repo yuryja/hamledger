@@ -1,41 +1,23 @@
 <script lang="ts">
-interface PropData {
-  sfi: number;
-  aIndex: number;
-  kIndex: number;
-}
+import { usePropagationStore } from '../../store/propagation'
+import { useWeatherStore } from '../../store/weather'
+import { useTimeStore } from '../../store/time'
 
 export default {
   name: 'PropClockWeather',
-  data() {
-    return {
-      propData: {
-        sfi: 153,
-        aIndex: 6,
-        kIndex: 2
-      } as PropData,
-      utcTime: '00:00:00',
-      weatherInfo: '28°C Sunny',
-      clockInterval: 0
-    }
-  },
-  methods: {
-    updateUTCClock() {
-      const now = new Date();
-      const utcHours = String(now.getUTCHours()).padStart(2, "0");
-      const utcMinutes = String(now.getUTCMinutes()).padStart(2, "0");
-      const utcSeconds = String(now.getUTCSeconds()).padStart(2, "0");
-      this.utcTime = `${utcHours}:${utcMinutes}:${utcSeconds}`;
-    }
+  setup() {
+    const propStore = usePropagationStore()
+    const weatherStore = useWeatherStore()
+    const timeStore = useTimeStore()
+    
+    return { propStore, weatherStore, timeStore }
   },
   mounted() {
-    this.updateUTCClock();
-    this.clockInterval = window.setInterval(this.updateUTCClock, 1000);
+    this.timeStore.startClock()
+    this.propStore.updatePropagationData()
   },
   beforeUnmount() {
-    if (this.clockInterval) {
-      clearInterval(this.clockInterval);
-    }
+    this.timeStore.stopClock()
   }
 }
 </script>
@@ -47,26 +29,26 @@ export default {
       <div class="propagation-info">
         <div class="prop-item">
           <span class="prop-label">SFI</span>
-          <span class="prop-value">{{ propData.sfi }}</span>
+          <span class="prop-value">{{ propStore.propData.sfi }}</span>
         </div>
         <div class="prop-item">
           <span class="prop-label">A</span>
-          <span class="prop-value">{{ propData.aIndex }}</span>
+          <span class="prop-value">{{ propStore.propData.aIndex }}</span>
         </div>
         <div class="prop-item">
           <span class="prop-label">K</span>
-          <span class="prop-value">{{ propData.kIndex }}</span>
+          <span class="prop-value">{{ propStore.propData.kIndex }}</span>
         </div>
       </div>
 
       <div class="clock-weather-block">
         <div class="utc-clock">
           <span class="clock-label">UTC:</span>
-          <span class="clock-value">{{ utcTime }}</span>
+          <span class="clock-value">{{ timeStore.utcTime }}</span>
         </div>
         <div class="local-weather">
           <span class="weather-label">Local WX:</span>
-          <span class="weather-value">{{ weatherInfo }}</span>
+          <span class="weather-value">{{ weatherStore.weatherInfo }}</span>
         </div>
       </div>
     </div>
