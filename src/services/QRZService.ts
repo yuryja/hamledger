@@ -1,11 +1,13 @@
 import { QRZData } from '../types/station';
 import { configHelper } from '../utils/configHelper';
+import { OnlineStationService } from './OnlineStationService';
 
-export class QRZService {
-  private baseUrl = "https://xmldata.qrz.com/xml/current";
+export class QRZService extends OnlineStationService {
+  protected baseUrl = "https://xmldata.qrz.com/xml/current";
+  protected serviceName = "QRZ.com";
   private sessionKey?: string;
 
-  private async getSessionKey(): Promise<string> {
+  public async authenticate(): Promise<void> {
     if (this.sessionKey) {
       return this.sessionKey;
     }
@@ -32,21 +34,23 @@ export class QRZService {
     const error = xmlDoc.querySelector("Error")?.textContent;
 
     if (error) {
-      throw new Error(`QRZ Authentication error: ${error}`);
+      throw this.handleError(error, "Authentication error");
     }
     if (!key) {
       throw new Error("No session key returned");
     }
 
     this.sessionKey = key;
-    return key;
   }
 
   public async lookupCallsign(callsign: string): Promise<QRZData | Error> {
     try {
-      const key = await this.getSessionKey();
+      await this.authenticate();
+      if (!this.sessionKey) {
+        throw new Error("Authentication failed");
+      }
       const params = new URLSearchParams({
-        s: key,
+        s: this.sessionKey,
         callsign,
       });
 
@@ -57,7 +61,7 @@ export class QRZService {
 
       const error = xmlDoc.querySelector("Error")?.textContent;
       if (error) {
-        throw new Error(`QRZ Lookup error: ${error}`);
+        throw this.handleError(error, "Lookup error");
       }
 
       const callsignElem = xmlDoc.querySelector("Callsign");
