@@ -7,7 +7,9 @@ export default {
   name: 'LogBook',
   data() {
     return {
-      DateHelper
+      DateHelper,
+      sortKey: 'datetime',
+      sortOrder: 'desc'
     }
   },
   name: 'LogBook',
@@ -25,6 +27,25 @@ export default {
   },
   methods: {
     getCountryCodeForCallsign,
+    sortBy(key: string) {
+      if (this.sortKey === key) {
+        this.sortOrder = this.sortOrder === 'asc' ? 'desc' : 'asc';
+      } else {
+        this.sortKey = key;
+        this.sortOrder = 'asc';
+      }
+    },
+    getSortedQsos() {
+      return [...this.allQsos].sort((a, b) => {
+        const aVal = a[this.sortKey];
+        const bVal = b[this.sortKey];
+        const modifier = this.sortOrder === 'asc' ? 1 : -1;
+        
+        if (aVal < bVal) return -1 * modifier;
+        if (aVal > bVal) return 1 * modifier;
+        return 0;
+      });
+    },
     async handleImportAdif() {
       const result = await this.qsoStore.importAdif();
       if (!result.success) {
@@ -51,13 +72,43 @@ export default {
       <table class="qso-table">
         <thead>
           <tr>
-            <th>Date</th>
+            <th @click="sortBy('datetime')" class="sortable">
+              Date
+              <span v-if="sortKey === 'datetime'" class="sort-indicator">
+                {{ sortOrder === 'asc' ? '▲' : '▼' }}
+              </span>
+            </th>
             <th>Time</th>
-            <th>Callsign</th>
-            <th>Band</th>
-            <th>Freq. RX</th>
-            <th>Freq. TX</th>
-            <th>Mode</th>
+            <th @click="sortBy('callsign')" class="sortable">
+              Callsign
+              <span v-if="sortKey === 'callsign'" class="sort-indicator">
+                {{ sortOrder === 'asc' ? '▲' : '▼' }}
+              </span>
+            </th>
+            <th @click="sortBy('band')" class="sortable">
+              Band
+              <span v-if="sortKey === 'band'" class="sort-indicator">
+                {{ sortOrder === 'asc' ? '▲' : '▼' }}
+              </span>
+            </th>
+            <th @click="sortBy('freqRx')" class="sortable">
+              Freq. RX
+              <span v-if="sortKey === 'freqRx'" class="sort-indicator">
+                {{ sortOrder === 'asc' ? '▲' : '▼' }}
+              </span>
+            </th>
+            <th @click="sortBy('freqTx')" class="sortable">
+              Freq. TX
+              <span v-if="sortKey === 'freqTx'" class="sort-indicator">
+                {{ sortOrder === 'asc' ? '▲' : '▼' }}
+              </span>
+            </th>
+            <th @click="sortBy('mode')" class="sortable">
+              Mode
+              <span v-if="sortKey === 'mode'" class="sort-indicator">
+                {{ sortOrder === 'asc' ? '▲' : '▼' }}
+              </span>
+            </th>
             <th>RSTr</th>
             <th>RSTt</th>
             <th>Remark</th>
@@ -65,7 +116,7 @@ export default {
           </tr>
         </thead>
         <tbody>
-          <tr v-for="entry in allQsos" :key="entry._id">
+          <tr v-for="entry in getSortedQsos()" :key="entry._id">
             <td>{{ this.DateHelper.formatUTCDate(new Date(entry.datetime)) }}</td>
             <td>{{ this.DateHelper.formatUTCTime(new Date(entry.datetime)) }}</td>
             <td>
@@ -126,6 +177,20 @@ export default {
   position: sticky;
   top: 0;
   z-index: 1;
+}
+
+.qso-table thead th.sortable {
+  cursor: pointer;
+  user-select: none;
+}
+
+.qso-table thead th.sortable:hover {
+  background: #555;
+}
+
+.sort-indicator {
+  margin-left: 0.5rem;
+  color: var(--main-color);
 }
 
 .qso-table tbody td {
