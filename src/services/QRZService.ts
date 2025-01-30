@@ -1,19 +1,19 @@
-import { QRZData } from '../types/station';
-import { configHelper } from '../utils/configHelper';
-import { OnlineStationService } from './OnlineStationService';
+import { QRZData } from "../types/station";
+import { configHelper } from "../utils/configHelper";
+import { OnlineStationService } from "./OnlineStationService";
 
 export class QRZService extends OnlineStationService {
   protected baseUrl = "https://xmldata.qrz.com/xml/current";
   protected serviceName = "QRZ.com";
   private sessionKey?: string;
 
-  public async authenticate(): Promise<void> {
+  public async authenticate(): Promise<void | string> {
     if (this.sessionKey) {
       return this.sessionKey;
     }
 
-    const username = configHelper.getSetting(['qrz'], 'username');
-    const password = configHelper.getSetting(['qrz'], 'password');
+    const username = configHelper.getSetting(["qrz"], "username");
+    const password = configHelper.getSetting(["qrz"], "password");
 
     if (!username || !password) {
       throw new Error("QRZ credentials not configured in settings");
@@ -43,7 +43,9 @@ export class QRZService extends OnlineStationService {
     this.sessionKey = key;
   }
 
-  public async lookupCallsign(callsign: string): Promise<QRZData | Error> {
+  public async lookupStationByCallsign(
+    callsign: string
+  ): Promise<QRZData | Error> {
     try {
       await this.authenticate();
       if (!this.sessionKey) {
@@ -77,7 +79,8 @@ export class QRZService extends OnlineStationService {
         addr2: callsignElem.querySelector("addr2")?.textContent || "",
         state: callsignElem.querySelector("state")?.textContent || "",
         zip: callsignElem.querySelector("zip")?.textContent || "",
-        country: callsignElem.querySelector("country")?.textContent || "Unknown",
+        country:
+          callsignElem.querySelector("country")?.textContent || "Unknown",
         lat: parseFloat(callsignElem.querySelector("lat")?.textContent || "0"),
         lon: parseFloat(callsignElem.querySelector("lon")?.textContent || "0"),
         grid: callsignElem.querySelector("grid")?.textContent || "",
