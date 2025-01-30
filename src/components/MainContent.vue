@@ -44,18 +44,15 @@ export default {
 <style scoped>
 .main-content {
   margin-left: 60px;
-  height: 100vh;
-  overflow: hidden;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 .qso-layout {
   height: 100%;
   display: flex;
   flex-direction: column;
-}
-
-.qso-layout :deep(> *:last-child) {
-  flex: 1;
-  min-height: 0;
+  gap: 1rem;
 }
 </style>
