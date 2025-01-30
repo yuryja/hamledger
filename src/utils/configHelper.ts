@@ -18,10 +18,9 @@ export class ConfigHelper {
   constructor(schema = schema_json) {
     this.schema = schema;
     this.settings = defaultSettings;
-    this.initSettings();
   }
 
-  private async initSettings(): Promise<void> {
+  public async initSettings(): Promise<void> {
     try {
       const settings = await window.electronAPI.loadSettings();
       if (settings) {

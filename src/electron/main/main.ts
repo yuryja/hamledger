@@ -110,3 +110,36 @@ app.on("window-all-closed", () => {
     app.quit();
   }
 });
+import { app, BrowserWindow, ipcMain } from 'electron'
+import { join } from 'path'
+import fs from 'fs'
+
+// Settings file path
+const userSettingsPath = join(app.getPath('userData'), 'settings.json')
+const defaultSettingsPath = join(app.getAppPath(), 'src/settings.json')
+
+// Settings handlers
+ipcMain.handle('settings:load', async () => {
+  try {
+    if (fs.existsSync(userSettingsPath)) {
+      const settings = JSON.parse(fs.readFileSync(userSettingsPath, 'utf8'))
+      return settings
+    }
+    // If no user settings exist, load and save defaults
+    const defaultSettings = JSON.parse(fs.readFileSync(defaultSettingsPath, 'utf8'))
+    fs.writeFileSync(userSettingsPath, JSON.stringify(defaultSettings, null, 2))
+    return defaultSettings
+  } catch (error) {
+    console.error('Error loading settings:', error)
+    return null
+  }
+})
+
+ipcMain.handle('settings:save', async (_, settings) => {
+  try {
+    fs.writeFileSync(userSettingsPath, JSON.stringify(settings, null, 2))
+  } catch (error) {
+    console.error('Error saving settings:', error)
+    throw error
+  }
+})
