@@ -39,10 +39,11 @@ export default {
     handleChange(field: ConfigField, event: Event) {
       const target = event.target as HTMLInputElement
       const value = configHelper.processConfigValue(
-        field, 
+        field,
         target.type === 'checkbox' ? String(target.checked) : target.value
       )
       configHelper.updateSetting(field.path, field.key, value)
+    }
   }
 }
 </script>
