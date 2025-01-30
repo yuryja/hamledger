@@ -1,6 +1,7 @@
 <script lang="ts">
 import { useQsoStore } from '../store/qso'
 import { getCountryCodeForCallsign } from '../utils/callsign'
+import { DateHelper } from '../utils/dateHelper'
 
 export default {
   name: 'LogArea',
@@ -61,19 +62,8 @@ export default {
         </thead>
         <tbody>
           <tr v-for="entry in currentSession" :key="entry.callsign + entry.datetime">
-            <td>{{ new Date(entry.datetime).toLocaleDateString('en-US', {
-              timeZone: 'UTC',
-              year: 'numeric',
-              month: '2-digit',
-              day: '2-digit'
-            }) }}</td>
-            <td>{{ new Date(entry.datetime).toLocaleTimeString('en-US', {
-              timeZone: 'UTC',
-              hour12: false,
-              hour: '2-digit',
-              minute: '2-digit',
-              second: '2-digit'
-            }) }}</td>
+            <td>{{ DateHelper.formatUTCDate(new Date(entry.datetime)) }}</td>
+            <td>{{ DateHelper.formatUTCTime(new Date(entry.datetime)) }}</td>
             <td>
               <img v-if="getCountryCodeForCallsign(entry.callsign) !== 'xx'"
                 :src="`https://flagcdn.com/h40/${getCountryCodeForCallsign(entry.callsign)}.png`"

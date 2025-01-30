@@ -1,6 +1,7 @@
 <script lang="ts">
 import { usePropagationStore } from '../../store/propagation'
 import { useWeatherStore } from '../../store/weather'
+import { DateHelper } from '../../utils/dateHelper'
 
 export default {
   name: 'PropClockWeather',
@@ -27,11 +28,7 @@ export default {
   },
   methods: {
     updateUTCClock() {
-      const now = new Date()
-      const utcHours = String(now.getUTCHours()).padStart(2, "0")
-      const utcMinutes = String(now.getUTCMinutes()).padStart(2, "0")
-      const utcSeconds = String(now.getUTCSeconds()).padStart(2, "0")
-      this.utcTime = `${utcHours}:${utcMinutes}:${utcSeconds}`
+      this.utcTime = DateHelper.getCurrentUTCTime()
     }
   }
 }
