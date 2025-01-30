@@ -1,10 +1,10 @@
 // src/electron/main/main.ts
 import { join } from "path";
 import { app, BrowserWindow, ipcMain, dialog } from "electron";
+import fs from "fs";
 import { parseAdif } from "../../utils/adif";
 import { QsoEntry } from "../../types/qso";
 import { db, saveQso } from "../../utils/db";
-import fs from "fs";
 
 const isDev = process.env.npm_lifecycle_event === "app:dev" ? true : false;
 
@@ -110,36 +110,38 @@ app.on("window-all-closed", () => {
     app.quit();
   }
 });
-import { app, BrowserWindow, ipcMain } from 'electron'
-import { join } from 'path'
-import fs from 'fs'
 
 // Settings file path
-const userSettingsPath = join(app.getPath('userData'), 'settings.json')
-const defaultSettingsPath = join(app.getAppPath(), 'src/settings.json')
+const userSettingsPath = join(app.getPath("userData"), "settings.json");
+const defaultSettingsPath = join(app.getAppPath(), "src/settings.json");
 
 // Settings handlers
-ipcMain.handle('settings:load', async () => {
+ipcMain.handle("settings:load", async () => {
   try {
     if (fs.existsSync(userSettingsPath)) {
-      const settings = JSON.parse(fs.readFileSync(userSettingsPath, 'utf8'))
-      return settings
+      const settings = JSON.parse(fs.readFileSync(userSettingsPath, "utf8"));
+      return settings;
     }
     // If no user settings exist, load and save defaults
-    const defaultSettings = JSON.parse(fs.readFileSync(defaultSettingsPath, 'utf8'))
-    fs.writeFileSync(userSettingsPath, JSON.stringify(defaultSettings, null, 2))
-    return defaultSettings
+    const defaultSettings = JSON.parse(
+      fs.readFileSync(defaultSettingsPath, "utf8")
+    );
+    fs.writeFileSync(
+      userSettingsPath,
+      JSON.stringify(defaultSettings, null, 2)
+    );
+    return defaultSettings;
   } catch (error) {
-    console.error('Error loading settings:', error)
-    return null
+    console.error("Error loading settings:", error);
+    return null;
   }
-})
+});
 
-ipcMain.handle('settings:save', async (_, settings) => {
+ipcMain.handle("settings:save", async (_, settings) => {
   try {
-    fs.writeFileSync(userSettingsPath, JSON.stringify(settings, null, 2))
+    fs.writeFileSync(userSettingsPath, JSON.stringify(settings, null, 2));
   } catch (error) {
-    console.error('Error saving settings:', error)
-    throw error
+    console.error("Error saving settings:", error);
+    throw error;
   }
-})
+});
