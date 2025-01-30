@@ -42,63 +42,80 @@ export default {
       </div>
     </div>
 
-    <table class="qso-table">
-      <thead>
-        <tr>
-          <th>Date</th>
-          <th>Time</th>
-          <th>Callsign</th>
-          <th>Band</th>
-          <th>Freq. RX</th>
-          <th>Freq. TX</th>
-          <th>Mode</th>
-          <th>RSTr</th>
-          <th>RSTr</th>
-          <th>Remark</th>
-          <th>Notes</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="entry in currentSession" :key="entry.callsign + entry.datetime">
-          <td>{{ new Date(entry.datetime).toLocaleDateString('en-US', {
-            timeZone: 'UTC',
-            year: 'numeric',
-            month: '2-digit',
-            day: '2-digit'
-          }) }}</td>
-          <td>{{ new Date(entry.datetime).toLocaleTimeString('en-US', {
-            timeZone: 'UTC',
-            hour12: false,
-            hour: '2-digit',
-            minute: '2-digit',
-            second: '2-digit'
-          }) }}</td>
-          <td>
-            <img v-if="getCountryCodeForCallsign(entry.callsign) !== 'xx'"
-              :src="`https://flagcdn.com/h40/${getCountryCodeForCallsign(entry.callsign)}.png`"
-              :alt="getCountryCodeForCallsign(entry.callsign)" class="callsign-flag" />
-            {{ entry.callsign }}
-          </td>
-          <td>{{ entry.band }}</td>
-          <td>{{ entry.freqRx }}</td>
-          <td>{{ entry.freqTx }}</td>
-          <td>{{ entry.mode }}</td>
-          <td>{{ entry.rstr }}</td>
-          <td>{{ entry.rstt }}</td>
-          <td>{{ entry.remark }}</td>
-          <td>{{ entry.notes }}</td>
-        </tr>
-      </tbody>
-    </table>
+    <div class="table-wrapper">
+      <table class="qso-table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Time</th>
+            <th>Callsign</th>
+            <th>Band</th>
+            <th>Freq. RX</th>
+            <th>Freq. TX</th>
+            <th>Mode</th>
+            <th>RSTr</th>
+            <th>RSTr</th>
+            <th>Remark</th>
+            <th>Notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="entry in currentSession" :key="entry.callsign + entry.datetime">
+            <td>{{ new Date(entry.datetime).toLocaleDateString('en-US', {
+              timeZone: 'UTC',
+              year: 'numeric',
+              month: '2-digit',
+              day: '2-digit'
+            }) }}</td>
+            <td>{{ new Date(entry.datetime).toLocaleTimeString('en-US', {
+              timeZone: 'UTC',
+              hour12: false,
+              hour: '2-digit',
+              minute: '2-digit',
+              second: '2-digit'
+            }) }}</td>
+            <td>
+              <img v-if="getCountryCodeForCallsign(entry.callsign) !== 'xx'"
+                :src="`https://flagcdn.com/h40/${getCountryCodeForCallsign(entry.callsign)}.png`"
+                :alt="getCountryCodeForCallsign(entry.callsign)" class="callsign-flag" />
+              {{ entry.callsign }}
+            </td>
+            <td>{{ entry.band }}</td>
+            <td>{{ entry.freqRx }}</td>
+            <td>{{ entry.freqTx }}</td>
+            <td>{{ entry.mode }}</td>
+            <td>{{ entry.rstr }}</td>
+            <td>{{ entry.rstt }}</td>
+            <td>{{ entry.remark }}</td>
+            <td>{{ entry.notes }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </main>
 </template>
 
 <style>
+.log-container {
+  background: #333;
+  border-radius: 5px;
+  padding: 1rem;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
 .log-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 1rem;
+}
+
+.table-wrapper {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
 }
 
 .log-actions {
@@ -114,11 +131,6 @@ export default {
   cursor: pointer;
   border-radius: 3px;
   font-weight: bold;
-}
-.log-container {
-  background: #333;
-  border-radius: 5px;
-  padding: 1rem;
 }
 
 .log-header {
@@ -156,19 +168,11 @@ export default {
   color: #000;
 }
 
-.table-container {
-  flex: 1;
-  overflow-y: auto;
-  margin-top: 1rem;
-}
-
 /* QSO Table */
 .qso-table {
-  position: relative;
   width: 100%;
   table-layout: fixed;
   border-collapse: collapse;
-  margin-top: 1rem;
   color: var(--gray-color);
 }
 
@@ -177,6 +181,9 @@ export default {
   padding: 0.7rem;
   text-align: left;
   font-weight: normal;
+  position: sticky;
+  top: 0;
+  z-index: 1;
 }
 
 .qso-table tbody td {
