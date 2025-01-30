@@ -5,6 +5,13 @@ import defaultSettings from "../settings.json";
 declare global {
   interface Window {
     electronAPI: {
+      addQso: (qso: any) => Promise<any>;
+      getAllDocs: () => Promise<any>;
+      importAdif: () => Promise<{
+        imported: boolean;
+        count?: number;
+        error?: any;
+      }>;
       loadSettings: () => Promise<any>;
       saveSettings: (settings: any) => Promise<void>;
     };

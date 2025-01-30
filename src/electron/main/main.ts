@@ -4,7 +4,7 @@ import { app, BrowserWindow, ipcMain, dialog } from "electron";
 import fs from "fs";
 import { parseAdif } from "../../utils/adif";
 import { QsoEntry } from "../../types/qso";
-import { databaseService } from "../../utils/db";
+import { databaseService } from "../../services/DatabaseService";
 
 const isDev = process.env.npm_lifecycle_event === "app:dev" ? true : false;
 
@@ -43,7 +43,7 @@ ipcMain.handle("qso:add", async (_, qso) => {
 ipcMain.handle("qso:getAllDocs", async () => {
   try {
     const qsos = await databaseService.getAllQsos();
-    return { rows: qsos.map(doc => ({ doc })) };
+    return { rows: qsos.map((doc) => ({ doc })) };
   } catch (error) {
     console.error("Failed to get all docs:", error);
     return { rows: [] };

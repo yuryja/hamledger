@@ -1,7 +1,7 @@
 import { defineStore } from "pinia";
 import { useRigStore } from "./rig";
 import { StationData, QRZData, GeoData } from "../types/station";
-import { fetchQRZData } from "../utils/qrz";
+import { qrzService } from "../services/QRZService";
 import { getCountryCodeForCallsign } from "../utils/callsign";
 import { geocodeLocation } from "../utils/geocoding";
 import { getWeather } from "../utils/weather";
@@ -17,6 +17,8 @@ declare global {
         count?: number;
         error?: any;
       }>;
+      loadSettings: () => Promise<any>;
+      saveSettings: (settings: any) => Promise<void>;
     };
   }
 }
@@ -175,7 +177,7 @@ export const useQsoStore = defineStore("qso", {
         };
 
         const countryCode = getCountryCodeForCallsign(callsign);
-        const qrzData = await fetchQRZData(callsign);
+        const qrzData = await qrzService.lookupCallsign(callsign);
 
         // If QRZ lookup failed, try to find info in existing QSOs
         if (qrzData instanceof Error) {
