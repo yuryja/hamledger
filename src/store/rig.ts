@@ -1,9 +1,5 @@
 import { defineStore } from 'pinia'
-
-interface Mode {
-  value: string
-  label: string
-}
+import { Mode } from '../types/rig'
 
 export const useRigStore = defineStore('rig', {
   state: () => ({
