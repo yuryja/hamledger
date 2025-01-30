@@ -100,9 +100,10 @@ export default {
   background: #333;
   border-radius: 5px;
   padding: 1rem;
-  height: 100%;
   display: flex;
   flex-direction: column;
+  min-height: 0;
+  height: 100%;
 }
 
 .log-header {
@@ -110,12 +111,14 @@ export default {
   align-items: center;
   gap: 1rem;
   margin-bottom: 1rem;
+  flex-shrink: 0;
 }
 
 .table-wrapper {
   flex: 1;
   overflow-y: auto;
   min-height: 0;
+  margin-bottom: 0;
 }
 
 .qso-table {

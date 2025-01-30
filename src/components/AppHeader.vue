@@ -28,7 +28,6 @@ export default {
   background: #333;
   padding: 1rem;
   border-radius: 5px;
-  margin-bottom: 1rem;
   gap: 1rem;
 }
 

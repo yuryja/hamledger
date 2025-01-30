@@ -30,7 +30,6 @@ export default {
   display: flex;
   height: 100vh;
   padding: 1rem;
-  padding-bottom: 2rem; /* Extra padding at bottom */
   box-sizing: border-box;
 }
 </style>
