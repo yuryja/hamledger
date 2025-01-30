@@ -187,7 +187,7 @@ export default {
 .config-panel {
   display: flex;
   width: 100%;
-  height: 100vh;
+  height: calc(100vh - 2rem);
 }
 
 .config-container {
@@ -198,6 +198,7 @@ export default {
   display: flex;
   flex-direction: column;
   margin: 0;
+  min-height: 0;
 }
 
 .config-header {
@@ -205,6 +206,7 @@ export default {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 1rem;
+  flex-shrink: 0;
 }
 
 .search-box {
@@ -223,7 +225,6 @@ export default {
 .config-layout {
   display: flex;
   gap: 1rem;
-  overflow: hidden;
   flex: 1;
   min-height: 0;
 }
@@ -265,6 +266,7 @@ export default {
   border-radius: 4px;
   padding: 1rem;
   min-width: 0;
+  min-height: 0;
 }
 
 .config-fields {
