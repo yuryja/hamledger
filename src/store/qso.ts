@@ -5,6 +5,7 @@ import { fetchQRZData } from "../utils/qrz";
 import { getCountryCodeForCallsign } from "../utils/callsign";
 import { geocodeLocation } from "../utils/geocoding";
 import { getWeather } from "../utils/weather";
+import { QsoEntry } from "../types/qso";
 
 declare global {
   interface Window {
@@ -20,21 +21,6 @@ const CALLSIGN_REGEX =
 
 export function isValidCallsign(callsign: string): boolean {
   return CALLSIGN_REGEX.test(callsign.toUpperCase());
-}
-
-interface QsoEntry {
-  _id?: string;
-  _rev?: string;
-  callsign: string;
-  band: string;
-  freqRx: number;
-  freqTx?: number | string;
-  mode: string;
-  rstr?: string;
-  rstt?: string;
-  datetime: string;
-  remark?: string;
-  notes?: string;
 }
 
 export const useQsoStore = defineStore("qso", {
@@ -190,12 +176,17 @@ export const useQsoStore = defineStore("qso", {
 
         // If QRZ lookup failed, try to find info in existing QSOs
         if (qrzData instanceof Error) {
-          const existingQso = this.allQsos.find(qso => qso.callsign === callsign);
-          
+          const existingQso = this.allQsos.find(
+            (qso) => qso.callsign === callsign
+          );
+
           // Create basic station data with just country and flag
           const stationData: StationData = {
             callsign,
-            flag: countryCode !== "xx" ? `https://flagcdn.com/h80/${countryCode}.png` : "",
+            flag:
+              countryCode !== "xx"
+                ? `https://flagcdn.com/h80/${countryCode}.png`
+                : "",
             country: existingQso?.country || "Unknown",
             weather: "",
             localTime: "",
@@ -209,7 +200,10 @@ export const useQsoStore = defineStore("qso", {
         // If QRZ lookup succeeded, create full station data
         const stationData: StationData = {
           callsign,
-          flag: countryCode !== "xx" ? `https://flagcdn.com/h80/${countryCode}.png` : "",
+          flag:
+            countryCode !== "xx"
+              ? `https://flagcdn.com/h80/${countryCode}.png`
+              : "",
           country: qrzData.country,
           qrzData,
           weather: "",
@@ -263,7 +257,6 @@ export const useQsoStore = defineStore("qso", {
 
         this.stationInfo = stationData;
         return stationData;
-
       } catch (error) {
         console.error("Error fetching station info:", error);
         return null;
