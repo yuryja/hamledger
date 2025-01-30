@@ -44,6 +44,8 @@ function createWindow() {
   // );
 }
 
+function addQsoToDB(qso: QsoEntry) {}
+
 // Set up IPC handlers for database operations
 ipcMain.handle("qso:add", async (_, qso) => {
   try {
@@ -80,7 +82,6 @@ ipcMain.handle("adif:import", async () => {
     if (filePaths.length === 0) return { imported: false };
 
     const content = fs.readFileSync(filePaths[0], "utf8");
-    console.log(content);
     const records = parseAdif(content);
 
     // Convert ADIF records to QSO format and save to DB
@@ -91,7 +92,7 @@ ipcMain.handle("adif:import", async () => {
           `${record.qso_date.replace(
             /(\d{4})(\d{2})(\d{2})/,
             "$1-$2-$3"
-          )}T${record.time_on.replace(/(\d{2})(\d{2})(\d{2})/, "$1:$2:$3")}Z`
+          )}T${record.time_on.replace(/(\d{2})(\d{2})(\d{2})?/, "$1:$2")}Z`
         ).toISOString(),
         band: record.band,
         freqRx: parseFloat(record.freq) || 0,
