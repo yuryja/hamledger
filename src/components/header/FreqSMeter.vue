@@ -18,6 +18,9 @@ export default {
   computed: {
     majorTicks(): MajorTick[] {
       return this.smeterHelper.getMajorTicks()
+    },
+    minorTicks(index): MinorTick[] {
+      return this.smeterHelper.generateMinorTicks(index)
     }
   }
 }
@@ -59,8 +62,7 @@ export default {
               <div class="tick-line"></div>
             </div>
 
-            <template v-for="(minorTick, minorIndex) in smeterHelper.generateMinorTicks(index)"
-              :key="'minor-' + index + '-' + minorIndex">
+            <template v-for="(minorTick, minorIndex) in minorTicks(index)" :key="'minor-' + index + '-' + minorIndex">
               <div class="tick minor-tick">
                 <div class="tick-box" :style="{ background: minorTick.color }"></div>
               </div>
