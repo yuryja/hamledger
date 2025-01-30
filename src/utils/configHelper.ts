@@ -1,46 +1,32 @@
 import { ConfigField, ConfigCategory } from "../types/config";
 import schema_json from "../settings.schema.json";
-import { join } from "path";
-import { app } from "electron";
-import fs from "fs";
+import defaultSettings from "../settings.json";
 
 export class ConfigHelper {
   private schema: any;
   private settings: any;
-  private settingsPath: string;
 
   constructor(schema = schema_json) {
     this.schema = schema;
-    this.settingsPath = join(app.getPath("userData"), "settings.json");
-    this.settings = this.loadSettings();
+    this.settings = defaultSettings;
+    this.initSettings();
   }
 
-  private loadSettings(): any {
+  private async initSettings(): Promise<void> {
     try {
-      // First try to load from user data directory
-      if (fs.existsSync(this.settingsPath)) {
-        const userSettings = JSON.parse(
-          fs.readFileSync(this.settingsPath, "utf8")
-        );
-        return userSettings;
+      const settings = await window.electronAPI.loadSettings();
+      if (settings) {
+        this.settings = settings;
       }
-
-      // If no user settings exist, load default settings from the app
-      const defaultSettings = JSON.parse(
-        fs.readFileSync(join(app.getAppPath(), "src/settings.json"), "utf8")
-      );
-      // Save default settings to user directory
-      this.saveSettings(defaultSettings);
-      return defaultSettings;
     } catch (error) {
       console.error("Error loading settings:", error);
-      return {};
+      this.settings = defaultSettings;
     }
   }
 
-  public saveSettings(newSettings: any): void {
+  public async saveSettings(newSettings: any): Promise<void> {
     try {
-      fs.writeFileSync(this.settingsPath, JSON.stringify(newSettings, null, 2));
+      await window.electronAPI.saveSettings(newSettings);
       this.settings = newSettings;
     } catch (error) {
       console.error("Error saving settings:", error);

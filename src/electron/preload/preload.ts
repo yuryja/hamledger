@@ -7,6 +7,8 @@ declare global {
       addQso: (qso: any) => Promise<any>;
       getAllDocs: () => Promise<any>;
       importAdif: () => Promise<{imported: boolean, count?: number, error?: any}>;
+      loadSettings: () => Promise<any>;
+      saveSettings: (settings: any) => Promise<void>;
     }
   }
 }
@@ -14,5 +16,7 @@ declare global {
 contextBridge.exposeInMainWorld('electronAPI', {
   addQso: (qso: any) => ipcRenderer.invoke('qso:add', qso),
   getAllDocs: () => ipcRenderer.invoke('qso:getAllDocs'),
-  importAdif: () => ipcRenderer.invoke('adif:import')
+  importAdif: () => ipcRenderer.invoke('adif:import'),
+  loadSettings: () => ipcRenderer.invoke('settings:load'),
+  saveSettings: (settings: any) => ipcRenderer.invoke('settings:save', settings)
 })
