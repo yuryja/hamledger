@@ -187,16 +187,17 @@ export default {
 .config-panel {
   display: flex;
   width: 100%;
+  height: 100vh;
 }
 
 .config-container {
   background: #333;
   border-radius: 5px;
   padding: 1rem;
-  height: calc(100vh - 100px);
+  flex: 1;
   display: flex;
   flex-direction: column;
-  margin-right: 1rem;
+  margin: 0;
 }
 
 .config-header {
@@ -223,8 +224,8 @@ export default {
   display: flex;
   gap: 1rem;
   overflow: hidden;
-  width: 100%;
-  height: 100%;
+  flex: 1;
+  min-height: 0;
 }
 
 .config-sidebar {
@@ -258,13 +259,12 @@ export default {
 }
 
 .config-main {
+  flex: 1;
   overflow-y: auto;
   background: #2b2b2b;
   border-radius: 4px;
   padding: 1rem;
-  width: 100%;
   min-width: 0;
-  /* Prevents flex item from overflowing */
 }
 
 .config-fields {
