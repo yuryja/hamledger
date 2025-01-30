@@ -5,6 +5,12 @@ import { DateHelper } from '../utils/dateHelper'
 
 export default {
   name: 'LogBook',
+  data() {
+    return {
+      DateHelper
+    }
+  },
+  name: 'LogBook',
   setup() {
     const qsoStore = useQsoStore()
     return { qsoStore }
@@ -60,8 +66,8 @@ export default {
         </thead>
         <tbody>
           <tr v-for="entry in allQsos" :key="entry._id">
-            <td>{{ DateHelper.formatUTCDate(new Date(entry.datetime)) }}</td>
-            <td>{{ DateHelper.formatUTCTime(new Date(entry.datetime)) }}</td>
+            <td>{{ this.DateHelper.formatUTCDate(new Date(entry.datetime)) }}</td>
+            <td>{{ this.DateHelper.formatUTCTime(new Date(entry.datetime)) }}</td>
             <td>
               <img v-if="getCountryCodeForCallsign(entry.callsign) !== 'xx'"
                 :src="`https://flagcdn.com/h40/${getCountryCodeForCallsign(entry.callsign)}.png`"
