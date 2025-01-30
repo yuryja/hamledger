@@ -26,8 +26,7 @@ export default {
       })
     }
   },
-  async mounted() {
-    await configHelper.initSettings()
+  mounted() {
     this.configFields = configHelper.flattenConfig()
   },
   methods: {

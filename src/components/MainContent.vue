@@ -5,6 +5,7 @@ import QsoPanel from './QsoPanel.vue'
 import LogArea from './LogArea.vue'
 import LogBook from './LogBook.vue'
 import ConfigView from './ConfigView.vue'
+import { configHelper } from '../utils/configHelper'
 
 export default {
   name: 'MainContent',
@@ -23,6 +24,9 @@ export default {
     handleViewChange(view: string) {
       this.currentView = view;
     }
+  },
+  async mounted() {
+    await configHelper.initSettings()
   }
 }
 </script>

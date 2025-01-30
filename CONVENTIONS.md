@@ -1,0 +1,2 @@
+- Use types everywhere possible.
+- Use object oriented programming everywhere possible.

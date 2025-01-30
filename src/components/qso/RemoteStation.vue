@@ -18,12 +18,6 @@ export default {
     stationInfo(): StationData | null {
       return this.qsoStore.stationInfo
     },
-    getStationName(): string {
-      if (!this.stationInfo?.qrzData) return this.callsign;
-
-      const { name, nickname, fname } = this.stationInfo.qrzData;
-      return [name, (nickname || ""), fname || this.callsign].join(" ")
-    }
   },
   watch: {
     async callsign(newCallsign: string) {
@@ -43,16 +37,16 @@ export default {
       <div class="station-block station-remote">
         <img v-if="stationInfo?.flag" :src="stationInfo.flag" :alt="stationInfo.country" class="station-flag" />
         <div class="station-info">
-          <p class="station-name">Remote: {{ getStationName }}</p>
-          <p class="station-qth">QTH: {{ stationInfo?.qrzData?.qth || 'Loading...' }}</p>
-          <p class="station-country">Country: {{ stationInfo?.country || 'Loading...' }}</p>
+          <p class="station-name">Remote: {{ stationInfo?.baseData?.name }}</p>
+          <p class="station-qth">QTH: {{ stationInfo?.baseData?.qth || 'Loading...' }}</p>
+          <p class="station-country">Country: {{ stationInfo?.baseData?.country || 'Loading...' }}</p>
           <template v-if="stationInfo?.geodata">
-            <p class="station-coords-text">Lat: {{ stationInfo.geodata.lat.toFixed(4) }}°</p>
-            <p class="station-coords-text">Lon: {{ stationInfo.geodata.lon.toFixed(4) }}°</p>
+            <p class="station-coords-text">Lat: {{ stationInfo.geodata.lat?.toFixed(4) }}°</p>
+            <p class="station-coords-text">Lon: {{ stationInfo.geodata.lon?.toFixed(4) }}°</p>
             <p v-if="stationInfo.geodata.display_name" class="station-coords-text">Location: {{
               stationInfo.geodata.display_name }}</p>
           </template>
-          <p v-if="stationInfo?.qrzData?.grid" class="station-coords-text">Grid: {{ stationInfo.qrzData.grid }}</p>
+          <p v-if="stationInfo?.baseData?.grid" class="station-coords-text">Grid: {{ stationInfo.baseData.grid }}</p>
         </div>
       </div>
 

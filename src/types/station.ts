@@ -6,6 +6,7 @@ export interface BaseStationData {
   lon?: number;
   grid?: string;
   qth: string;
+  time_offset?: number;
 }
 
 export interface QRZData extends BaseStationData {
@@ -50,7 +51,7 @@ export interface StationData {
   flag: string;
   weather: string;
   localTime: string;
-  qrzData?: QRZData;
+  geodata: GeoData;
   greetings: {
     greeting: string;
     ipa: string;

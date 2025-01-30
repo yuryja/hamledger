@@ -162,10 +162,6 @@ export class ConfigHelper {
       fields,
     }));
   }
-  // Get the entire settings object
-  public getSettings(): any {
-    return this.settings;
-  }
 }
 
 export const configHelper = new ConfigHelper();

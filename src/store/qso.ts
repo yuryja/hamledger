@@ -1,6 +1,6 @@
 import { defineStore } from "pinia";
 import { useRigStore } from "./rig";
-import { StationData, QRZData, GeoData } from "../types/station";
+import { StationData, BaseStationData, GeoData } from "../types/station";
 import { qrzService } from "../services/QRZService";
 import { getCountryCodeForCallsign } from "../utils/callsign";
 import { geocodeLocation } from "../utils/geocoding";
@@ -37,20 +37,12 @@ export const useQsoStore = defineStore("qso", {
     currentUTCTime: "",
     initialized: false,
     stationInfo: {
-      baseData: {
-        call: "",
-        name: "",
-        country: "",
-        lat: undefined,
-        lon: undefined,
-        grid: "",
-        qth: ""
-      } as BaseStationData,
+      baseData: {} as BaseStationData,
+      geodata: {} as GeoData,
       flag: "",
       weather: "",
       localTime: "",
-      qrzData: undefined,
-      greetings: []
+      greetings: [],
     } satisfies StationData,
     qsoForm: {
       callsign: "",
@@ -171,7 +163,7 @@ export const useQsoStore = defineStore("qso", {
         second: "2-digit",
       });
     },
-    async fetchStationInfo(callsign: string) {
+    async fetchStationInfo(callsign: string): Promise<void | Error> {
       try {
         // Reset station info first to avoid showing stale data
         this.stationInfo = {
@@ -182,13 +174,13 @@ export const useQsoStore = defineStore("qso", {
             lat: undefined,
             lon: undefined,
             grid: "",
-            qth: ""
+            qth: "",
           },
+          geodata: {},
           flag: "",
           weather: "",
           localTime: "",
-          qrzData: undefined,
-          greetings: []
+          greetings: [],
         };
 
         const countryCode = getCountryCodeForCallsign(callsign);
@@ -197,7 +189,7 @@ export const useQsoStore = defineStore("qso", {
         // If QRZ lookup failed, try to find info in existing QSOs
         if (qrzData instanceof Error) {
           const existingQso = this.allQsos.find(
-            (qso) => qso.callsign === callsign
+            (qso: QsoEntry) => qso.callsign === callsign
           );
 
           // Create basic station data with just country and flag
@@ -209,52 +201,55 @@ export const useQsoStore = defineStore("qso", {
               lat: undefined,
               lon: undefined,
               grid: "",
-              qth: ""
+              qth: "",
             },
-            flag: countryCode !== "xx" ? `https://flagcdn.com/h80/${countryCode}.png` : "",
+            geodata: {},
+            flag:
+              countryCode !== "xx"
+                ? `https://flagcdn.com/h80/${countryCode}.png`
+                : "",
             weather: "",
             localTime: "",
             qrzData: undefined,
-            greetings: []
+            greetings: [],
+          };
+        } else {
+          // If QRZ lookup succeeded, create full station data
+          this.stationInfo = {
+            baseData: {
+              call: callsign,
+              name: qrzData.name,
+              country: qrzData.country,
+              lat: qrzData.lat,
+              lon: qrzData.lon,
+              grid: qrzData.grid,
+              qth: qrzData.qth,
+            },
+            geodata: {},
+            flag:
+              countryCode !== "xx"
+                ? `https://flagcdn.com/h80/${countryCode}.png`
+                : "",
+            weather: "",
+            localTime: "",
+            greetings: [],
           };
 
-          this.stationInfo = stationData;
-          return stationData;
+          // Get coordinates from QRZ or geocoding
+          this.stationInfo.geodata =
+            this.stationInfo.baseData.lat && this.stationInfo.baseData.lon
+              ? {
+                  lat: this.stationInfo.baseData.lat,
+                  lon: this.stationInfo.baseData.lon,
+                  display_name: "",
+                }
+              : {};
         }
-
-        // If QRZ lookup succeeded, create full station data
-        this.stationInfo = {
-          baseData: {
-            call: callsign,
-            name: qrzData.name,
-            country: qrzData.country,
-            lat: qrzData.lat,
-            lon: qrzData.lon,
-            grid: qrzData.grid,
-            qth: qrzData.qth
-          },
-          flag: countryCode !== "xx" ? `https://flagcdn.com/h80/${countryCode}.png` : "",
-          weather: "",
-          localTime: "",
-          qrzData,
-          greetings: []
-        };
-
-        // Get coordinates from QRZ or geocoding
-        let geodata: GeoData | undefined =
-          qrzData.lat && qrzData.lon
-            ? {
-                lat: qrzData.lat,
-                lon: qrzData.lon,
-                display_name: "",
-              }
-            : undefined;
-
         // If QRZ doesn't provide coordinates, try geocoding
-        if (!geodata && qrzData.qth) {
-          const geoData = await geocodeLocation(qrzData.qth);
+        if (!this.stationInfo.geodata && this.stationInfo.baseData.qth) {
+          const geoData = await geocodeLocation(this.stationInfo.baseData.qth);
           if (geoData) {
-            geodata = {
+            this.stationInfo.geodata = {
               lat: geoData.lat,
               lon: geoData.lon,
               display_name: geoData.display_name,
@@ -262,33 +257,32 @@ export const useQsoStore = defineStore("qso", {
           }
         }
 
-        // Save geodata to station info
-        stationData.geodata = geodata;
-
         // Get weather if we have coordinates
-        if (geodata) {
-          const weatherData = await getWeather(geodata.lat, geodata.lon);
+        if (this.stationInfo.geodata) {
+          const weatherData = await getWeather(
+            this.stationInfo.geodata.lat,
+            this.stationInfo.geodata.lon
+          );
           if (weatherData) {
-            stationData.weather = `${weatherData.temperature}°C, ${weatherData.description}`;
+            this.stationInfo.weather = `${weatherData.temperature}°C, ${weatherData.description}`;
           }
         }
 
         // Calculate local time using timezone offset
-        if (qrzData.gmtOffset !== undefined) {
+        if (this.stationInfo.baseData.time_offset !== undefined) {
           const localTime = new Date();
-          localTime.setHours(localTime.getHours() + qrzData.gmtOffset);
-          stationData.localTime = localTime.toLocaleTimeString("en-US", {
+          localTime.setHours(
+            localTime.getHours() + this.stationInfo.baseData.time_offset
+          );
+          this.stationInfo.localTime = localTime.toLocaleTimeString("en-US", {
             hour12: false,
             hour: "2-digit",
             minute: "2-digit",
           });
         }
-
-        this.stationInfo = stationData;
-        return stationData;
       } catch (error) {
         console.error("Error fetching station info:", error);
-        return null;
+        return error;
       }
     },
   },
