@@ -1,17 +1,17 @@
 import { ConfigField, ConfigCategory } from "../types/config";
-import schema from "../settings.schema.json";
-import { join } from 'path';
-import { app } from '@electron/remote';
-import fs from 'fs';
+import schema_json from "../settings.schema.json";
+import { join } from "path";
+import { app } from "electron";
+import fs from "fs";
 
 export class ConfigHelper {
   private schema: any;
   private settings: any;
   private settingsPath: string;
 
-  constructor(schema = schema) {
+  constructor(schema = schema_json) {
     this.schema = schema;
-    this.settingsPath = join(app.getPath('userData'), 'settings.json');
+    this.settingsPath = join(app.getPath("userData"), "settings.json");
     this.settings = this.loadSettings();
   }
 
@@ -19,17 +19,21 @@ export class ConfigHelper {
     try {
       // First try to load from user data directory
       if (fs.existsSync(this.settingsPath)) {
-        const userSettings = JSON.parse(fs.readFileSync(this.settingsPath, 'utf8'));
+        const userSettings = JSON.parse(
+          fs.readFileSync(this.settingsPath, "utf8")
+        );
         return userSettings;
       }
 
       // If no user settings exist, load default settings from the app
-      const defaultSettings = JSON.parse(fs.readFileSync(join(__dirname, '../settings.json'), 'utf8'));
+      const defaultSettings = JSON.parse(
+        fs.readFileSync(join(app.getAppPath(), "src/settings.json"), "utf8")
+      );
       // Save default settings to user directory
       this.saveSettings(defaultSettings);
       return defaultSettings;
     } catch (error) {
-      console.error('Error loading settings:', error);
+      console.error("Error loading settings:", error);
       return {};
     }
   }
@@ -39,13 +43,13 @@ export class ConfigHelper {
       fs.writeFileSync(this.settingsPath, JSON.stringify(newSettings, null, 2));
       this.settings = newSettings;
     } catch (error) {
-      console.error('Error saving settings:', error);
+      console.error("Error saving settings:", error);
     }
   }
 
   public updateSetting(path: string[], key: string, value: any): void {
     let current = this.settings;
-    
+
     // Navigate to the correct nested object
     for (const pathPart of path) {
       if (!current[pathPart]) {
@@ -63,7 +67,7 @@ export class ConfigHelper {
 
   public getSetting(path: string[], key: string): any {
     let current = this.settings;
-    
+
     for (const pathPart of path) {
       if (!current[pathPart]) {
         return undefined;
@@ -153,11 +157,10 @@ export class ConfigHelper {
       fields,
     }));
   }
+  // Get the entire settings object
+  public getSettings(): any {
+    return this.settings;
+  }
 }
 
 export const configHelper = new ConfigHelper();
-
-// Get the entire settings object
-public getSettings(): any {
-  return this.settings;
-}
