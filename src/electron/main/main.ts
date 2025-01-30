@@ -35,8 +35,6 @@ function createWindow() {
   // );
 }
 
-function addQsoToDB(qso: QsoEntry) {}
-
 // Set up IPC handlers for database operations
 ipcMain.handle("qso:add", async (_, qso) => {
   return await saveQso(qso);

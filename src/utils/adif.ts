@@ -13,7 +13,7 @@ export function parseAdif(content: string): AdifRecord[] {
   if (headerEnd === -1) return records;
 
   const body = content.substring(headerEnd + 5);
-  const regex = /<([^:>]+)(?::(\d+)(?::([^>]+))?)?>(.*?)(?=<|$)/gi;
+  const regex = /<([^:>]+)(?::(\d+)(?::([^>]+))?)?>([^<]*)/gi;
   let currentRecord: AdifRecord = {};
   let match;
 
