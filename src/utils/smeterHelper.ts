@@ -25,11 +25,12 @@ export class SMeterHelper {
   }
 
   public generateMinorTicks(majorIndex: number): MinorTick[] {
-    if (majorIndex >= this.majorTicks.length - 1) return []
+    if (typeof majorIndex !== 'number' || majorIndex >= this.majorTicks.length - 1) {
+      return []
+    }
 
-    return Array(4).fill(null).map(() => ({
-      color: this.getMinorColorFromIndex(majorIndex)
-    }))
+    const color = this.getMinorColorFromIndex(majorIndex)
+    return Array(4).fill(null).map(() => ({ color }))
   }
 }
 
