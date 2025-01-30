@@ -17,7 +17,13 @@ export default {
     }
   },
   methods: {
-    getCountryCodeForCallsign
+    getCountryCodeForCallsign,
+    async handleImportAdif() {
+      const result = await this.qsoStore.importAdif();
+      if (!result.success) {
+        console.error('ADIF import failed:', result.error);
+      }
+    }
   }
 }
 </script>
@@ -25,8 +31,13 @@ export default {
 <template>
   <main class="log-container">
     <h2 class="section-title">LogBook</h2>
-    <div class="qso-count">
-      <span>Total QSOs: {{ totalCount }}</span>
+    <div class="log-header">
+      <div class="qso-count">
+        <span>Total QSOs: {{ totalCount }}</span>
+      </div>
+      <div class="log-actions">
+        <button class="action-btn" @click="handleImportAdif">Import ADIF</button>
+      </div>
     </div>
 
     <table class="qso-table">

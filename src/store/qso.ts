@@ -149,6 +149,20 @@ export const useQsoStore = defineStore("qso", {
       }
     },
 
+    async importAdif() {
+      try {
+        const result = await window.electronAPI.importAdif();
+        if (result.imported) {
+          await this.initializeStore();
+          return { success: true, count: result.count };
+        }
+        return { success: false, error: result.error };
+      } catch (error) {
+        console.error("Failed to import ADIF:", error);
+        return { success: false, error };
+      }
+    },
+
     updateCurrentUTCTime() {
       const now = new Date();
       this.currentUTCTime = now.toLocaleTimeString("en-US", {

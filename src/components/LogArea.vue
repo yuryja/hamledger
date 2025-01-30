@@ -94,6 +94,27 @@ export default {
 </template>
 
 <style>
+.log-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.log-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.action-btn {
+  background: var(--main-color);
+  border: none;
+  padding: 0.5rem 1rem;
+  color: #000;
+  cursor: pointer;
+  border-radius: 3px;
+  font-weight: bold;
+}
 .log-container {
   background: #333;
   border-radius: 5px;
