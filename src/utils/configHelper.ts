@@ -2,6 +2,15 @@ import { ConfigField, ConfigCategory } from "../types/config";
 import schema_json from "../settings.schema.json";
 import defaultSettings from "../settings.json";
 
+declare global {
+  interface Window {
+    electronAPI: {
+      loadSettings: () => Promise<any>;
+      saveSettings: (settings: any) => Promise<void>;
+    };
+  }
+}
+
 export class ConfigHelper {
   private schema: any;
   private settings: any;
