@@ -32,13 +32,13 @@
     "asar": true,
     "directories": {
       "buildResources": "assets",
-      "output": "release/${version}"
+      "output": "release/${version}/${platform}"
     },
     "files": [
       "dist"
     ],
     "mac": {
-      "artifactName": "${productName}_${version}.${ext}",
+      "artifactName": "${productName}_${version}_macos_${arch}.${ext}",
       "target": [
         {
           "target": "dmg",
@@ -63,7 +63,7 @@
           ]
         }
       ],
-      "artifactName": "${productName}_${version}.${ext}",
+      "artifactName": "${productName}_${version}_windows_${arch}.${ext}",
       "signingHashAlgorithms": null,
       "certificateFile": null,
       "certificatePassword": null
@@ -75,7 +75,7 @@
         "rpm"
       ],
       "category": "Utility",
-      "artifactName": "${productName}_${version}.${ext}"
+      "artifactName": "${productName}_${version}_linux_${arch}.${ext}"
     },
     "nsis": {
       "oneClick": false,
