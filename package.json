@@ -6,6 +6,7 @@
   "description": "A modern cross-platform logger for radio-amateurs. It just works.",
   "main": "dist/electron/electron/main/main.js",
   "license": "CC-BY-NC-ND-4.0",
+  "email": "valkonybalazs@gmail.com",
   "scripts": {
     "vite:dev": "vite",
     "vite:build": "vue-tsc --noEmit && vite build",
@@ -39,7 +40,10 @@
       "target": [
         {
           "target": "dmg",
-          "arch": ["x64", "arm64"]
+          "arch": [
+            "x64",
+            "arm64"
+          ]
         }
       ],
       "category": "public.app-category.utilities",
