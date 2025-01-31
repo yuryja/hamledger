@@ -2,11 +2,13 @@
   "name": "hamledger",
   "private": true,
   "version": "0.0.1",
-  "author": "Balazs Valkony - HA5XB",
+  "author": {
+    "name": "Balazs Valkony - HA5XB",
+    "email": "valkonybalazs@gmail.com"
+  },
   "description": "A modern cross-platform logger for radio-amateurs. It just works.",
   "main": "dist/electron/electron/main/main.js",
   "license": "CC-BY-NC-ND-4.0",
-  "email": "valkonybalazs@gmail.com",
   "scripts": {
     "vite:dev": "vite",
     "vite:build": "vue-tsc --noEmit && vite build",
