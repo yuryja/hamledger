@@ -17,10 +17,15 @@
     "app:build": "npm run vite:build && tsc",
     "app:preview": "npm run vite:build && tsc && electron .",
     "test": "vitest --environment jsdom",
-    "test:coverage": "vitest run --coverage --environment jsdom"
+    "test:coverage": "vitest run --coverage --environment jsdom",
+    "build:win": "npm run app:build && electron-builder --win",
+    "build:mac": "npm run app:build && electron-builder --mac",
+    "build:linux": "npm run app:build && electron-builder --linux",
+    "build:all": "npm run app:build && electron-builder -mwl"
   },
   "build": {
-    "appId": "hamledger",
+    "appId": "com.hamledger.app",
+    "productName": "HamLedger",
     "asar": true,
     "directories": {
       "buildResources": "assets",
@@ -32,8 +37,10 @@
     "mac": {
       "artifactName": "${productName}_${version}.${ext}",
       "target": [
-        "dmg"
-      ]
+        "dmg",
+        "zip"
+      ],
+      "category": "public.app-category.utilities"
     },
     "win": {
       "target": [
@@ -44,6 +51,15 @@
           ]
         }
       ],
+      "artifactName": "${productName}_${version}.${ext}"
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb",
+        "rpm"
+      ],
+      "category": "Utility",
       "artifactName": "${productName}_${version}.${ext}"
     },
     "nsis": {
