@@ -9,6 +9,10 @@ export default {
     QsoEditDialog
   },
   name: 'LogBook',
+  setup() {
+    const qsoStore = useQsoStore()
+    return { qsoStore }
+  },
   data() {
     return {
       DateHelper,
@@ -17,11 +21,6 @@ export default {
       selectedQso: null,
       showEditDialog: false
     }
-  },
-  name: 'LogBook',
-  setup() {
-    const qsoStore = useQsoStore()
-    return { qsoStore }
   },
   computed: {
     allQsos() {
@@ -46,7 +45,7 @@ export default {
         const aVal = a[this.sortKey];
         const bVal = b[this.sortKey];
         const modifier = this.sortOrder === 'asc' ? 1 : -1;
-        
+
         if (aVal < bVal) return -1 * modifier;
         if (aVal > bVal) return 1 * modifier;
         return 0;
@@ -122,9 +121,7 @@ export default {
           </tr>
         </thead>
         <tbody>
-          <tr v-for="entry in getSortedQsos()" 
-              :key="entry._id"
-              @click="selectedQso = entry; showEditDialog = true">
+          <tr v-for="entry in getSortedQsos()" :key="entry._id" @click="selectedQso = entry; showEditDialog = true">
             <td>{{ this.DateHelper.formatUTCDate(new Date(entry.datetime)) }}</td>
             <td>{{ this.DateHelper.formatUTCTime(new Date(entry.datetime)) }}</td>
             <td>
@@ -146,12 +143,7 @@ export default {
       </table>
     </div>
 
-    <QsoEditDialog 
-      v-if="selectedQso"
-      :qso="selectedQso"
-      :show="showEditDialog"
-      @close="showEditDialog = false"
-    />
+    <QsoEditDialog v-if="selectedQso" :qso="selectedQso" :show="showEditDialog" @close="showEditDialog = false" />
   </main>
 </template>
 

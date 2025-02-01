@@ -24,7 +24,7 @@ function createWindow() {
     mainWindow.loadURL("http://localhost:5173");
     mainWindow.webContents.openDevTools(); // Open the DevTools.
   } else {
-    mainWindow.loadFile(join(__dirname, "../../index.html"));
+    mainWindow.loadFile(join(__dirname, "../../../index.html"));
   }
 
   mainWindow.maximize();
