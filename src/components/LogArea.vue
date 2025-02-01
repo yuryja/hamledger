@@ -11,7 +11,8 @@ export default {
   name: 'LogArea',
   setup() {
     const qsoStore = useQsoStore()
-    return { qsoStore }
+    return { qsoStore, DateHelper
+     }
   },
   computed: {
     currentSession() {
