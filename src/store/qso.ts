@@ -6,7 +6,7 @@ import { getCountryCodeForCallsign } from "../utils/callsign";
 import { geocodeLocation } from "../utils/geocoding";
 import { getWeather } from "../utils/weather";
 import { QsoEntry } from "../types/qso";
-import { gridToLatLon } from "../utils/maidenhead";
+import { MaidenheadLocator } from "../utils/maidenhead";
 import * as countries from 'i18n-iso-countries';
 import en from 'i18n-iso-countries/langs/en.json';
 countries.registerLocale(en);
@@ -235,7 +235,7 @@ export const useQsoStore = defineStore("qso", {
         // 1. From grid square if available
         if (this.stationInfo.baseData.grid) {
           try {
-            const coords = gridToLatLon(this.stationInfo.baseData.grid);
+            const coords = MaidenheadLocator.gridToLatLon(this.stationInfo.baseData.grid);
             this.stationInfo.geodata = {
               lat: coords.lat,
               lon: coords.lon,
