@@ -1,3 +1,0 @@
-"directories": {
-  "output": "release/${version}/${platform}"
-}
