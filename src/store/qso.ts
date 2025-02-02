@@ -50,6 +50,7 @@ export const useQsoStore = defineStore("qso", {
       localTime: "",
       greetings: [],
       distance: undefined as number | undefined,
+      qrzError: false
     } satisfies StationData,
     qsoForm: {
       callsign: "",
@@ -202,6 +203,7 @@ export const useQsoStore = defineStore("qso", {
           localTime: "",
           greetings: [],
           distance: undefined,
+          qrzError: false
         };
 
         // Get country information from callsign
@@ -216,7 +218,10 @@ export const useQsoStore = defineStore("qso", {
 
         // Try to get additional info from QRZ
         const qrzData = await qrzService.lookupStationByCallsign(callsign);
-        if (!(qrzData instanceof Error)) {
+        if (qrzData instanceof Error) {
+          this.stationInfo.qrzError = true;
+          console.error("QRZ lookup failed:", qrzData);
+        } else {
           this.stationInfo.baseData.name = qrzData.name;
           this.stationInfo.baseData.grid = qrzData.grid;
           this.stationInfo.baseData.qth = qrzData.qth;

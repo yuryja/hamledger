@@ -58,6 +58,7 @@ export interface StationData {
     label: string;
   }[];
   distance?: number;
+  qrzError?: boolean;
 }
 
 export interface GeoData {
