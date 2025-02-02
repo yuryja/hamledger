@@ -57,6 +57,7 @@ export interface StationData {
     ipa: string;
     label: string;
   }[];
+  distance?: number;
 }
 
 export interface GeoData {

@@ -47,6 +47,7 @@ export default {
               stationInfo.geodata.display_name }}</p>
           </template>
           <p v-if="stationInfo?.baseData?.grid" class="station-coords-text">Grid: {{ stationInfo.baseData.grid }}</p>
+          <p v-if="stationInfo?.distance" class="station-distance">Distance: {{ stationInfo.distance }} km</p>
         </div>
       </div>
 
@@ -119,6 +120,12 @@ export default {
 .station-coords-text,
 .station-weather-text {
   color: var(--gray-color);
+}
+
+.station-distance {
+  color: var(--main-color);
+  font-weight: bold;
+  margin-top: 0.2rem;
 }
 
 .station-coords-title,

@@ -7,6 +7,8 @@ import { geocodeLocation } from "../utils/geocoding";
 import { getWeather } from "../utils/weather";
 import { QsoEntry } from "../types/qso";
 import { MaidenheadLocator } from "../utils/maidenhead";
+import { configHelper } from "../utils/configHelper";
+import { calculateDistance } from "../utils/distance";
 import * as countries from 'i18n-iso-countries';
 import en from 'i18n-iso-countries/langs/en.json';
 countries.registerLocale(en);
@@ -47,6 +49,7 @@ export const useQsoStore = defineStore("qso", {
       weather: "",
       localTime: "",
       greetings: [],
+      distance: undefined as number | undefined,
     } satisfies StationData,
     qsoForm: {
       callsign: "",
@@ -198,6 +201,7 @@ export const useQsoStore = defineStore("qso", {
           weather: "",
           localTime: "",
           greetings: [],
+          distance: undefined,
         };
 
         // Get country information from callsign
@@ -242,6 +246,24 @@ export const useQsoStore = defineStore("qso", {
               lon: geoData.lon,
               display_name: geoData.display_name
             };
+          }
+        }
+
+        // Calculate distance if we have remote coordinates and local grid
+        if (this.stationInfo.geodata.lat !== undefined && this.stationInfo.geodata.lon !== undefined) {
+          const localGrid = configHelper.getSetting(['station'], 'grid');
+          if (localGrid) {
+            try {
+              const localCoords = MaidenheadLocator.gridToLatLon(localGrid);
+              this.stationInfo.distance = calculateDistance(
+                localCoords.lat,
+                localCoords.lon,
+                this.stationInfo.geodata.lat,
+                this.stationInfo.geodata.lon
+              );
+            } catch (error) {
+              console.error("Error calculating distance:", error);
+            }
           }
         }
 
