@@ -6,7 +6,7 @@ interface SidebarItem {
 }
 
 export default {
-  name: 'Sidebar',
+  name: 'SideBar',
   data() {
     return {
       currentView: 'qso',

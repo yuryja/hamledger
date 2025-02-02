@@ -1,12 +1,12 @@
 <script lang="ts">
-import Sidebar from './components/Sidebar.vue'
+import SideBar from './components/SideBar.vue'
 import MainContent from './components/MainContent.vue'
 import { useQsoStore } from './store/qso'
 
 export default {
   name: 'App',
   components: {
-    Sidebar,
+    SideBar,
     MainContent
   },
   async mounted() {
@@ -18,7 +18,7 @@ export default {
 
 <template>
   <div class="app-container">
-    <Sidebar @view-change="(view) => $refs.mainContent.handleViewChange(view)" />
+    <SideBar @view-change="(view) => $refs.mainContent?.handleViewChange(view)" />
     <MainContent ref="mainContent" />
   </div>
 </template>

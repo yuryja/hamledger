@@ -1,6 +1,6 @@
 <script lang="ts">
 import { useRigStore } from '../../store/rig'
-import type { MajorTick, MinorTick } from '../../types/smeter'
+import type { MajorTick } from '../../types/smeter'
 import { smeterHelper } from '../../utils/smeterHelper'
 
 export default {
