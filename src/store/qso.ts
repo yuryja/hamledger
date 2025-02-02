@@ -6,6 +6,10 @@ import { getCountryCodeForCallsign } from "../utils/callsign";
 import { geocodeLocation } from "../utils/geocoding";
 import { getWeather } from "../utils/weather";
 import { QsoEntry } from "../types/qso";
+import { gridToLatLon } from "../utils/maidenhead";
+import * as countries from 'i18n-iso-countries';
+import en from 'i18n-iso-countries/langs/en.json';
+countries.registerLocale(en);
 
 declare global {
   interface Window {
@@ -194,7 +198,7 @@ export const useQsoStore = defineStore("qso", {
         // Reset station info first to avoid showing stale data
         this.stationInfo = {
           baseData: {
-            call: "",
+            call: callsign,
             name: "",
             country: "",
             lat: undefined,
@@ -209,82 +213,53 @@ export const useQsoStore = defineStore("qso", {
           greetings: [],
         };
 
+        // Get country information from callsign
         const countryCode = getCountryCodeForCallsign(callsign);
+        const countryName = countries.getName(countryCode.toUpperCase(), "en") || "Unknown";
+        
+        // Set country and flag
+        this.stationInfo.baseData.country = countryName;
+        this.stationInfo.flag = countryCode !== "xx" 
+          ? `https://flagcdn.com/h80/${countryCode}.png` 
+          : "";
+
+        // Try to get additional info from QRZ
         const qrzData = await qrzService.lookupStationByCallsign(callsign);
-
-        // If QRZ lookup failed, try to find info in existing QSOs
-        if (qrzData instanceof Error) {
-          const existingQso = this.allQsos.find(
-            (qso: QsoEntry) => qso.callsign === callsign
-          );
-
-          // Create basic station data with just country and flag
-          this.stationInfo = {
-            baseData: {
-              call: callsign,
-              name: "",
-              country: existingQso?.country || "Unknown",
-              lat: undefined,
-              lon: undefined,
-              grid: "",
-              qth: "",
-            },
-            geodata: {},
-            flag:
-              countryCode !== "xx"
-                ? `https://flagcdn.com/h80/${countryCode}.png`
-                : "",
-            weather: "",
-            localTime: "",
-            qrzData: undefined,
-            greetings: [],
-          };
-        } else {
-          // If QRZ lookup succeeded, create full station data
-          this.stationInfo = {
-            baseData: {
-              call: callsign,
-              name: qrzData.name,
-              country: qrzData.country,
-              lat: qrzData.lat,
-              lon: qrzData.lon,
-              grid: qrzData.grid,
-              qth: qrzData.qth,
-            },
-            geodata: {},
-            flag:
-              countryCode !== "xx"
-                ? `https://flagcdn.com/h80/${countryCode}.png`
-                : "",
-            weather: "",
-            localTime: "",
-            greetings: [],
-          };
-
-          // Get coordinates from QRZ or geocoding
-          this.stationInfo.geodata =
-            this.stationInfo.baseData.lat && this.stationInfo.baseData.lon
-              ? {
-                  lat: this.stationInfo.baseData.lat,
-                  lon: this.stationInfo.baseData.lon,
-                  display_name: "",
-                }
-              : {};
+        if (!(qrzData instanceof Error)) {
+          this.stationInfo.baseData.name = qrzData.name;
+          this.stationInfo.baseData.grid = qrzData.grid;
+          this.stationInfo.baseData.qth = qrzData.qth;
         }
-        // If QRZ doesn't provide coordinates, try geocoding
-        if (!this.stationInfo.geodata && this.stationInfo.baseData.qth) {
+
+        // Try to get coordinates in order of preference:
+        // 1. From grid square if available
+        if (this.stationInfo.baseData.grid) {
+          try {
+            const coords = gridToLatLon(this.stationInfo.baseData.grid);
+            this.stationInfo.geodata = {
+              lat: coords.lat,
+              lon: coords.lon,
+              display_name: this.stationInfo.baseData.qth || ""
+            };
+          } catch (error) {
+            console.error("Error converting grid to coordinates:", error);
+          }
+        }
+        
+        // 2. From QTH if available and grid failed
+        if (!this.stationInfo.geodata.lat && this.stationInfo.baseData.qth) {
           const geoData = await geocodeLocation(this.stationInfo.baseData.qth);
           if (geoData) {
             this.stationInfo.geodata = {
               lat: geoData.lat,
               lon: geoData.lon,
-              display_name: geoData.display_name,
+              display_name: geoData.display_name
             };
           }
         }
 
         // Get weather if we have coordinates
-        if (this.stationInfo.geodata) {
+        if (this.stationInfo.geodata.lat !== undefined) {
           const weatherData = await getWeather(
             this.stationInfo.geodata.lat,
             this.stationInfo.geodata.lon
@@ -294,12 +269,11 @@ export const useQsoStore = defineStore("qso", {
           }
         }
 
-        // Calculate local time using timezone offset
-        if (this.stationInfo.baseData.time_offset !== undefined) {
+        // Set local time based on coordinates
+        if (this.stationInfo.geodata.lon !== undefined) {
+          const timeZoneOffset = Math.round(this.stationInfo.geodata.lon / 15);
           const localTime = new Date();
-          localTime.setHours(
-            localTime.getHours() + this.stationInfo.baseData.time_offset
-          );
+          localTime.setHours(localTime.getUTCHours() + timeZoneOffset);
           this.stationInfo.localTime = localTime.toLocaleTimeString("en-US", {
             hour12: false,
             hour: "2-digit",
