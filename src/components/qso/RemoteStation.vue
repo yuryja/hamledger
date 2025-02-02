@@ -35,7 +35,7 @@ export default {
     <div v-if="isValid && callsign" class="remote-station-boxes">
       <!-- Station details with integrated location -->
       <div class="station-block station-remote">
-        <img v-if="stationInfo?.flag" :src="stationInfo.flag" :alt="stationInfo.country" class="station-flag" />
+        <img v-if="stationInfo?.flag" :src="stationInfo.flag" :alt="stationInfo.baseData.country" class="station-flag" />
         <div class="station-info">
           <p class="station-name">Remote: {{ stationInfo?.baseData?.name }}</p>
           <p class="station-qth">QTH: {{ stationInfo?.baseData?.qth || 'Loading...' }}</p>
