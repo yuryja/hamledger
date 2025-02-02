@@ -50,6 +50,16 @@ ipcMain.handle("qso:getAllDocs", async () => {
   }
 });
 
+// Add QSO update handler
+ipcMain.handle("qso:update", async (_, qso) => {
+  try {
+    return await databaseService.updateQso(qso);
+  } catch (error) {
+    console.error("Failed to update QSO:", error);
+    throw error;
+  }
+});
+
 // ADIF Import handler
 ipcMain.handle("adif:import", async () => {
   try {

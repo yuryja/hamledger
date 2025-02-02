@@ -9,6 +9,7 @@ declare global {
       importAdif: () => Promise<{imported: boolean, count?: number, error?: any}>;
       loadSettings: () => Promise<any>;
       saveSettings: (settings: any) => Promise<void>;
+      updateQso: (qso: any) => Promise<any>;
     }
   }
 }
@@ -18,5 +19,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
   getAllDocs: () => ipcRenderer.invoke('qso:getAllDocs'),
   importAdif: () => ipcRenderer.invoke('adif:import'),
   loadSettings: () => ipcRenderer.invoke('settings:load'),
-  saveSettings: (settings: any) => ipcRenderer.invoke('settings:save', settings)
+  saveSettings: (settings: any) => ipcRenderer.invoke('settings:save', settings),
+  updateQso: (qso: any) => ipcRenderer.invoke('qso:update', qso)
 })

@@ -31,6 +31,17 @@ export class DatabaseService {
     }
   }
 
+  public async updateQso(qso: QsoEntry): Promise<{ ok: boolean; id?: string; error?: any }> {
+    try {
+      const response = await this.db.put(qso);
+      await this.backupToJson();
+      return { ok: true, id: response.id };
+    } catch (error) {
+      console.error('Failed to update QSO:', error);
+      return { ok: false, error };
+    }
+  }
+
   public async getAllQsos(): Promise<QsoEntry[]> {
     try {
       const allDocs = await this.db.allDocs({ include_docs: true });
