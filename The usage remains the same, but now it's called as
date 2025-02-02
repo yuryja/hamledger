@@ -1,1 +1,0 @@
-const coords = MaidenheadLocator.gridToLatLon("FN31pr");
