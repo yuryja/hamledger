@@ -1,7 +1,7 @@
 {
   "name": "hamledger",
   "private": true,
-  "version": "0.0.1",
+  "version": "0.0.2",
   "author": {
     "name": "Balazs Valkony - HA5XB",
     "email": "valkonybalazs@gmail.com"
