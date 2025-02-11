@@ -2,11 +2,11 @@
 import { useQsoStore } from '../store/qso'
 import { getCountryCodeForCallsign } from '../utils/callsign'
 import { DateHelper } from '../utils/dateHelper'
-import QsoEditDialog from './qso/QsoEditDialog.vue'
+import QsoDetailDialog from './qso/QsoDetailDialog.vue'
 
 export default {
   components: {
-    QsoEditDialog
+    QsoDetailDialog
   },
   name: 'LogBook',
   setup() {
