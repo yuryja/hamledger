@@ -28,8 +28,16 @@ export default {
       stationInfo: null as any
     }
   },
+  watch: {
+    async show(newVal) {
+      if (newVal && this.qso.callsign) {
+        await this.qsoStore.fetchStationInfo(this.qso.callsign)
+        this.stationInfo = this.qsoStore.stationInfo
+      }
+    }
+  },
   async created() {
-    if (this.qso.callsign) {
+    if (this.show && this.qso.callsign) {
       await this.qsoStore.fetchStationInfo(this.qso.callsign)
       this.stationInfo = this.qsoStore.stationInfo
     }
