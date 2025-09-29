@@ -201,7 +201,7 @@ const getSpotLayout = () => {
     
     // Calculate column offset
     const column = overlapping.length % maxColumns
-    const leftOffset = 55 + (column * 80) // Base position + column spacing
+    const leftOffset = 45 + (column * 80) // Base position + column spacing
     
     layoutSpots.push({
       ...spot,
@@ -642,14 +642,14 @@ onMounted(() => {
   position: relative;
   height: 100%;
   width: 100%;
-  padding: 20px 20px 20px 45px;
+  padding: 20px 20px 20px 35px;
   overflow-x: auto;
   min-width: 400px;
 }
 
 .scale-line {
   position: absolute;
-  left: 45px;
+  left: 35px;
   top: 20px;
   bottom: 20px;
   width: 2px;
@@ -658,7 +658,7 @@ onMounted(() => {
 
 .major-tick, .minor-tick {
   position: absolute;
-  left: 45px;
+  left: 35px;
 }
 
 .tick-mark {
@@ -680,18 +680,18 @@ onMounted(() => {
 
 .tick-label {
   position: absolute;
-  left: -40px;
+  left: -30px;
   top: -10px;
   font-size: 0.7rem;
   color: var(--main-color);
   white-space: nowrap;
   text-align: center;
-  width: 40px;
+  width: 30px;
 }
 
 .spot-label {
   position: absolute;
-  left: 55px;
+  left: 45px;
   background: var(--bg-darker);
   color: var(--text-primary);
   padding: 0.2rem 0.4rem;
