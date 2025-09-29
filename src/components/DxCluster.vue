@@ -186,7 +186,7 @@ const getSpotLayout = () => {
     return freqA - freqB
   })
 
-  const layoutSpots = []
+  const layoutSpots = [] as any
   const minDistance = 3 // Minimum distance between spots in percentage
   const maxColumns = 4 // Maximum number of columns for overlapping spots
 
@@ -239,6 +239,7 @@ const showMagnifier = (event: MouseEvent, frequency: string) => {
   magnifierFrequency.value = `${(freq / 1000).toFixed(3)} MHz környéke`
   
   // Position magnifier near mouse but keep it in viewport
+  ##AI! 'rect' is declared but its value is never read.ts-plugin(6133)
   const rect = (event.target as HTMLElement).getBoundingClientRect()
   magnifierPosition.value = {
     x: Math.min(event.clientX + 20, window.innerWidth - 300),
@@ -268,8 +269,8 @@ const generateScaleTicks = () => {
   const range = bandRanges[selectedBand.value]
   if (!range) return { major: [], minor: [] }
   
-  const majorTicks = []
-  const minorTicks = []
+  const majorTicks = [] as any
+  const minorTicks = [] as any
   const step = (range.max - range.min) / 10
   
   for (let i = 0; i <= 10; i++) {
