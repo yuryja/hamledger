@@ -679,8 +679,8 @@ onMounted(() => {
 
 .tick-label {
   position: absolute;
-  left: -20px;
-  top: -10px;
+  left: 5px;
+  top: -15px;
   font-size: 0.7rem;
   color: var(--main-color);
   white-space: nowrap;
