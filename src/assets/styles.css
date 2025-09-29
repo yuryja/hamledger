@@ -40,6 +40,7 @@
 /* Main color variables */
 :root {
   --main-color: #ffa500;
+  --accent-color: #ffa500;
   /* explicit orange */
   --gray-color: #ccc;
   font-synthesis: none;
