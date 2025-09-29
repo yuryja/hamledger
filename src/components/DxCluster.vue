@@ -405,16 +405,16 @@ onMounted(() => {
 }
 
 .filters-column {
-  width: 120px;
+  width: 80px;
   background: var(--bg-darker);
   border-radius: var(--border-radius);
   border: 1px solid var(--border-color);
-  padding: 0.5rem;
+  padding: 0.3rem;
   overflow-y: auto;
 }
 
 .filter-group {
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.5rem;
 }
 
 .filter-group:last-child {
@@ -423,9 +423,9 @@ onMounted(() => {
 
 .filter-label {
   display: block;
-  margin-bottom: 0.3rem;
+  margin-bottom: 0.2rem;
   color: var(--text-secondary);
-  font-size: 0.75rem;
+  font-size: 0.65rem;
   font-weight: 600;
 }
 
@@ -436,17 +436,18 @@ onMounted(() => {
 }
 
 .filter-btn-small {
-  padding: 0.4rem 0.3rem;
+  padding: 0.3rem 0.2rem;
   border: 1px solid var(--border-color);
   background: var(--bg-lighter);
   color: var(--text-secondary);
   border-radius: var(--border-radius);
   cursor: pointer;
   transition: all 0.2s ease;
-  font-size: 0.7rem;
+  font-size: 0.65rem;
   text-align: center;
   font-weight: 600;
-  min-height: 32px;
+  min-height: 28px;
+  width: 100%;
 }
 
 .filter-btn-small:hover {
@@ -463,28 +464,29 @@ onMounted(() => {
 .checkbox-label {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.3rem;
   color: var(--text-secondary);
   cursor: pointer;
-  font-size: 0.8rem;
-  margin-bottom: 0.5rem;
+  font-size: 0.65rem;
+  margin-bottom: 0.3rem;
 }
 
 .page-length-selector {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: 0.2rem;
   color: var(--text-secondary);
-  font-size: 0.8rem;
+  font-size: 0.65rem;
 }
 
 .page-length-selector select {
-  padding: 0.25rem;
+  padding: 0.2rem;
   border: 1px solid var(--border-color);
   background: var(--bg-lighter);
   color: var(--text-primary);
   border-radius: var(--border-radius);
-  font-size: 0.75rem;
+  font-size: 0.65rem;
+  width: 100%;
 }
 
 .frequency-scale {
