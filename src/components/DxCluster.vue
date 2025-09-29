@@ -172,6 +172,43 @@ const getSpotOpacity = (timeStr: string, dateStr: string) => {
   }
 }
 
+const getSpotLayout = () => {
+  const sortedSpots = [...spots.value].sort((a, b) => {
+    const freqA = parseFloat(a.Frequency)
+    const freqB = parseFloat(b.Frequency)
+    return freqA - freqB
+  })
+
+  const layoutSpots = []
+  const minDistance = 3 // Minimum distance between spots in percentage
+  const maxColumns = 4 // Maximum number of columns for overlapping spots
+
+  for (let i = 0; i < sortedSpots.length; i++) {
+    const spot = sortedSpots[i]
+    const position = getSpotPosition(spot.Frequency)
+    
+    // Find overlapping spots
+    const overlapping = layoutSpots.filter(layoutSpot => 
+      Math.abs(layoutSpot.position - position) < minDistance
+    )
+    
+    // Calculate column offset
+    const column = overlapping.length % maxColumns
+    const leftOffset = 30 + (column * 80) // Base position + column spacing
+    
+    layoutSpots.push({
+      ...spot,
+      position,
+      leftOffset,
+      column
+    })
+  }
+  
+  return layoutSpots
+}
+
+const layoutSpots = computed(() => getSpotLayout())
+
 const generateScaleTicks = () => {
   const range = bandRanges[selectedBand.value]
   if (!range) return { major: [], minor: [] }
@@ -264,17 +301,20 @@ onMounted(() => {
             
             <!-- Spots -->
             <div 
-              v-for="spot in spots" 
+              v-for="spot in layoutSpots" 
               :key="spot.Nr"
               class="spot-label"
               :style="{ 
-                top: `${100 - getSpotPosition(spot.Frequency)}%`,
-                opacity: getSpotOpacity(spot.Time, spot.Date)
+                top: `${100 - spot.position}%`,
+                left: `${spot.leftOffset}px`,
+                opacity: getSpotOpacity(spot.Time, spot.Date),
+                zIndex: spot.column + 1
               }"
               :class="{
                 validated: spot.Valid,
                 lotw: spot.LOTW,
-                eqsl: spot.EQSL
+                eqsl: spot.EQSL,
+                [`column-${spot.column}`]: true
               }"
               :title="`${spot.DXCall} - ${formatFrequency(spot.Frequency)} - ${spot.Comment}`"
             >
@@ -499,7 +539,9 @@ onMounted(() => {
   position: relative;
   height: 100%;
   width: 100%;
-  padding: 20px 60px 20px 0px;
+  padding: 20px 20px 20px 0px;
+  overflow-x: auto;
+  min-width: 400px;
 }
 
 .scale-line {
@@ -544,23 +586,43 @@ onMounted(() => {
 
 .spot-label {
   position: absolute;
-  left: 30px;
   background: var(--bg-darker);
   color: var(--text-primary);
-  padding: 0.25rem 0.5rem;
+  padding: 0.2rem 0.4rem;
   border-radius: var(--border-radius);
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   font-weight: 600;
   border: 1px solid var(--border-color);
   cursor: pointer;
   transition: all 0.2s ease;
   white-space: nowrap;
   transform: translateY(-50%);
+  max-width: 70px;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .spot-label:hover {
   background: var(--bg-lighter);
-  z-index: 10;
+  z-index: 100 !important;
+  max-width: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.spot-label.column-0 {
+  background: var(--bg-darker);
+}
+
+.spot-label.column-1 {
+  background: rgba(255, 165, 0, 0.1);
+}
+
+.spot-label.column-2 {
+  background: rgba(0, 123, 255, 0.1);
+}
+
+.spot-label.column-3 {
+  background: rgba(40, 167, 69, 0.1);
 }
 
 .spot-label.validated {
