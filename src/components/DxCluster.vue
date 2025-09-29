@@ -201,7 +201,7 @@ const getSpotLayout = () => {
     
     // Calculate column offset
     const column = overlapping.length % maxColumns
-    const leftOffset = 30 + (column * 80) // Base position + column spacing
+    const leftOffset = 80 + (column * 80) // Base position + column spacing
     
     layoutSpots.push({
       ...spot,
@@ -547,11 +547,11 @@ onMounted(() => {
 }
 
 .filters-column {
-  width: 80px;
+  width: 60px;
   background: var(--bg-darker);
   border-radius: var(--border-radius);
   border: 1px solid var(--border-color);
-  padding: 0.3rem;
+  padding: 0.2rem;
   overflow-y: auto;
 }
 
@@ -578,18 +578,19 @@ onMounted(() => {
 }
 
 .filter-btn-small {
-  padding: 0.3rem 0.2rem;
+  padding: 0.2rem;
   border: 1px solid var(--border-color);
   background: var(--bg-lighter);
   color: var(--text-secondary);
   border-radius: var(--border-radius);
   cursor: pointer;
   transition: all 0.2s ease;
-  font-size: 0.65rem;
+  font-size: 0.6rem;
   text-align: center;
   font-weight: 600;
-  min-height: 28px;
+  min-height: 24px;
   width: 100%;
+  aspect-ratio: 1;
 }
 
 .filter-btn-small:hover {
@@ -641,53 +642,56 @@ onMounted(() => {
   position: relative;
   height: 100%;
   width: 100%;
-  padding: 20px 20px 20px 0px;
+  padding: 20px 20px 20px 60px;
   overflow-x: auto;
   min-width: 400px;
 }
 
 .scale-line {
   position: absolute;
-  left: 0px;
+  left: 60px;
   top: 20px;
   bottom: 20px;
   width: 2px;
-  background: var(--border-color);
+  background: var(--main-color);
 }
 
 .major-tick, .minor-tick {
   position: absolute;
-  left: 0px;
+  left: 60px;
 }
 
 .tick-mark {
   position: absolute;
-  background: var(--text-secondary);
+  background: var(--main-color);
 }
 
 .tick-mark.major {
   width: 20px;
   height: 2px;
-  left: 0px;
+  left: -20px;
 }
 
 .tick-mark.minor {
   width: 10px;
   height: 1px;
-  left: 0px;
+  left: -10px;
 }
 
 .tick-label {
   position: absolute;
-  left: 25px;
+  left: -55px;
   top: -8px;
   font-size: 0.7rem;
-  color: var(--text-secondary);
+  color: var(--main-color);
   white-space: nowrap;
+  text-align: right;
+  width: 50px;
 }
 
 .spot-label {
   position: absolute;
+  left: 80px;
   background: var(--bg-darker);
   color: var(--text-primary);
   padding: 0.2rem 0.4rem;
