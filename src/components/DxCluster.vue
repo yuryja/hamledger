@@ -405,16 +405,16 @@ onMounted(() => {
 }
 
 .filters-column {
-  width: 200px;
+  width: 120px;
   background: var(--bg-darker);
   border-radius: var(--border-radius);
   border: 1px solid var(--border-color);
-  padding: 1rem;
+  padding: 0.5rem;
   overflow-y: auto;
 }
 
 .filter-group {
-  margin-bottom: 1rem;
+  margin-bottom: 0.75rem;
 }
 
 .filter-group:last-child {
@@ -423,10 +423,10 @@ onMounted(() => {
 
 .filter-label {
   display: block;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.3rem;
   color: var(--text-secondary);
-  font-size: 0.8rem;
-  font-weight: 500;
+  font-size: 0.75rem;
+  font-weight: 600;
 }
 
 .filter-buttons-column {
@@ -436,15 +436,17 @@ onMounted(() => {
 }
 
 .filter-btn-small {
-  padding: 0.25rem 0.5rem;
+  padding: 0.4rem 0.3rem;
   border: 1px solid var(--border-color);
   background: var(--bg-lighter);
   color: var(--text-secondary);
   border-radius: var(--border-radius);
   cursor: pointer;
   transition: all 0.2s ease;
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   text-align: center;
+  font-weight: 600;
+  min-height: 32px;
 }
 
 .filter-btn-small:hover {
