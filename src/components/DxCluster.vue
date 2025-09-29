@@ -499,12 +499,12 @@ onMounted(() => {
   position: relative;
   height: 100%;
   width: 100%;
-  padding: 20px 60px 20px 20px;
+  padding: 20px 60px 20px 0px;
 }
 
 .scale-line {
   position: absolute;
-  left: 50px;
+  left: 0px;
   top: 20px;
   bottom: 20px;
   width: 2px;
@@ -513,7 +513,7 @@ onMounted(() => {
 
 .major-tick, .minor-tick {
   position: absolute;
-  left: 50px;
+  left: 0px;
 }
 
 .tick-mark {
@@ -524,13 +524,13 @@ onMounted(() => {
 .tick-mark.major {
   width: 20px;
   height: 2px;
-  left: -10px;
+  left: 0px;
 }
 
 .tick-mark.minor {
   width: 10px;
   height: 1px;
-  left: -5px;
+  left: 0px;
 }
 
 .tick-label {
@@ -544,7 +544,7 @@ onMounted(() => {
 
 .spot-label {
   position: absolute;
-  left: 80px;
+  left: 30px;
   background: var(--bg-darker);
   color: var(--text-primary);
   padding: 0.25rem 0.5rem;
