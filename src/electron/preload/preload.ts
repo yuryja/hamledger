@@ -10,6 +10,7 @@ declare global {
       loadSettings: () => Promise<any>;
       saveSettings: (settings: any) => Promise<void>;
       updateQso: (qso: any) => Promise<any>;
+      fetchDxSpots: (params: string) => Promise<{success: boolean, data?: any, error?: string}>;
     }
   }
 }
@@ -20,5 +21,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
   importAdif: () => ipcRenderer.invoke('adif:import'),
   loadSettings: () => ipcRenderer.invoke('settings:load'),
   saveSettings: (settings: any) => ipcRenderer.invoke('settings:save', settings),
-  updateQso: (qso: any) => ipcRenderer.invoke('qso:update', qso)
+  updateQso: (qso: any) => ipcRenderer.invoke('qso:update', qso),
+  fetchDxSpots: (params: string) => ipcRenderer.invoke('fetch-dx-spots', params)
 })

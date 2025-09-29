@@ -2,6 +2,7 @@
 import { join } from "path";
 import { app, BrowserWindow, ipcMain, dialog } from "electron";
 import fs from "fs";
+import fetch from "node-fetch";
 import { parseAdif } from "../../utils/adif";
 import { QsoEntry } from "../../types/qso";
 import { databaseService } from "../../services/DatabaseService";
@@ -99,6 +100,32 @@ ipcMain.handle("adif:import", async () => {
   } catch (error) {
     console.error("ADIF import error:", error);
     return { imported: false, error };
+  }
+});
+
+// DX Spots API handler
+ipcMain.handle("fetch-dx-spots", async (event, params: string) => {
+  try {
+    const url = `https://dxheat.com/source/spots/?${params}`;
+    const response = await fetch(url, {
+      headers: {
+        'User-Agent': 'HamLogger/1.0',
+        'Accept': 'application/json'
+      }
+    });
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    return { success: true, data };
+  } catch (error) {
+    console.error('DX Spots API error:', error);
+    return { 
+      success: false, 
+      error: error instanceof Error ? error.message : 'Unknown error' 
+    };
   }
 });
 

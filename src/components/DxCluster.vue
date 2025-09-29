@@ -30,34 +30,30 @@ const bands = ['10', '15', '20', '40', '80', '160']
 const modes = ['PHONE', 'CW', 'FT8', 'FT4', 'RTTY', 'PSK31']
 const pageLengthOptions = [25, 50, 65, 100, 200]
 
-const buildApiUrl = () => {
-  const params = new URLSearchParams()
-  params.append('a', pageLength.value.toString())
-  
-  selectedBands.value.forEach(band => params.append('b', band))
-  selectedCdx.value.forEach(cdx => params.append('cdx', cdx))
-  selectedCde.value.forEach(cde => params.append('cde', cde))
-  selectedModes.value.forEach(mode => params.append('m', mode))
-  
-  if (validatedOnly.value) {
-    params.append('valid', '1')
-  }
-  
-  return `https://dxheat.com/source/spots/?${params.toString()}`
-}
-
 const fetchSpots = async () => {
   loading.value = true
   error.value = null
   
   try {
-    const response = await fetch(buildApiUrl())
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`)
+    const params = new URLSearchParams()
+    params.append('a', pageLength.value.toString())
+    
+    selectedBands.value.forEach(band => params.append('b', band))
+    selectedCdx.value.forEach(cdx => params.append('cdx', cdx))
+    selectedCde.value.forEach(cde => params.append('cde', cde))
+    selectedModes.value.forEach(mode => params.append('m', mode))
+    
+    if (validatedOnly.value) {
+      params.append('valid', '1')
     }
     
-    const data = await response.json()
-    spots.value = data.map((spot: any) => ({
+    const result = await window.electronAPI.fetchDxSpots(params.toString())
+    
+    if (!result.success) {
+      throw new Error(result.error || 'API hívás sikertelen')
+    }
+    
+    spots.value = result.data.map((spot: any) => ({
       frequency: spot.frequency || 0,
       mode: spot.mode || 'UNKNOWN',
       callsign: spot.callsign || '',
