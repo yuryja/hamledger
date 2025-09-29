@@ -251,6 +251,7 @@ onMounted(() => {
 <style scoped>
 .dx-cluster {
   height: 100%;
+  width: 50rem;
   display: flex;
   flex-direction: column;
   background: var(--bg-lighter);
