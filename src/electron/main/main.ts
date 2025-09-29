@@ -3,6 +3,7 @@ import { join } from "path";
 import { app, BrowserWindow, ipcMain, dialog } from "electron";
 import fs from "fs";
 import fetch from "node-fetch";
+import { HttpsProxyAgent } from "https-proxy-agent";
 import { parseAdif } from "../../utils/adif";
 import { QsoEntry } from "../../types/qso";
 import { databaseService } from "../../services/DatabaseService";
@@ -107,12 +108,26 @@ ipcMain.handle("adif:import", async () => {
 ipcMain.handle("fetch-dx-spots", async (event, params: string) => {
   try {
     const url = `https://dxheat.com/source/spots/?${params}`;
-    const response = await fetch(url, {
+    
+    // Check for proxy environment variables
+    const proxyUrl = process.env.HTTPS_PROXY || process.env.https_proxy || 
+                     process.env.HTTP_PROXY || process.env.http_proxy;
+    
+    const fetchOptions: any = {
       headers: {
         'User-Agent': 'HamLogger/1.0',
         'Accept': 'application/json'
-      }
-    });
+      },
+      timeout: 30000 // 30 second timeout
+    };
+    
+    // Use proxy agent if proxy is configured
+    if (proxyUrl) {
+      fetchOptions.agent = new HttpsProxyAgent(proxyUrl);
+      console.log(`Using proxy: ${proxyUrl}`);
+    }
+    
+    const response = await fetch(url, fetchOptions);
     
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
