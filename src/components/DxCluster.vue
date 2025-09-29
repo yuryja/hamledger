@@ -239,8 +239,6 @@ const showMagnifier = (event: MouseEvent, frequency: string) => {
   magnifierFrequency.value = `${(freq / 1000).toFixed(3)} MHz környéke`
   
   // Position magnifier near mouse but keep it in viewport
-  ##AI! 'rect' is declared but its value is never read.ts-plugin(6133)
-  const rect = (event.target as HTMLElement).getBoundingClientRect()
   magnifierPosition.value = {
     x: Math.min(event.clientX + 20, window.innerWidth - 300),
     y: Math.max(event.clientY - 100, 20)
