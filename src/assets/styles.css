@@ -39,7 +39,8 @@
 
 /* Main color variables */
 :root {
-  --main-color: #ffa500; /* explicit orange */
+  --main-color: #ffa500;
+  /* explicit orange */
   --gray-color: #ccc;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -76,4 +77,9 @@ input:hover {
 .mode-badge:hover {
   filter: brightness(110%);
   background: #555;
+}
+
+.panel {
+  padding: 1rem;
+  border: 1px solid var(--border-color);
 }
