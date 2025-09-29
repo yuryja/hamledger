@@ -2,14 +2,27 @@
 import { ref, onMounted, computed, watch } from 'vue'
 
 interface DxSpot {
-  frequency: number
-  mode: string
-  callsign: string
-  cdx: string
-  cde: string
-  time: string
-  signal?: string
-  validated?: boolean
+  Nr: number
+  Spotter: string
+  Frequency: string
+  DXCall: string
+  Time: string
+  Date: string
+  Beacon: boolean
+  MM: boolean
+  AM: boolean
+  Valid: boolean
+  EQSL?: boolean
+  LOTW?: boolean
+  LOTW_Date?: string
+  DXHomecall: string
+  Comment: string
+  Flag: string
+  Band: number
+  Mode: string
+  Continent_dx: string
+  Continent_spotter: string
+  DXLocator?: string
 }
 
 const spots = ref<DxSpot[]>([])
@@ -54,14 +67,27 @@ const fetchSpots = async () => {
     }
     
     spots.value = result.data.map((spot: any) => ({
-      frequency: spot.frequency || 0,
-      mode: spot.mode || 'UNKNOWN',
-      callsign: spot.callsign || '',
-      cdx: spot.cdx || '',
-      cde: spot.cde || '',
-      time: spot.time || '',
-      signal: spot.signal,
-      validated: spot.validated || false
+      Nr: spot.Nr || 0,
+      Spotter: spot.Spotter || '',
+      Frequency: spot.Frequency || '0',
+      DXCall: spot.DXCall || '',
+      Time: spot.Time || '',
+      Date: spot.Date || '',
+      Beacon: spot.Beacon || false,
+      MM: spot.MM || false,
+      AM: spot.AM || false,
+      Valid: spot.Valid || false,
+      EQSL: spot.EQSL,
+      LOTW: spot.LOTW,
+      LOTW_Date: spot.LOTW_Date,
+      DXHomecall: spot.DXHomecall || '',
+      Comment: spot.Comment || '',
+      Flag: spot.Flag || '',
+      Band: spot.Band || 0,
+      Mode: spot.Mode || 'UNKNOWN',
+      Continent_dx: spot.Continent_dx || '',
+      Continent_spotter: spot.Continent_spotter || '',
+      DXLocator: spot.DXLocator
     }))
   } catch (err) {
     error.value = err instanceof Error ? err.message : 'Ismeretlen hiba történt'
@@ -71,25 +97,29 @@ const fetchSpots = async () => {
   }
 }
 
-const formatFrequency = (freq: number) => {
-  if (freq >= 1000000) {
-    return `${(freq / 1000000).toFixed(3)} MHz`
-  } else if (freq >= 1000) {
-    return `${(freq / 1000).toFixed(1)} kHz`
+const formatFrequency = (freqStr: string) => {
+  const freq = parseFloat(freqStr)
+  if (freq >= 1000) {
+    return `${(freq / 1000).toFixed(3)} MHz`
   }
-  return `${freq} Hz`
+  return `${freq} kHz`
 }
 
-const formatTime = (timeStr: string) => {
+const formatTime = (timeStr: string, dateStr: string) => {
   try {
-    const date = new Date(timeStr)
+    // Format: "21:19" and "29/09/25"
+    const [day, month, year] = dateStr.split('/')
+    const fullYear = `20${year}` // Assuming 21st century
+    const isoDate = `${fullYear}-${month}-${day}T${timeStr}:00Z`
+    const date = new Date(isoDate)
+    
     return date.toLocaleTimeString('hu-HU', { 
       hour: '2-digit', 
       minute: '2-digit',
       timeZone: 'UTC'
     }) + 'Z'
   } catch {
-    return timeStr
+    return `${timeStr}Z`
   }
 }
 
@@ -223,25 +253,31 @@ onMounted(() => {
         <div class="spots-header">
           <div class="header-cell">Frekvencia</div>
           <div class="header-cell">Üzemmód</div>
-          <div class="header-cell">Hívójel</div>
+          <div class="header-cell">DX Hívójel</div>
+          <div class="header-cell">Spotter</div>
           <div class="header-cell">CDX</div>
           <div class="header-cell">CDE</div>
           <div class="header-cell">Idő</div>
-          <div class="header-cell">Jel</div>
+          <div class="header-cell">Megjegyzés</div>
         </div>
         
         <div 
           v-for="(spot, index) in spots" 
-          :key="index"
-          :class="['spot-row', { validated: spot.validated }]"
+          :key="spot.Nr"
+          :class="['spot-row', { 
+            validated: spot.Valid,
+            lotw: spot.LOTW,
+            eqsl: spot.EQSL
+          }]"
         >
-          <div class="spot-cell frequency">{{ formatFrequency(spot.frequency) }}</div>
-          <div class="spot-cell mode">{{ spot.mode }}</div>
-          <div class="spot-cell callsign">{{ spot.callsign }}</div>
-          <div class="spot-cell cdx">{{ spot.cdx }}</div>
-          <div class="spot-cell cde">{{ spot.cde }}</div>
-          <div class="spot-cell time">{{ formatTime(spot.time) }}</div>
-          <div class="spot-cell signal">{{ spot.signal || '-' }}</div>
+          <div class="spot-cell frequency">{{ formatFrequency(spot.Frequency) }}</div>
+          <div class="spot-cell mode">{{ spot.Mode }}</div>
+          <div class="spot-cell callsign">{{ spot.DXCall }}</div>
+          <div class="spot-cell spotter">{{ spot.Spotter }}</div>
+          <div class="spot-cell cdx">{{ spot.Continent_dx }}</div>
+          <div class="spot-cell cde">{{ spot.Continent_spotter }}</div>
+          <div class="spot-cell time">{{ formatTime(spot.Time, spot.Date) }}</div>
+          <div class="spot-cell comment" :title="spot.Comment">{{ spot.Comment || '-' }}</div>
         </div>
       </div>
     </div>
@@ -387,7 +423,7 @@ onMounted(() => {
 
 .spots-header {
   display: grid;
-  grid-template-columns: 1.2fr 0.8fr 1fr 0.6fr 0.6fr 0.8fr 0.6fr;
+  grid-template-columns: 1.2fr 0.8fr 1fr 1fr 0.6fr 0.6fr 0.8fr 1.5fr;
   gap: 0.5rem;
   padding: 0.75rem 0.5rem;
   background: var(--bg-darker);
@@ -400,7 +436,7 @@ onMounted(() => {
 
 .spot-row {
   display: grid;
-  grid-template-columns: 1.2fr 0.8fr 1fr 0.6fr 0.6fr 0.8fr 0.6fr;
+  grid-template-columns: 1.2fr 0.8fr 1fr 1fr 0.6fr 0.6fr 0.8fr 1.5fr;
   gap: 0.5rem;
   padding: 0.5rem;
   border-bottom: 1px solid var(--border-color);
@@ -414,6 +450,18 @@ onMounted(() => {
 .spot-row.validated {
   background: rgba(34, 197, 94, 0.1);
   border-left: 3px solid #22c55e;
+}
+
+.spot-row.lotw {
+  border-right: 3px solid #3b82f6;
+}
+
+.spot-row.eqsl {
+  border-right: 3px solid #f59e0b;
+}
+
+.spot-row.lotw.eqsl {
+  border-right: 3px solid linear-gradient(45deg, #3b82f6 50%, #f59e0b 50%);
 }
 
 .header-cell, .spot-cell {
@@ -433,6 +481,11 @@ onMounted(() => {
   color: var(--text-primary);
 }
 
+.spot-cell.spotter {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
 .spot-cell.mode {
   font-size: 0.85rem;
   color: var(--text-secondary);
@@ -441,6 +494,14 @@ onMounted(() => {
 .spot-cell.time {
   font-size: 0.85rem;
   color: var(--text-secondary);
+}
+
+.spot-cell.comment {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 @media (max-width: 768px) {
@@ -454,7 +515,7 @@ onMounted(() => {
   }
   
   .spots-header, .spot-row {
-    grid-template-columns: 1fr 0.7fr 1fr 0.5fr 0.5fr 0.7fr 0.5fr;
+    grid-template-columns: 1fr 0.7fr 1fr 1fr 0.5fr 0.5fr 0.7fr 1fr;
     font-size: 0.8rem;
   }
 }
