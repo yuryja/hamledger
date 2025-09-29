@@ -155,7 +155,7 @@ const selectBand = (band: string) => {
 
 const getSpotPosition = (frequency: string) => {
   const freq = parseFloat(frequency)
-  const range = bandRanges[selectedBand.value]
+  const range = getActualFrequencyRange()
   if (!range) return 0
   
   const percentage = ((freq - range.min) / (range.max - range.min)) * 100
@@ -224,7 +224,7 @@ const showMagnifier = (event: MouseEvent, frequency: string) => {
   }
   
   const freq = parseFloat(frequency)
-  const range = bandRanges[selectedBand.value]
+  const range = getActualFrequencyRange()
   if (!range) return
   
   // Find all spots within ±5 kHz range
@@ -263,8 +263,27 @@ const keepMagnifierVisible = () => {
   }
 }
 
+const getActualFrequencyRange = () => {
+  if (spots.value.length === 0) {
+    // Fallback to band ranges if no spots
+    return bandRanges[selectedBand.value] || { min: 14000, max: 14350 }
+  }
+  
+  const frequencies = spots.value.map(spot => parseFloat(spot.Frequency))
+  const minFreq = Math.min(...frequencies)
+  const maxFreq = Math.max(...frequencies)
+  
+  // Add 5% padding on both sides
+  const padding = (maxFreq - minFreq) * 0.05
+  
+  return {
+    min: Math.max(minFreq - padding, 0),
+    max: maxFreq + padding
+  }
+}
+
 const generateScaleTicks = () => {
-  const range = bandRanges[selectedBand.value]
+  const range = getActualFrequencyRange()
   if (!range) return { major: [], minor: [] }
   
   const majorTicks = [] as any
