@@ -87,8 +87,8 @@ input:hover {
 
 /* Custom scrollbar styles */
 ::-webkit-scrollbar {
-  width: 4px;
-  height: 4px;
+  width: 2px;
+  height: 2px;
 }
 
 ::-webkit-scrollbar-track {
@@ -96,12 +96,16 @@ input:hover {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--main-color);
-  border-radius: 2px;
+  background: linear-gradient(to bottom, transparent 0%, var(--main-color) 20%, var(--main-color) 80%, transparent 100%);
+  border-radius: 1px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #ff8c00;
+  background: linear-gradient(to bottom, transparent 0%, #ff8c00 20%, #ff8c00 80%, transparent 100%);
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
 }
 
 /* Firefox scrollbar */
