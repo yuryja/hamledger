@@ -6,9 +6,7 @@ export default {
 
 <template>
   <div class="dx-cluster">
-    <div class="dx-cluster-header">
-      <h3>DX Cluster</h3>
-    </div>
+    <h2 class="section-title">DX Cluster</h2>
     <div class="dx-cluster-content">
       <!-- DX Cluster content will go here -->
     </div>
@@ -24,22 +22,9 @@ export default {
   border-radius: var(--border-radius-lg);
   overflow: hidden;
   border: 1px solid var(--border-color);
+  padding: 1rem
 }
 
-.dx-cluster-header {
-  padding: var(--spacing-md);
-  background: var(--bg-darker);
-  border-bottom: 1px solid var(--border-color);
-}
-
-.dx-cluster-header h3 {
-  margin: 0;
-  color: var(--main-color);
-  font-size: var(--font-size-lg);
-  font-weight: bold;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
 
 .dx-cluster-content {
   flex: 1;
