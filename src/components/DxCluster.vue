@@ -34,6 +34,7 @@ const magnifierVisible = ref(false)
 const magnifierSpots = ref<DxSpot[]>([])
 const magnifierPosition = ref({ x: 0, y: 0 })
 const magnifierFrequency = ref('')
+let magnifierTimeout: NodeJS.Timeout | null = null
 
 // Filter states
 const selectedCdx = ref<string[]>(['EU', 'NA', 'SA', 'AS', 'AF', 'OC', 'AN'])
@@ -216,6 +217,12 @@ const getSpotLayout = () => {
 const layoutSpots = computed(() => getSpotLayout())
 
 const showMagnifier = (event: MouseEvent, frequency: string) => {
+  // Clear any pending hide timeout
+  if (magnifierTimeout) {
+    clearTimeout(magnifierTimeout)
+    magnifierTimeout = null
+  }
+  
   const freq = parseFloat(frequency)
   const range = bandRanges[selectedBand.value]
   if (!range) return
@@ -242,8 +249,19 @@ const showMagnifier = (event: MouseEvent, frequency: string) => {
 }
 
 const hideMagnifier = () => {
-  magnifierVisible.value = false
-  magnifierSpots.value = []
+  // Delay hiding to prevent flickering
+  magnifierTimeout = setTimeout(() => {
+    magnifierVisible.value = false
+    magnifierSpots.value = []
+  }, 100)
+}
+
+const keepMagnifierVisible = () => {
+  // Clear hide timeout when mouse enters magnifier
+  if (magnifierTimeout) {
+    clearTimeout(magnifierTimeout)
+    magnifierTimeout = null
+  }
 }
 
 const generateScaleTicks = () => {
@@ -371,7 +389,7 @@ onMounted(() => {
           left: `${magnifierPosition.x}px`,
           top: `${magnifierPosition.y}px`
         }"
-        @mouseenter="magnifierVisible = true"
+        @mouseenter="keepMagnifierVisible"
         @mouseleave="hideMagnifier"
       >
         <div class="magnifier-header">
