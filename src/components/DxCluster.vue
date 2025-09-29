@@ -29,6 +29,12 @@ const spots = ref<DxSpot[]>([])
 const loading = ref(false)
 const error = ref<string | null>(null)
 
+// Magnifier window state
+const magnifierVisible = ref(false)
+const magnifierSpots = ref<DxSpot[]>([])
+const magnifierPosition = ref({ x: 0, y: 0 })
+const magnifierFrequency = ref('')
+
 // Filter states
 const selectedCdx = ref<string[]>(['EU', 'NA', 'SA', 'AS', 'AF', 'OC', 'AN'])
 const selectedCde = ref<string[]>(['EU', 'NA', 'SA', 'AS', 'AF', 'OC', 'AN'])
@@ -209,6 +215,37 @@ const getSpotLayout = () => {
 
 const layoutSpots = computed(() => getSpotLayout())
 
+const showMagnifier = (event: MouseEvent, frequency: string) => {
+  const freq = parseFloat(frequency)
+  const range = bandRanges[selectedBand.value]
+  if (!range) return
+  
+  // Find all spots within ±5 kHz range
+  const nearbySpots = spots.value.filter(spot => {
+    const spotFreq = parseFloat(spot.Frequency)
+    return Math.abs(spotFreq - freq) <= 5
+  }).sort((a, b) => parseFloat(a.Frequency) - parseFloat(b.Frequency))
+  
+  if (nearbySpots.length <= 1) return
+  
+  magnifierSpots.value = nearbySpots
+  magnifierFrequency.value = `${(freq / 1000).toFixed(3)} MHz környéke`
+  
+  // Position magnifier near mouse but keep it in viewport
+  const rect = (event.target as HTMLElement).getBoundingClientRect()
+  magnifierPosition.value = {
+    x: Math.min(event.clientX + 20, window.innerWidth - 300),
+    y: Math.max(event.clientY - 100, 20)
+  }
+  
+  magnifierVisible.value = true
+}
+
+const hideMagnifier = () => {
+  magnifierVisible.value = false
+  magnifierSpots.value = []
+}
+
 const generateScaleTicks = () => {
   const range = bandRanges[selectedBand.value]
   if (!range) return { major: [], minor: [] }
@@ -317,8 +354,55 @@ onMounted(() => {
                 [`column-${spot.column}`]: true
               }"
               :title="`${spot.DXCall} - ${formatFrequency(spot.Frequency)} - ${spot.Comment}`"
+              @mouseenter="showMagnifier($event, spot.Frequency)"
+              @mouseleave="hideMagnifier"
             >
               {{ spot.DXCall }}
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Magnifier Window -->
+      <div 
+        v-if="magnifierVisible"
+        class="magnifier-window"
+        :style="{
+          left: `${magnifierPosition.x}px`,
+          top: `${magnifierPosition.y}px`
+        }"
+        @mouseenter="magnifierVisible = true"
+        @mouseleave="hideMagnifier"
+      >
+        <div class="magnifier-header">
+          <h4>{{ magnifierFrequency }}</h4>
+          <span class="spot-count">{{ magnifierSpots.length }} spot</span>
+        </div>
+        <div class="magnifier-content">
+          <div 
+            v-for="spot in magnifierSpots" 
+            :key="`mag-${spot.Nr}`"
+            class="magnifier-spot"
+            :class="{
+              validated: spot.Valid,
+              lotw: spot.LOTW,
+              eqsl: spot.EQSL
+            }"
+          >
+            <div class="spot-info">
+              <div class="spot-call">{{ spot.DXCall }}</div>
+              <div class="spot-freq">{{ formatFrequency(spot.Frequency) }}</div>
+              <div class="spot-details">
+                <span class="spot-mode">{{ spot.Mode }}</span>
+                <span class="spot-time">{{ formatTime(spot.Time, spot.Date) }}</span>
+                <span class="spot-spotter">{{ spot.Spotter }}</span>
+              </div>
+              <div class="spot-comment" v-if="spot.Comment">{{ spot.Comment }}</div>
+            </div>
+            <div class="spot-badges">
+              <span v-if="spot.Valid" class="badge valid">✓</span>
+              <span v-if="spot.LOTW" class="badge lotw">L</span>
+              <span v-if="spot.EQSL" class="badge eqsl">E</span>
             </div>
           </div>
         </div>
@@ -666,6 +750,150 @@ onMounted(() => {
   cursor: pointer;
 }
 
+.magnifier-window {
+  position: fixed;
+  background: var(--bg-darker);
+  border: 2px solid var(--main-color);
+  border-radius: var(--border-radius-lg);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  min-width: 280px;
+  max-width: 400px;
+  max-height: 300px;
+  overflow: hidden;
+}
+
+.magnifier-header {
+  background: var(--main-color);
+  color: white;
+  padding: 0.5rem 0.75rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.magnifier-header h4 {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.spot-count {
+  font-size: 0.8rem;
+  opacity: 0.9;
+}
+
+.magnifier-content {
+  max-height: 240px;
+  overflow-y: auto;
+  padding: 0.5rem;
+}
+
+.magnifier-spot {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 0.5rem;
+  margin-bottom: 0.5rem;
+  background: var(--bg-lighter);
+  border-radius: var(--border-radius);
+  border: 1px solid var(--border-color);
+  transition: background-color 0.2s ease;
+}
+
+.magnifier-spot:hover {
+  background: var(--bg-dark);
+}
+
+.magnifier-spot:last-child {
+  margin-bottom: 0;
+}
+
+.magnifier-spot.validated {
+  border-left: 3px solid #22c55e;
+}
+
+.magnifier-spot.lotw {
+  border-right: 3px solid #3b82f6;
+}
+
+.magnifier-spot.eqsl {
+  border-right: 3px solid #f59e0b;
+}
+
+.spot-info {
+  flex: 1;
+}
+
+.spot-call {
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--text-primary);
+  margin-bottom: 0.2rem;
+}
+
+.spot-freq {
+  font-weight: 600;
+  font-size: 0.8rem;
+  color: var(--main-color);
+  margin-bottom: 0.3rem;
+}
+
+.spot-details {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.2rem;
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+}
+
+.spot-mode {
+  background: var(--bg-dark);
+  padding: 0.1rem 0.3rem;
+  border-radius: var(--border-radius-sm);
+}
+
+.spot-comment {
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+  font-style: italic;
+  margin-top: 0.2rem;
+  word-break: break-word;
+}
+
+.spot-badges {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  margin-left: 0.5rem;
+}
+
+.badge {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  text-align: center;
+  line-height: 18px;
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+.badge.valid {
+  background: #22c55e;
+  color: white;
+}
+
+.badge.lotw {
+  background: #3b82f6;
+  color: white;
+}
+
+.badge.eqsl {
+  background: #f59e0b;
+  color: white;
+}
+
 @media (max-width: 768px) {
   .dx-cluster-main {
     flex-direction: column;
@@ -680,6 +908,11 @@ onMounted(() => {
   .filter-buttons-column {
     flex-direction: row;
     flex-wrap: wrap;
+  }
+  
+  .magnifier-window {
+    min-width: 250px;
+    max-width: 90vw;
   }
 }
 </style>
