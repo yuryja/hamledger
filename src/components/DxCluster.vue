@@ -102,34 +102,40 @@ const getSpotOpacity = (timeStr: string, dateStr: string) => {
 }
 
 const getSpotLayout = () => {
+  // Sort spots by age (newest first)
   const sortedSpots = [...spots.value].sort((a, b) => {
-    const freqA = parseFloat(a.Frequency)
-    const freqB = parseFloat(b.Frequency)
-    return freqA - freqB
+    const timeA = new Date(`20${a.Date.split('/')[2]}-${a.Date.split('/')[1]}-${a.Date.split('/')[0]}T${a.Time}:00Z`)
+    const timeB = new Date(`20${b.Date.split('/')[2]}-${b.Date.split('/')[1]}-${b.Date.split('/')[0]}T${b.Time}:00Z`)
+    return timeB.getTime() - timeA.getTime() // Newest first
   })
 
   const layoutSpots = [] as any
-  const minDistance = 3 // Minimum distance between spots in percentage
-  const maxColumns = 2 // Maximum number of columns for overlapping spots
+  const halfPoint = Math.ceil(sortedSpots.length / 2)
 
   for (let i = 0; i < sortedSpots.length; i++) {
     const spot = sortedSpots[i]
     const position = getSpotPosition(spot.Frequency)
     
-    // Find overlapping spots
-    const overlapping = layoutSpots.filter(layoutSpot => 
-      Math.abs(layoutSpot.position - position) < minDistance
-    )
-    
-    // Calculate column offset
-    const column = overlapping.length % maxColumns
+    // First half goes to column 0, second half to column 1
+    const column = i < halfPoint ? 0 : 1
     const leftOffset = 35 + (column * 90) // Base position + column spacing
+    
+    // Calculate opacity for second column based on age within that column
+    let opacity = getSpotOpacity(spot.Time, spot.Date)
+    if (column === 1) {
+      const indexInSecondColumn = i - halfPoint
+      const totalInSecondColumn = sortedSpots.length - halfPoint
+      // Linear interpolation from normal opacity to 15% for oldest
+      const ageFactor = indexInSecondColumn / (totalInSecondColumn - 1)
+      opacity = Math.max(0.15, opacity * (1 - ageFactor * 0.85))
+    }
     
     layoutSpots.push({
       ...spot,
       position,
       leftOffset,
-      column
+      column,
+      customOpacity: opacity
     })
   }
   
@@ -275,7 +281,7 @@ onUnmounted(() => {
               :style="{ 
                 top: `${100 - spot.position}%`,
                 left: `${spot.leftOffset}px`,
-                opacity: getSpotOpacity(spot.Time, spot.Date),
+                opacity: spot.customOpacity,
                 zIndex: spot.column + 1
               }"
               :class="{
@@ -627,15 +633,7 @@ onUnmounted(() => {
 }
 
 .spot-label.column-1 {
-  background: rgba(255, 165, 0, 0.1);
-}
-
-.spot-label.column-2 {
-  background: rgba(0, 123, 255, 0.1);
-}
-
-.spot-label.column-3 {
-  background: rgba(40, 167, 69, 0.1);
+  background: var(--bg-darker);
 }
 
 .spot-label.validated {
