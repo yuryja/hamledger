@@ -402,9 +402,9 @@ export class CallsignHelper {
    * Get flag URL for callsign, handling portable prefixes
    * For portable operations (e.g., DL/HA5XB), creates a composite flag
    * @param callsign - The callsign to get flag for
-   * @returns Flag URL or composite flag data URL
+   * @returns Promise that resolves to flag URL or composite flag data URL
    */
-  public static getFlagUrl(callsign: string): string {
+  public static async getFlagUrl(callsign: string): Promise<string> {
     const upperCallsign = callsign.toUpperCase();
     
     // Check if it's a portable operation
@@ -435,7 +435,7 @@ export class CallsignHelper {
         // If we have two different countries, create composite flag
         if (prefixCountry && baseCountry && prefixCountry !== baseCountry && 
             prefixCountry !== 'xx' && baseCountry !== 'xx') {
-          return this.createCompositeFlagUrl(prefixCountry, baseCountry);
+          return await this.createCompositeFlagUrl(prefixCountry, baseCountry);
         }
       }
     }
@@ -450,26 +450,29 @@ export class CallsignHelper {
    * The composite is divided diagonally from bottom-left to top-right
    * @param prefixCountry - Country code for the prefix
    * @param baseCountry - Country code for the base callsign
-   * @returns Data URL for the composite flag
+   * @returns Promise that resolves to data URL for the composite flag
    */
-  private static createCompositeFlagUrl(prefixCountry: string, baseCountry: string): string {
-    // Create a canvas element
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return '';
-    
-    canvas.width = 80;
-    canvas.height = 60;
-    
-    // Create image elements for both flags
-    const prefixImg = new Image();
-    const baseImg = new Image();
-    
-    // Set CORS to allow loading external images
-    prefixImg.crossOrigin = 'anonymous';
-    baseImg.crossOrigin = 'anonymous';
-    
+  private static async createCompositeFlagUrl(prefixCountry: string, baseCountry: string): Promise<string> {
     return new Promise<string>((resolve) => {
+      // Create a canvas element
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      if (!ctx) {
+        resolve(`https://flagcdn.com/h80/${baseCountry}.png`);
+        return;
+      }
+      
+      canvas.width = 80;
+      canvas.height = 60;
+      
+      // Create image elements for both flags
+      const prefixImg = new Image();
+      const baseImg = new Image();
+      
+      // Set CORS to allow loading external images
+      prefixImg.crossOrigin = 'anonymous';
+      baseImg.crossOrigin = 'anonymous';
+      
       let loadedCount = 0;
       
       const onImageLoad = () => {
@@ -512,16 +515,17 @@ export class CallsignHelper {
         }
       };
       
+      // Handle errors - fallback to base country flag
+      const onError = () => resolve(`https://flagcdn.com/h80/${baseCountry}.png`);
+      
       prefixImg.onload = onImageLoad;
       baseImg.onload = onImageLoad;
-      
-      // Handle errors - fallback to base country flag
-      prefixImg.onerror = () => resolve(`https://flagcdn.com/h80/${baseCountry}.png`);
-      baseImg.onerror = () => resolve(`https://flagcdn.com/h80/${baseCountry}.png`);
+      prefixImg.onerror = onError;
+      baseImg.onerror = onError;
       
       prefixImg.src = `https://flagcdn.com/h80/${prefixCountry}.png`;
       baseImg.src = `https://flagcdn.com/h80/${baseCountry}.png`;
-    }).catch(() => `https://flagcdn.com/h80/${baseCountry}.png`);
+    });
   }
 }
 

@@ -198,7 +198,7 @@ export const useQsoStore = defineStore('qso', {
 
         // Set country and flag (handling portable prefixes)
         this.stationInfo.baseData.country = countryName;
-        this.stationInfo.flag = CallsignHelper.getFlagUrl(callsign);
+        this.stationInfo.flag = await CallsignHelper.getFlagUrl(callsign);
 
         // Try to get additional info from QRZ
         // First try with the full callsign (including portable prefixes/suffixes)
