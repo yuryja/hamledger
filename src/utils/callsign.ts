@@ -507,7 +507,7 @@ export class CallsignHelper {
           ctx.strokeStyle = '#333';
           ctx.lineWidth = 1;
           ctx.beginPath();
-          ctx.moveTo(0, 0);
+          ctx.moveTo(canvas.width, 0);
           ctx.lineTo(canvas.width, canvas.height);
           ctx.stroke();
           
