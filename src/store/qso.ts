@@ -208,7 +208,17 @@ export const useQsoStore = defineStore('qso', {
           countryCode !== 'xx' ? `https://flagcdn.com/h80/${countryCode}.png` : '';
 
         // Try to get additional info from QRZ
-        const qrzData = await qrzService.lookupStationByCallsign(callsign);
+        // First try with the full callsign (including portable prefixes/suffixes)
+        let qrzData = await qrzService.lookupStationByCallsign(callsign);
+        
+        // If not found, try with base callsign (remove portable prefixes and suffixes)
+        if (qrzData instanceof Error) {
+          const baseCallsign = this.extractBaseCallsign(callsign);
+          if (baseCallsign !== callsign) {
+            qrzData = await qrzService.lookupStationByCallsign(baseCallsign);
+          }
+        }
+        
         if (qrzData instanceof Error) {
           this.stationInfo.qrzError = true;
           console.error('QRZ lookup failed:', qrzData);
@@ -292,6 +302,61 @@ export const useQsoStore = defineStore('qso', {
         console.error('Error fetching station info:', error);
         return error;
       }
+    },
+
+    /**
+     * Extract base callsign by removing portable prefixes and suffixes
+     * Examples:
+     * - DL/HA5XB -> HA5XB
+     * - HA5XB/P -> HA5XB
+     * - DL/HA5XB/M -> HA5XB
+     */
+    extractBaseCallsign(callsign: string): string {
+      let baseCall = callsign.toUpperCase();
+      
+      // Remove portable prefix (e.g., DL/HA5XB -> HA5XB)
+      if (baseCall.includes('/')) {
+        const parts = baseCall.split('/');
+        
+        // If there are multiple parts, find the main callsign
+        // Usually the longest part or the one that matches callsign pattern best
+        if (parts.length === 2) {
+          // Simple case: PREFIX/CALL or CALL/SUFFIX
+          const [first, second] = parts;
+          
+          // Check which part looks more like a base callsign
+          // Base callsign usually has numbers and is longer
+          if (this.looksLikeBaseCallsign(first) && this.looksLikeBaseCallsign(second)) {
+            // Both look like callsigns, prefer the longer one
+            baseCall = first.length >= second.length ? first : second;
+          } else if (this.looksLikeBaseCallsign(first)) {
+            baseCall = first;
+          } else if (this.looksLikeBaseCallsign(second)) {
+            baseCall = second;
+          } else {
+            // Neither looks perfect, use the longer one
+            baseCall = first.length >= second.length ? first : second;
+          }
+        } else if (parts.length === 3) {
+          // Case like DL/HA5XB/M - middle part is usually the base callsign
+          baseCall = parts[1];
+        } else if (parts.length > 3) {
+          // Complex case, find the part that looks most like a base callsign
+          baseCall = parts.reduce((best, current) => 
+            this.looksLikeBaseCallsign(current) && current.length > best.length ? current : best
+          );
+        }
+      }
+      
+      return baseCall;
+    },
+
+    /**
+     * Check if a string looks like a base callsign
+     * Base callsigns typically contain at least one digit and are 3+ characters
+     */
+    looksLikeBaseCallsign(call: string): boolean {
+      return call.length >= 3 && /\d/.test(call) && /[A-Z]/.test(call);
     },
   },
   getters: {
