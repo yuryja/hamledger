@@ -313,18 +313,93 @@ const prefixMap: PrefixMap = {
   'Z[V-Z]': 'br',
 };
 
-export function getCountryCodeForCallsign(callsign: string): string {
-  callsign = callsign.toUpperCase();
-  const knownPrefixes = Object.keys(prefixMap).sort((a, b) => b.length - a.length);
+const CALLSIGN_REGEX =
+  /((2[A-Z]{1,2}|[BFGIKMNRW][A-Z]{0,2}|3[A-CE-Z][A-Z]{0,1}|4[A-MO-Z][A-Z]{0,1}|[5-9OUX][A-Z][A-Z]{0,1})([0-9][0-9A-Z]{0,3}[A-Z])|([ACDLP][2-9A-Z][A-Z]{0,1}|E[2-7A-Z][A-Z]{0,1}|H[2-46-9A-Z][A-Z]{0,1}|[JTV][2-8A-Z][A-Z]{0,1}|S[2-35-9A-RT-Z][A-Z]{0,1}|Y[2-9A-Y][A-Z]{0,1}|Z[238A-Z][A-Z]{0,1})([0-9A-Z]{0,3}[A-Z]))/;
 
-  for (const prefix of knownPrefixes) {
-    // Convert prefix pattern to regex
-    const regexStr = prefix.replace(/\[([A-Z])-([A-Z])\]/g, '[$1-$2]');
-    const regex = new RegExp(`^${regexStr}`);
+export class CallsignHelper {
+  /**
+   * Get country code for a given callsign
+   */
+  public static getCountryCodeForCallsign(callsign: string): string {
+    callsign = callsign.toUpperCase();
+    const knownPrefixes = Object.keys(prefixMap).sort((a, b) => b.length - a.length);
 
-    if (regex.test(callsign)) {
-      return prefixMap[prefix];
+    for (const prefix of knownPrefixes) {
+      // Convert prefix pattern to regex
+      const regexStr = prefix.replace(/\[([A-Z])-([A-Z])\]/g, '[$1-$2]');
+      const regex = new RegExp(`^${regexStr}`);
+
+      if (regex.test(callsign)) {
+        return prefixMap[prefix];
+      }
     }
+    return 'xx';
   }
-  return 'xx';
+
+  /**
+   * Validate if a string is a valid callsign
+   */
+  public static isValidCallsign(callsign: string): boolean {
+    return CALLSIGN_REGEX.test(callsign.toUpperCase());
+  }
+
+  /**
+   * Extract base callsign by removing portable prefixes and suffixes
+   * Examples:
+   * - DL/HA5XB -> HA5XB
+   * - HA5XB/P -> HA5XB
+   * - DL/HA5XB/M -> HA5XB
+   */
+  public static extractBaseCallsign(callsign: string): string {
+    let baseCall = callsign.toUpperCase();
+    
+    // Remove portable prefix (e.g., DL/HA5XB -> HA5XB)
+    if (baseCall.includes('/')) {
+      const parts = baseCall.split('/');
+      
+      // If there are multiple parts, find the main callsign
+      // Usually the longest part or the one that matches callsign pattern best
+      if (parts.length === 2) {
+        // Simple case: PREFIX/CALL or CALL/SUFFIX
+        const [first, second] = parts;
+        
+        // Check which part looks more like a base callsign
+        // Base callsign usually has numbers and is longer
+        if (this.looksLikeBaseCallsign(first) && this.looksLikeBaseCallsign(second)) {
+          // Both look like callsigns, prefer the longer one
+          baseCall = first.length >= second.length ? first : second;
+        } else if (this.looksLikeBaseCallsign(first)) {
+          baseCall = first;
+        } else if (this.looksLikeBaseCallsign(second)) {
+          baseCall = second;
+        } else {
+          // Neither looks perfect, use the longer one
+          baseCall = first.length >= second.length ? first : second;
+        }
+      } else if (parts.length === 3) {
+        // Case like DL/HA5XB/M - middle part is usually the base callsign
+        baseCall = parts[1];
+      } else if (parts.length > 3) {
+        // Complex case, find the part that looks most like a base callsign
+        baseCall = parts.reduce((best, current) => 
+          this.looksLikeBaseCallsign(current) && current.length > best.length ? current : best
+        );
+      }
+    }
+    
+    return baseCall;
+  }
+
+  /**
+   * Check if a string looks like a base callsign
+   * Base callsigns typically contain at least one digit and are 3+ characters
+   */
+  public static looksLikeBaseCallsign(call: string): boolean {
+    return call.length >= 3 && /\d/.test(call) && /[A-Z]/.test(call);
+  }
+}
+
+// Backward compatibility - export the original function
+export function getCountryCodeForCallsign(callsign: string): string {
+  return CallsignHelper.getCountryCodeForCallsign(callsign);
 }

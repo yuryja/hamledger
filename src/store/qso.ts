@@ -2,7 +2,7 @@ import { defineStore } from 'pinia';
 import { useRigStore } from './rig';
 import { StationData, BaseStationData, GeoData } from '../types/station';
 import { qrzService } from '../services/QRZService';
-import { getCountryCodeForCallsign } from '../utils/callsign';
+import { CallsignHelper } from '../utils/callsign';
 import { geocodeLocation } from '../utils/geocoding';
 import { getWeather } from '../utils/weather';
 import { QsoEntry } from '../types/qso';
@@ -27,12 +27,6 @@ declare global {
   }
 }
 
-const CALLSIGN_REGEX =
-  /((2[A-Z]{1,2}|[BFGIKMNRW][A-Z]{0,2}|3[A-CE-Z][A-Z]{0,1}|4[A-MO-Z][A-Z]{0,1}|[5-9OUX][A-Z][A-Z]{0,1})([0-9][0-9A-Z]{0,3}[A-Z])|([ACDLP][2-9A-Z][A-Z]{0,1}|E[2-7A-Z][A-Z]{0,1}|H[2-46-9A-Z][A-Z]{0,1}|[JTV][2-8A-Z][A-Z]{0,1}|S[2-35-9A-RT-Z][A-Z]{0,1}|Y[2-9A-Y][A-Z]{0,1}|Z[238A-Z][A-Z]{0,1})([0-9A-Z]{0,3}[A-Z]))/;
-
-export function isValidCallsign(callsign: string): boolean {
-  return CALLSIGN_REGEX.test(callsign.toUpperCase());
-}
 
 export const useQsoStore = defineStore('qso', {
   state: () => ({
@@ -199,7 +193,7 @@ export const useQsoStore = defineStore('qso', {
         };
 
         // Get country information from callsign
-        const countryCode = getCountryCodeForCallsign(callsign);
+        const countryCode = CallsignHelper.getCountryCodeForCallsign(callsign);
         const countryName = countries.getName(countryCode.toUpperCase(), 'en') || 'Unknown';
 
         // Set country and flag
@@ -213,7 +207,7 @@ export const useQsoStore = defineStore('qso', {
         
         // If not found, try with base callsign (remove portable prefixes and suffixes)
         if (qrzData instanceof Error) {
-          const baseCallsign = this.extractBaseCallsign(callsign);
+          const baseCallsign = CallsignHelper.extractBaseCallsign(callsign);
           if (baseCallsign !== callsign) {
             qrzData = await qrzService.lookupStationByCallsign(baseCallsign);
           }
@@ -304,66 +298,12 @@ export const useQsoStore = defineStore('qso', {
       }
     },
 
-    /**
-     * Extract base callsign by removing portable prefixes and suffixes
-     * Examples:
-     * - DL/HA5XB -> HA5XB
-     * - HA5XB/P -> HA5XB
-     * - DL/HA5XB/M -> HA5XB
-     */
-    extractBaseCallsign(callsign: string): string {
-      let baseCall = callsign.toUpperCase();
-      
-      // Remove portable prefix (e.g., DL/HA5XB -> HA5XB)
-      if (baseCall.includes('/')) {
-        const parts = baseCall.split('/');
-        
-        // If there are multiple parts, find the main callsign
-        // Usually the longest part or the one that matches callsign pattern best
-        if (parts.length === 2) {
-          // Simple case: PREFIX/CALL or CALL/SUFFIX
-          const [first, second] = parts;
-          
-          // Check which part looks more like a base callsign
-          // Base callsign usually has numbers and is longer
-          if (this.looksLikeBaseCallsign(first) && this.looksLikeBaseCallsign(second)) {
-            // Both look like callsigns, prefer the longer one
-            baseCall = first.length >= second.length ? first : second;
-          } else if (this.looksLikeBaseCallsign(first)) {
-            baseCall = first;
-          } else if (this.looksLikeBaseCallsign(second)) {
-            baseCall = second;
-          } else {
-            // Neither looks perfect, use the longer one
-            baseCall = first.length >= second.length ? first : second;
-          }
-        } else if (parts.length === 3) {
-          // Case like DL/HA5XB/M - middle part is usually the base callsign
-          baseCall = parts[1];
-        } else if (parts.length > 3) {
-          // Complex case, find the part that looks most like a base callsign
-          baseCall = parts.reduce((best, current) => 
-            this.looksLikeBaseCallsign(current) && current.length > best.length ? current : best
-          );
-        }
-      }
-      
-      return baseCall;
-    },
-
-    /**
-     * Check if a string looks like a base callsign
-     * Base callsigns typically contain at least one digit and are 3+ characters
-     */
-    looksLikeBaseCallsign(call: string): boolean {
-      return call.length >= 3 && /\d/.test(call) && /[A-Z]/.test(call);
-    },
   },
   getters: {
     sessionCount: state => state.currentSession.length,
     totalCount: state => state.allQsos.length,
     isCallsignValid: state => {
-      return state.qsoForm.callsign ? isValidCallsign(state.qsoForm.callsign) : true;
+      return state.qsoForm.callsign ? CallsignHelper.isValidCallsign(state.qsoForm.callsign) : true;
     },
   },
 });
