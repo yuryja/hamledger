@@ -49,6 +49,14 @@ export default {
     toggleEditMode() {
       this.showEditMode = !this.showEditMode;
     },
+    async onEditComplete() {
+      this.showEditMode = false;
+      // Refresh station info after edit
+      if (this.qso.callsign) {
+        await this.qsoStore.fetchStationInfo(this.qso.callsign);
+        this.stationInfo = this.qsoStore.stationInfo;
+      }
+    },
   },
 };
 </script>
@@ -63,7 +71,7 @@ export default {
         </button>
       </div>
 
-      <QsoEditDialog v-if="showEditMode" :qso="qso" :show="true" @close="toggleEditMode" />
+      <QsoEditDialog v-if="showEditMode" :qso="qso" :show="true" @close="onEditComplete" />
 
       <div v-else class="qso-details">
         <div class="main-info">
