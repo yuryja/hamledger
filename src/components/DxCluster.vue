@@ -231,12 +231,8 @@ onUnmounted(() => {
     
     <div class="dx-cluster-main">
       <!-- Frequency Scale and Spots -->
-      <div class="spots-column">
-        <div v-if="loading" class="loading">
-          Loading...
-        </div>
-        
-        <div v-else-if="error" class="error">
+      <div class="spots-column">       
+        <div v-if="error" class="error">
           Error: {{ error }}
           <button @click="dxStore.fetchSpots" class="retry-btn">Try again!</button>
         </div>
@@ -347,7 +343,7 @@ onUnmounted(() => {
       <div class="filters-column">
         <!-- Band Selection -->
         <div class="filter-group">
-          <label class="filter-label">Sáv:</label>
+          <label class="filter-label">Band:</label>
           <div class="filter-buttons-column">
             <button 
               v-for="band in bands" 
@@ -362,7 +358,7 @@ onUnmounted(() => {
 
         <!-- Remote Country (CDX) -->
         <div class="filter-group">
-          <label class="filter-label">CDX:</label>
+          <label class="filter-label">DX:</label>
           <div class="filter-buttons-column">
             <button 
               v-for="continent in continents" 
@@ -377,7 +373,7 @@ onUnmounted(() => {
 
         <!-- Spotter Country (CDE) -->
         <div class="filter-group">
-          <label class="filter-label">CDE:</label>
+          <label class="filter-label">DE:</label>
           <div class="filter-buttons-column">
             <button 
               v-for="continent in continents" 
@@ -392,7 +388,7 @@ onUnmounted(() => {
 
         <!-- Modes -->
         <div class="filter-group">
-          <label class="filter-label">Üzemmód:</label>
+          <label class="filter-label">Mode:</label>
           <div class="filter-buttons-column">
             <button 
               v-for="mode in modes" 
@@ -409,15 +405,15 @@ onUnmounted(() => {
         <div class="filter-group">
           <label class="checkbox-label">
             <input 
-              type="checkbox" 
+              type="checkbox"
               :checked="filters.validatedOnly"
               @change="updateValidatedOnly($event.target.checked)"
             />
-            Validált
+            Valid
           </label>
           
           <div class="page-length-selector">
-            <label>Spotok:</label>
+            <label>Spots:</label>
             <select :value="filters.pageLength" @change="updatePageLength(parseInt($event.target.value))">
               <option v-for="length in pageLengthOptions" :key="length" :value="length">
                 {{ length }}
@@ -554,22 +550,22 @@ onUnmounted(() => {
   height: 100%;
   width: 100%;
   padding: 20px 20px 20px 25px;
-  overflow-x: auto;
+  overflow-x: none;
   min-width: 400px;
 }
 
 .scale-line {
   position: absolute;
-  left: 25px;
-  top: 20px;
-  bottom: 20px;
-  width: 2px;
+  left: 0px;
+  top: 0px;
+  bottom: 0px;
+  width: 1px;
   background: var(--main-color);
 }
 
 .major-tick, .minor-tick {
   position: absolute;
-  left: 25px;
+  left: 0px;
 }
 
 .tick-mark {
@@ -579,7 +575,7 @@ onUnmounted(() => {
 
 .tick-mark.major {
   width: 20px;
-  height: 2px;
+  height: 1px;
   left: 0px;
 }
 
@@ -591,8 +587,8 @@ onUnmounted(() => {
 
 .tick-label {
   position: absolute;
-  left: -20px;
-  top: -10px;
+  left: 0px;
+  top: -15px;
   font-size: 0.7rem;
   color: var(--main-color);
   white-space: nowrap;
