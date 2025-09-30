@@ -33,17 +33,24 @@ export const useWeatherStore = defineStore('weather', {
       this.error = null;
 
       try {
-        const weatherResult = await getWeather(lat, lon);
+        const response = await window.electronAPI.fetchWeather(lat, lon);
         
-        if (weatherResult) {
-          this.weatherInfo = `${Math.round(weatherResult.temperature)}°C ${weatherResult.description}`;
+        if (response.success && response.data?.current_weather) {
+          const { temperature, weathercode } = response.data.current_weather;
+          const weatherResult = await getWeather(lat, lon);
+          
+          if (weatherResult) {
+            this.weatherInfo = `${Math.round(weatherResult.temperature)}°C ${weatherResult.description}`;
+          } else {
+            this.weatherInfo = `${Math.round(temperature)}°C Unknown`;
+          }
         } else {
-          this.error = 'Nem sikerült betölteni az időjárási adatokat';
+          this.error = response.error || 'Failed to load weather data';
           this.weatherInfo = 'Weather unavailable';
         }
       } catch (error) {
         console.error('Weather fetch error:', error);
-        this.error = 'Hálózati hiba történt';
+        this.error = 'Network error occurred';
         this.weatherInfo = 'Weather unavailable';
       } finally {
         this.isLoading = false;

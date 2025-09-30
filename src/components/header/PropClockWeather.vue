@@ -59,7 +59,7 @@ export default {
     <div class="prop-clock-weather-content">
       <div class="propagation-info">
         <div v-if="propStore.isLoading" class="prop-loading">
-          <span>Betöltés...</span>
+          <span>Loading...</span>
         </div>
         <div v-else-if="propStore.error" class="prop-error">
           <span>{{ propStore.error }}</span>
@@ -80,7 +80,7 @@ export default {
           <div v-if="propStore.propData.aurora !== undefined" class="prop-item">
             <span class="prop-label">Aurora</span>
             <span class="prop-value aurora" :class="{ active: propStore.propData.aurora }">
-              {{ propStore.propData.aurora ? 'POSITIVE' : 'NEGATIVE' }}
+              {{ propStore.propData.aurora ? 'YES' : 'NO' }}
             </span>
           </div>
         </div>
@@ -96,7 +96,7 @@ export default {
         </div>
         <div class="local-weather">
           <span class="weather-label">Local WX:</span>
-          <span v-if="weatherStore.isLoading" class="weather-loading">Betöltés...</span>
+          <span v-if="weatherStore.isLoading" class="weather-loading">Loading...</span>
           <span v-else-if="weatherStore.error" class="weather-error">{{ weatherStore.error }}</span>
           <span v-else class="weather-value">{{ weatherStore.weatherInfo }}</span>
         </div>
