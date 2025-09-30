@@ -159,7 +159,12 @@ const showMagnifier = (event: MouseEvent, frequency: string) => {
   const nearbySpots = spots.value.filter(spot => {
     const spotFreq = parseFloat(spot.Frequency)
     return Math.abs(spotFreq - freq) <= 5
-  }).sort((a, b) => parseFloat(a.Frequency) - parseFloat(b.Frequency))
+  }).sort((a, b) => {
+    // Sort by age (newest first)
+    const timeA = new Date(`20${a.Date.split('/')[2]}-${a.Date.split('/')[1]}-${a.Date.split('/')[0]}T${a.Time}:00Z`)
+    const timeB = new Date(`20${b.Date.split('/')[2]}-${b.Date.split('/')[1]}-${b.Date.split('/')[0]}T${b.Time}:00Z`)
+    return timeB.getTime() - timeA.getTime()
+  })
   
   if (nearbySpots.length <= 1) return
   
