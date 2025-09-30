@@ -625,7 +625,7 @@ onUnmounted(() => {
   border-radius: var(--border-radius);
   font-size: 0.7rem;
   font-weight: 600;
-  border: 1px solid rgba(255, 165, 0, 0.15);
+  border: 1px solid rgba(255, 165, 0, 0.30);
   cursor: pointer;
   transition: all 0.2s ease;
   white-space: nowrap;
