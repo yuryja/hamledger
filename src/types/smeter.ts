@@ -1,8 +1,8 @@
 export interface MajorTick {
-  label: string
-  color: string
+  label: string;
+  color: string;
 }
 
 export interface MinorTick {
-  color: string
+  color: string;
 }

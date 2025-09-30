@@ -1,41 +1,41 @@
 <script lang="ts">
-import { useRigStore } from '../../store/rig'
+import { useRigStore } from '../../store/rig';
 
 export default {
   name: 'RigControl',
   data() {
     return {
-      rigStore: useRigStore()
-    }
+      rigStore: useRigStore(),
+    };
   },
   computed: {
     modes() {
-      return this.rigStore.modes
+      return this.rigStore.modes;
     },
     selectedMode: {
       get() {
-        return this.rigStore.selectedMode
+        return this.rigStore.selectedMode;
       },
       set(newMode: string) {
-        this.rigStore.setMode(newMode)
-      }
+        this.rigStore.setMode(newMode);
+      },
     },
     rigModel() {
-      return this.rigStore.rigModel
+      return this.rigStore.rigModel;
     },
     splitActive() {
-      return this.rigStore.splitActive
-    }
+      return this.rigStore.splitActive;
+    },
   },
   methods: {
     handleReconnect() {
-      this.rigStore.handleReconnect()
+      this.rigStore.handleReconnect();
     },
     handleDisconnect() {
-      this.rigStore.handleDisconnect()
-    }
-  }
-}
+      this.rigStore.handleDisconnect();
+    },
+  },
+};
 </script>
 
 <template>

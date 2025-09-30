@@ -1,56 +1,56 @@
 <script lang="ts">
-import { useQsoStore } from '../../store/qso'
-import { QsoEntry } from '../../types/qso'
-import QsoEditDialog from './QsoEditDialog.vue'
+import { useQsoStore } from '../../store/qso';
+import { QsoEntry } from '../../types/qso';
+import QsoEditDialog from './QsoEditDialog.vue';
 
 export default {
   name: 'QsoDetailDialog',
   components: {
-    QsoEditDialog
+    QsoEditDialog,
   },
   props: {
     qso: {
       type: Object as () => QsoEntry,
-      required: true
+      required: true,
     },
     show: {
       type: Boolean,
-      required: true
-    }
+      required: true,
+    },
   },
   setup() {
-    const qsoStore = useQsoStore()
-    return { qsoStore }
+    const qsoStore = useQsoStore();
+    return { qsoStore };
   },
   data() {
     return {
       showEditMode: false,
-      stationInfo: null as any
-    }
+      stationInfo: null as any,
+    };
   },
   watch: {
     async show(newVal) {
       if (newVal && this.qso.callsign) {
-        await this.qsoStore.fetchStationInfo(this.qso.callsign)
-        this.stationInfo = this.qsoStore.stationInfo
+        await this.qsoStore.fetchStationInfo(this.qso.callsign);
+        this.stationInfo = this.qsoStore.stationInfo;
       }
-    }
+    },
   },
   async created() {
     if (this.show && this.qso.callsign) {
-      await this.qsoStore.fetchStationInfo(this.qso.callsign)
-      this.stationInfo = this.qsoStore.stationInfo
+      await this.qsoStore.fetchStationInfo(this.qso.callsign);
+      this.stationInfo = this.qsoStore.stationInfo;
     }
   },
   methods: {
     close() {
-      this.$emit('close')
+      this.$emit('close');
     },
     toggleEditMode() {
-      this.showEditMode = !this.showEditMode
-    }
-  }
-}
+      this.showEditMode = !this.showEditMode;
+    },
+  },
+};
 </script>
 
 <template>
@@ -63,18 +63,18 @@ export default {
         </button>
       </div>
 
-      <QsoEditDialog 
-        v-if="showEditMode"
-        :qso="qso"
-        :show="true"
-        @close="toggleEditMode"
-      />
-      
+      <QsoEditDialog v-if="showEditMode" :qso="qso" :show="true" @close="toggleEditMode" />
+
       <div v-else class="qso-details">
         <div class="main-info">
           <div class="callsign-section">
             <h3>{{ qso.callsign }}</h3>
-            <img v-if="stationInfo?.flag" :src="stationInfo.flag" :alt="stationInfo?.baseData?.country" class="country-flag"/>
+            <img
+              v-if="stationInfo?.flag"
+              :src="stationInfo.flag"
+              :alt="stationInfo?.baseData?.country"
+              class="country-flag"
+            />
             <div class="station-name">{{ stationInfo?.baseData?.name }}</div>
           </div>
 
@@ -151,14 +151,20 @@ export default {
               scrolling="no"
               marginheight="0"
               marginwidth="0"
-              :src="'https://www.openstreetmap.org/export/embed.html?bbox=' + 
-                (stationInfo.geodata.lon - 1) + '%2C' + 
-                (stationInfo.geodata.lat - 1) + '%2C' + 
-                (stationInfo.geodata.lon + 1) + '%2C' + 
-                (stationInfo.geodata.lat + 1) + 
-                '&layer=mapnik&marker=' + 
-                stationInfo.geodata.lat + '%2C' + 
-                stationInfo.geodata.lon"
+              :src="
+                'https://www.openstreetmap.org/export/embed.html?bbox=' +
+                (stationInfo.geodata.lon - 1) +
+                '%2C' +
+                (stationInfo.geodata.lat - 1) +
+                '%2C' +
+                (stationInfo.geodata.lon + 1) +
+                '%2C' +
+                (stationInfo.geodata.lat + 1) +
+                '&layer=mapnik&marker=' +
+                stationInfo.geodata.lat +
+                '%2C' +
+                stationInfo.geodata.lon
+              "
             ></iframe>
           </div>
         </div>
@@ -296,20 +302,23 @@ export default {
   margin: 0;
 }
 
-.remark, .notes {
+.remark,
+.notes {
   background: #444;
   padding: 1rem;
   border-radius: 3px;
 }
 
-.remark label, .notes label {
+.remark label,
+.notes label {
   color: var(--gray-color);
   font-size: 0.9rem;
   display: block;
   margin-bottom: 0.5rem;
 }
 
-.remark p, .notes p {
+.remark p,
+.notes p {
   margin: 0;
   white-space: pre-wrap;
 }

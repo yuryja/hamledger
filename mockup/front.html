@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -111,19 +111,19 @@
               <script>
                 $(document).ready(function () {
                   const majorTicks = [
-                    { label: "S1", color: "white" },
-                    { label: "S3", color: "white" },
-                    { label: "S5", color: "white" },
-                    { label: "S7", color: "white" },
-                    { label: "S9", color: "gray" },
-                    { label: "+10", color: "#ffa500" },
-                    { label: "+20", color: "#ffa500" },
-                    { label: "+30", color: "#ffa500" },
+                    { label: 'S1', color: 'white' },
+                    { label: 'S3', color: 'white' },
+                    { label: 'S5', color: 'white' },
+                    { label: 'S7', color: 'white' },
+                    { label: 'S9', color: 'gray' },
+                    { label: '+10', color: '#ffa500' },
+                    { label: '+20', color: '#ffa500' },
+                    { label: '+30', color: '#ffa500' },
                   ];
 
-                  const $meter = $(".s-meter");
+                  const $meter = $('.s-meter');
                   $meter.append('<div class="s-meter-inner"></div>');
-                  const $inner = $meter.find(".s-meter-inner");
+                  const $inner = $meter.find('.s-meter-inner');
 
                   function getMinorColorFromIndex(majorIndex) {
                     return majorTicks[majorIndex].color;
@@ -147,7 +147,7 @@
                             <div class="tick-box"></div>
                           </div>
                         `);
-                        $minor.find(".tick-box").css("background", color);
+                        $minor.find('.tick-box').css('background', color);
                         $inner.append($minor);
                       }
                     }
@@ -197,12 +197,11 @@
       <script>
         function updateUTCClock() {
           const now = new Date();
-          const utcHours = String(now.getUTCHours()).padStart(2, "0");
-          const utcMinutes = String(now.getUTCMinutes()).padStart(2, "0");
-          const utcSeconds = String(now.getUTCSeconds()).padStart(2, "0");
-          document.getElementById(
-            "utc-clock"
-          ).textContent = `${utcHours}:${utcMinutes}:${utcSeconds} UTC`;
+          const utcHours = String(now.getUTCHours()).padStart(2, '0');
+          const utcMinutes = String(now.getUTCMinutes()).padStart(2, '0');
+          const utcSeconds = String(now.getUTCSeconds()).padStart(2, '0');
+          document.getElementById('utc-clock').textContent =
+            `${utcHours}:${utcMinutes}:${utcSeconds} UTC`;
         }
         setInterval(updateUTCClock, 1000);
         updateUTCClock();
@@ -255,11 +254,7 @@
             </div>
             <div class="qso-input-group">
               <label for="notes">Notes</label>
-              <textarea
-                id="notes"
-                rows="2"
-                placeholder="Additional info"
-              ></textarea>
+              <textarea id="notes" rows="2" placeholder="Additional info"></textarea>
             </div>
 
             <button class="add-qso-btn">Add QSO</button>
@@ -322,35 +317,33 @@
         <script>
           $(document).ready(function () {
             const prefixMap = {
-              F: "fr",
-              HB9: "ch",
-              OK: "cz",
-              DL: "de",
-              G: "gb",
-              EA: "es",
+              F: 'fr',
+              HB9: 'ch',
+              OK: 'cz',
+              DL: 'de',
+              G: 'gb',
+              EA: 'es',
               // etc...
             };
 
             function getCountryCodeForCallsign(callsign) {
               callsign = callsign.toUpperCase();
-              const knownPrefixes = Object.keys(prefixMap).sort(
-                (a, b) => b.length - a.length
-              );
+              const knownPrefixes = Object.keys(prefixMap).sort((a, b) => b.length - a.length);
               for (const prefix of knownPrefixes) {
                 if (callsign.startsWith(prefix)) {
                   return prefixMap[prefix];
                 }
               }
-              return "xx";
+              return 'xx';
             }
 
-            $("table.qso-table tbody tr").each(function () {
+            $('table.qso-table tbody tr').each(function () {
               const $row = $(this);
-              const $callsignTd = $row.find("td").eq(0);
+              const $callsignTd = $row.find('td').eq(0);
               const callsign = $callsignTd.text().trim();
               if (callsign) {
                 const countryCode = getCountryCodeForCallsign(callsign);
-                if (countryCode !== "xx") {
+                if (countryCode !== 'xx') {
                   const $flag = $(`<img
                      src="https://flagcdn.com/h40/${countryCode}.png"
                      alt="${countryCode}"

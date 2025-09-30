@@ -1,40 +1,39 @@
 <script lang="ts">
-import { useQsoStore } from '../store/qso'
-import { getCountryCodeForCallsign } from '../utils/callsign'
-import { DateHelper } from '../utils/dateHelper'
-import QsoDetailDialog from './qso/QsoDetailDialog.vue'
+import { useQsoStore } from '../store/qso';
+import { getCountryCodeForCallsign } from '../utils/callsign';
+import { DateHelper } from '../utils/dateHelper';
+import QsoDetailDialog from './qso/QsoDetailDialog.vue';
 
 export default {
   components: {
-    QsoDetailDialog
+    QsoDetailDialog,
   },
   name: 'LogArea',
   setup() {
-    const qsoStore = useQsoStore()
-    return { qsoStore, DateHelper
-     }
+    const qsoStore = useQsoStore();
+    return { qsoStore, DateHelper };
   },
   computed: {
     currentSession() {
-      return this.qsoStore.currentSession
+      return this.qsoStore.currentSession;
     },
     allQsos() {
-      return this.qsoStore.allQsos
+      return this.qsoStore.allQsos;
     },
     sessionCount() {
-      return this.qsoStore.sessionCount
+      return this.qsoStore.sessionCount;
     },
     totalCount() {
-      return this.qsoStore.totalCount
-    }
+      return this.qsoStore.totalCount;
+    },
   },
   data() {
     return {
       sortKey: 'datetime',
       sortOrder: 'desc',
       selectedQso: null,
-      showEditDialog: false
-    }
+      showEditDialog: false,
+    };
   },
   methods: {
     getCountryCodeForCallsign,
@@ -51,14 +50,14 @@ export default {
         const aVal = a[this.sortKey];
         const bVal = b[this.sortKey];
         const modifier = this.sortOrder === 'asc' ? 1 : -1;
-        
+
         if (aVal < bVal) return -1 * modifier;
         if (aVal > bVal) return 1 * modifier;
         return 0;
       });
-    }
+    },
   },
-}
+};
 </script>
 
 <template>
@@ -120,15 +119,23 @@ export default {
           </tr>
         </thead>
         <tbody>
-          <tr v-for="entry in getSortedQsos()" 
-              :key="entry.callsign + entry.datetime"
-              @click="selectedQso = entry; showEditDialog = true">
+          <tr
+            v-for="entry in getSortedQsos()"
+            :key="entry.callsign + entry.datetime"
+            @click="
+              selectedQso = entry;
+              showEditDialog = true;
+            "
+          >
             <td>{{ DateHelper.formatUTCDate(new Date(entry.datetime)) }}</td>
             <td>{{ DateHelper.formatUTCTime(new Date(entry.datetime)) }}</td>
             <td>
-              <img v-if="getCountryCodeForCallsign(entry.callsign) !== 'xx'"
+              <img
+                v-if="getCountryCodeForCallsign(entry.callsign) !== 'xx'"
                 :src="`https://flagcdn.com/h40/${getCountryCodeForCallsign(entry.callsign)}.png`"
-                :alt="getCountryCodeForCallsign(entry.callsign)" class="callsign-flag" />
+                :alt="getCountryCodeForCallsign(entry.callsign)"
+                class="callsign-flag"
+              />
               {{ entry.callsign }}
             </td>
             <td>{{ entry.band }}</td>

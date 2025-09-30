@@ -4,8 +4,8 @@ export class DateHelper {
       timeZone: 'UTC',
       year: 'numeric',
       month: '2-digit',
-      day: '2-digit'
-    })
+      day: '2-digit',
+    });
   }
 
   public static formatUTCTime(date: Date): string {
@@ -14,15 +14,15 @@ export class DateHelper {
       hour12: false,
       hour: '2-digit',
       minute: '2-digit',
-      second: '2-digit'
-    })
+      second: '2-digit',
+    });
   }
 
   public static getCurrentUTCTime(): string {
-    const now = new Date()
-    const utcHours = String(now.getUTCHours()).padStart(2, "0")
-    const utcMinutes = String(now.getUTCMinutes()).padStart(2, "0")
-    const utcSeconds = String(now.getUTCSeconds()).padStart(2, "0")
-    return `${utcHours}:${utcMinutes}:${utcSeconds}`
+    const now = new Date();
+    const utcHours = String(now.getUTCHours()).padStart(2, '0');
+    const utcMinutes = String(now.getUTCMinutes()).padStart(2, '0');
+    const utcSeconds = String(now.getUTCSeconds()).padStart(2, '0');
+    return `${utcHours}:${utcMinutes}:${utcSeconds}`;
   }
 }

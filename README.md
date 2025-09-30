@@ -2,7 +2,6 @@
   <img src="src/assets/logo.png" width="200" height="200" alt="Hamledger Logo">
 </p>
 
-
 # Hamledger
 
 _If you find my work valuable, please consider to Sponsor or Donate!_
@@ -37,6 +36,7 @@ Hamledger is a feature-rich amateur radio logging application designed for ham r
 - **Styling**: Custom CSS with modern design principles
 
 ## Installation
+
 - Download the .deb or .rpm file from the [Releases](https://github.com/valibali/hamledger/releases).
 - In Debian/Ubuntu-based OS:
   ```bash
@@ -61,10 +61,14 @@ Hamledger is a feature-rich amateur radio logging application designed for ham r
 ### Installation
 
 1. Clone the repository:
+
    ```bash
    git clone https://github.com/valibali/hamledger.git
 
+   ```
+
 2. Install dependencies:
+
    ```bash
    npm install
    ```
@@ -77,6 +81,7 @@ Hamledger is a feature-rich amateur radio logging application designed for ham r
 ### Building for Production
 
 1. Build the application:
+
    ```bash
    npm run app:build
    ```
@@ -117,6 +122,5 @@ This project is licensed under the [GNU General Public License v3.0](LICENSE) wi
 - The Electron team for making cross-platform desktop apps possible
 - The amateur radio community for inspiration and feedback
 
-
-All the best, 
+All the best,
 HA5XB Balazs

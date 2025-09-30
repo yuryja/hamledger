@@ -1,14 +1,14 @@
-import { defineStore } from "pinia";
-import { useRigStore } from "./rig";
-import { StationData, BaseStationData, GeoData } from "../types/station";
-import { qrzService } from "../services/QRZService";
-import { getCountryCodeForCallsign } from "../utils/callsign";
-import { geocodeLocation } from "../utils/geocoding";
-import { getWeather } from "../utils/weather";
-import { QsoEntry } from "../types/qso";
-import { MaidenheadLocator } from "../utils/maidenhead";
-import { configHelper } from "../utils/configHelper";
-import { calculateDistance } from "../utils/distance";
+import { defineStore } from 'pinia';
+import { useRigStore } from './rig';
+import { StationData, BaseStationData, GeoData } from '../types/station';
+import { qrzService } from '../services/QRZService';
+import { getCountryCodeForCallsign } from '../utils/callsign';
+import { geocodeLocation } from '../utils/geocoding';
+import { getWeather } from '../utils/weather';
+import { QsoEntry } from '../types/qso';
+import { MaidenheadLocator } from '../utils/maidenhead';
+import { configHelper } from '../utils/configHelper';
+import { calculateDistance } from '../utils/distance';
 import * as countries from 'i18n-iso-countries';
 import en from 'i18n-iso-countries/langs/en.json';
 countries.registerLocale(en);
@@ -18,12 +18,12 @@ declare global {
     electronAPI: {
       addQso: (qso: any) => Promise<any>;
       getAllDocs: () => Promise<any>;
-      importAdif: () => Promise<{imported: boolean, count?: number, error?: any}>;
+      importAdif: () => Promise<{ imported: boolean; count?: number; error?: any }>;
       loadSettings: () => Promise<any>;
       saveSettings: (settings: any) => Promise<void>;
       updateQso: (qso: any) => Promise<any>;
-      fetchDxSpots: (params: string) => Promise<any>
-    }
+      fetchDxSpots: (params: string) => Promise<any>;
+    };
   }
 }
 
@@ -34,32 +34,32 @@ export function isValidCallsign(callsign: string): boolean {
   return CALLSIGN_REGEX.test(callsign.toUpperCase());
 }
 
-export const useQsoStore = defineStore("qso", {
+export const useQsoStore = defineStore('qso', {
   state: () => ({
     currentSession: [] as QsoEntry[],
     allQsos: [] as QsoEntry[],
-    currentUTCTime: "",
+    currentUTCTime: '',
     initialized: false,
     stationInfo: {
       baseData: {} as BaseStationData,
       geodata: {} as GeoData,
-      flag: "",
-      weather: "",
-      localTime: "",
+      flag: '',
+      weather: '',
+      localTime: '',
       greetings: [],
       distance: undefined as number | undefined,
-      qrzError: false
+      qrzError: false,
     } satisfies StationData,
     qsoForm: {
-      callsign: "",
-      band: "40m",
-      mode: "SSB",
-      rstr: "59",
-      rstt: "59",
-      date: "",
-      utc: "",
-      remark: "",
-      notes: "",
+      callsign: '',
+      band: '40m',
+      mode: 'SSB',
+      rstr: '59',
+      rstt: '59',
+      date: '',
+      utc: '',
+      remark: '',
+      notes: '',
     },
   }),
   actions: {
@@ -81,15 +81,13 @@ export const useQsoStore = defineStore("qso", {
       };
 
       // Handle TX frequency
-      newQso.freqTx = rigStore.splitActive
-        ? parseFloat(rigStore.txFrequency)
-        : "--";
+      newQso.freqTx = rigStore.splitActive ? parseFloat(rigStore.txFrequency) : '--';
 
       // Use form values or defaults for RST
-      newQso.rstr = this.qsoForm.rstr || "59";
-      newQso.rstt = this.qsoForm.rstt || "59";
-      newQso.remark = this.qsoForm.remark?.trim() || "--";
-      newQso.notes = this.qsoForm.notes?.trim() || "--";
+      newQso.rstr = this.qsoForm.rstr || '59';
+      newQso.rstt = this.qsoForm.rstt || '59';
+      newQso.remark = this.qsoForm.remark?.trim() || '--';
+      newQso.notes = this.qsoForm.notes?.trim() || '--';
 
       // Send to main process to save
       try {
@@ -103,20 +101,20 @@ export const useQsoStore = defineStore("qso", {
           this.allQsos.push(newQso);
         }
       } catch (error) {
-        console.error("Failed to save QSO:", error);
+        console.error('Failed to save QSO:', error);
       }
 
       // Reset form
       this.qsoForm = {
-        callsign: "",
-        band: "40m",
-        mode: "SSB",
-        rstr: "59",
-        rstt: "59",
-        date: "",
-        utc: "",
-        remark: "",
-        notes: "",
+        callsign: '',
+        band: '40m',
+        mode: 'SSB',
+        rstr: '59',
+        rstt: '59',
+        date: '',
+        utc: '',
+        remark: '',
+        notes: '',
       };
     },
     updateQsoForm(field: keyof typeof this.qsoForm, value: string) {
@@ -125,10 +123,10 @@ export const useQsoStore = defineStore("qso", {
     async initializeStore() {
       try {
         const result = await window.electronAPI.getAllDocs();
-        this.allQsos = result.rows.map((row) => row.doc as QsoEntry);
+        this.allQsos = result.rows.map(row => row.doc as QsoEntry);
         this.initialized = true;
       } catch (error) {
-        console.error("Failed to initialize QSO store:", error);
+        console.error('Failed to initialize QSO store:', error);
       }
     },
 
@@ -137,23 +135,19 @@ export const useQsoStore = defineStore("qso", {
         const response = await window.electronAPI.updateQso(updatedQso);
         if (response.ok) {
           // Update in current session if present
-          const sessionIndex = this.currentSession.findIndex(
-            qso => qso._id === updatedQso._id
-          );
+          const sessionIndex = this.currentSession.findIndex(qso => qso._id === updatedQso._id);
           if (sessionIndex !== -1) {
             this.currentSession[sessionIndex] = updatedQso;
           }
-          
+
           // Update in all QSOs
-          const allIndex = this.allQsos.findIndex(
-            qso => qso._id === updatedQso._id
-          );
+          const allIndex = this.allQsos.findIndex(qso => qso._id === updatedQso._id);
           if (allIndex !== -1) {
             this.allQsos[allIndex] = updatedQso;
           }
         }
       } catch (error) {
-        console.error("Failed to update QSO:", error);
+        console.error('Failed to update QSO:', error);
         throw error;
       }
     },
@@ -167,19 +161,19 @@ export const useQsoStore = defineStore("qso", {
         }
         return { success: false, error: result.error };
       } catch (error) {
-        console.error("Failed to import ADIF:", error);
+        console.error('Failed to import ADIF:', error);
         return { success: false, error };
       }
     },
 
     updateCurrentUTCTime() {
       const now = new Date();
-      this.currentUTCTime = now.toLocaleTimeString("en-US", {
-        timeZone: "UTC",
+      this.currentUTCTime = now.toLocaleTimeString('en-US', {
+        timeZone: 'UTC',
         hour12: false,
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit",
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
       });
     },
     async fetchStationInfo(callsign: string): Promise<void | Error> {
@@ -188,37 +182,36 @@ export const useQsoStore = defineStore("qso", {
         this.stationInfo = {
           baseData: {
             call: callsign,
-            name: "",
-            country: "",
+            name: '',
+            country: '',
             lat: undefined,
             lon: undefined,
-            grid: "",
-            qth: "",
+            grid: '',
+            qth: '',
           },
           geodata: {},
-          flag: "",
-          weather: "",
-          localTime: "",
+          flag: '',
+          weather: '',
+          localTime: '',
           greetings: [],
           distance: undefined,
-          qrzError: false
+          qrzError: false,
         };
 
         // Get country information from callsign
         const countryCode = getCountryCodeForCallsign(callsign);
-        const countryName = countries.getName(countryCode.toUpperCase(), "en") || "Unknown";
-        
+        const countryName = countries.getName(countryCode.toUpperCase(), 'en') || 'Unknown';
+
         // Set country and flag
         this.stationInfo.baseData.country = countryName;
-        this.stationInfo.flag = countryCode !== "xx" 
-          ? `https://flagcdn.com/h80/${countryCode}.png` 
-          : "";
+        this.stationInfo.flag =
+          countryCode !== 'xx' ? `https://flagcdn.com/h80/${countryCode}.png` : '';
 
         // Try to get additional info from QRZ
         const qrzData = await qrzService.lookupStationByCallsign(callsign);
         if (qrzData instanceof Error) {
           this.stationInfo.qrzError = true;
-          console.error("QRZ lookup failed:", qrzData);
+          console.error('QRZ lookup failed:', qrzData);
         } else {
           this.stationInfo.baseData.name = qrzData.name;
           this.stationInfo.baseData.grid = qrzData.grid;
@@ -233,13 +226,13 @@ export const useQsoStore = defineStore("qso", {
             this.stationInfo.geodata = {
               lat: coords.lat,
               lon: coords.lon,
-              display_name: this.stationInfo.baseData.qth || ""
+              display_name: this.stationInfo.baseData.qth || '',
             };
           } catch (error) {
-            console.error("Error converting grid to coordinates:", error);
+            console.error('Error converting grid to coordinates:', error);
           }
         }
-        
+
         // 2. From QTH if available and grid failed
         if (!this.stationInfo.geodata.lat && this.stationInfo.baseData.qth) {
           const geoData = await geocodeLocation(this.stationInfo.baseData.qth);
@@ -247,13 +240,16 @@ export const useQsoStore = defineStore("qso", {
             this.stationInfo.geodata = {
               lat: geoData.lat,
               lon: geoData.lon,
-              display_name: geoData.display_name
+              display_name: geoData.display_name,
             };
           }
         }
 
         // Calculate distance if we have remote coordinates and local grid
-        if (this.stationInfo.geodata.lat !== undefined && this.stationInfo.geodata.lon !== undefined) {
+        if (
+          this.stationInfo.geodata.lat !== undefined &&
+          this.stationInfo.geodata.lon !== undefined
+        ) {
           const localGrid = configHelper.getSetting(['station'], 'grid');
           if (localGrid) {
             try {
@@ -265,7 +261,7 @@ export const useQsoStore = defineStore("qso", {
                 this.stationInfo.geodata.lon
               );
             } catch (error) {
-              console.error("Error calculating distance:", error);
+              console.error('Error calculating distance:', error);
             }
           }
         }
@@ -286,25 +282,23 @@ export const useQsoStore = defineStore("qso", {
           const timeZoneOffset = Math.round(this.stationInfo.geodata.lon / 15);
           const localTime = new Date();
           localTime.setHours(localTime.getUTCHours() + timeZoneOffset);
-          this.stationInfo.localTime = localTime.toLocaleTimeString("en-US", {
+          this.stationInfo.localTime = localTime.toLocaleTimeString('en-US', {
             hour12: false,
-            hour: "2-digit",
-            minute: "2-digit",
+            hour: '2-digit',
+            minute: '2-digit',
           });
         }
       } catch (error) {
-        console.error("Error fetching station info:", error);
+        console.error('Error fetching station info:', error);
         return error;
       }
     },
   },
   getters: {
-    sessionCount: (state) => state.currentSession.length,
-    totalCount: (state) => state.allQsos.length,
-    isCallsignValid: (state) => {
-      return state.qsoForm.callsign
-        ? isValidCallsign(state.qsoForm.callsign)
-        : true;
+    sessionCount: state => state.currentSession.length,
+    totalCount: state => state.allQsos.length,
+    isCallsignValid: state => {
+      return state.qsoForm.callsign ? isValidCallsign(state.qsoForm.callsign) : true;
     },
   },
 });

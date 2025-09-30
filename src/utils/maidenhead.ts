@@ -16,9 +16,9 @@ export class MaidenheadLocator {
   public static gridToLatLon(grid: string): { lat: number; lon: number } {
     // Normalize the input
     grid = grid.trim().toUpperCase();
-    
+
     if (!MaidenheadLocator.isValidGridFormat(grid)) {
-      throw new Error("Grid locator must be an even-length string (e.g., 2, 4, 6, … characters).");
+      throw new Error('Grid locator must be an even-length string (e.g., 2, 4, 6, … characters).');
     }
 
     // Start at the southwest corner of the world
@@ -30,9 +30,16 @@ export class MaidenheadLocator {
     // Process each pair of characters
     for (let pair = 0; pair < grid.length / 2; pair++) {
       const i = pair * 2;
-      
+
       if (pair === 0) {
-        const { newLon, newLat } = this.processField(grid.charAt(i), grid.charAt(i + 1), lon, lat, lonSize, latSize);
+        const { newLon, newLat } = this.processField(
+          grid.charAt(i),
+          grid.charAt(i + 1),
+          lon,
+          lat,
+          lonSize,
+          latSize
+        );
         lon = newLon;
         lat = newLat;
       } else if (pair % 2 === 1) {
@@ -83,12 +90,12 @@ export class MaidenheadLocator {
     lonSize: number,
     latSize: number
   ): { newLon: number; newLat: number } {
-    if (lonChar < "A" || lonChar > "R" || latChar < "A" || latChar > "R") {
-      throw new Error("Invalid field characters in grid locator (must be A–R).");
+    if (lonChar < 'A' || lonChar > 'R' || latChar < 'A' || latChar > 'R') {
+      throw new Error('Invalid field characters in grid locator (must be A–R).');
     }
 
-    const newLon = lon + (lonChar.charCodeAt(0) - "A".charCodeAt(0)) * lonSize;
-    const newLat = lat + (latChar.charCodeAt(0) - "A".charCodeAt(0)) * latSize;
+    const newLon = lon + (lonChar.charCodeAt(0) - 'A'.charCodeAt(0)) * lonSize;
+    const newLat = lat + (latChar.charCodeAt(0) - 'A'.charCodeAt(0)) * latSize;
 
     return { newLon, newLat };
   }
@@ -105,7 +112,7 @@ export class MaidenheadLocator {
     const latDigit = parseInt(latDigitChar, 10);
 
     if (isNaN(lonDigit) || isNaN(latDigit)) {
-      throw new Error("Invalid digit characters in grid locator.");
+      throw new Error('Invalid digit characters in grid locator.');
     }
 
     const newLonSize = lonSize / 10;
@@ -127,16 +134,16 @@ export class MaidenheadLocator {
     lonSize: number,
     latSize: number
   ): { newLon: number; newLat: number; newLonSize: number; newLatSize: number } {
-    if (lonChar < "A" || lonChar > "X" || latChar < "A" || latChar > "X") {
-      throw new Error("Invalid subsquare characters in grid locator (must be A–X).");
+    if (lonChar < 'A' || lonChar > 'X' || latChar < 'A' || latChar > 'X') {
+      throw new Error('Invalid subsquare characters in grid locator (must be A–X).');
     }
 
     const newLonSize = lonSize / 24;
     const newLatSize = latSize / 24;
 
     return {
-      newLon: lon + (lonChar.charCodeAt(0) - "A".charCodeAt(0)) * newLonSize,
-      newLat: lat + (latChar.charCodeAt(0) - "A".charCodeAt(0)) * newLatSize,
+      newLon: lon + (lonChar.charCodeAt(0) - 'A'.charCodeAt(0)) * newLonSize,
+      newLat: lat + (latChar.charCodeAt(0) - 'A'.charCodeAt(0)) * newLatSize,
       newLonSize,
       newLatSize,
     };

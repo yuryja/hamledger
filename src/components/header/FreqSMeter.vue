@@ -1,47 +1,69 @@
 <script lang="ts">
-import { useRigStore } from '../../store/rig'
-import type { MajorTick } from '../../types/smeter'
-import { smeterHelper } from '../../utils/smeterHelper'
+import { useRigStore } from '../../store/rig';
+import type { MajorTick } from '../../types/smeter';
+import { smeterHelper } from '../../utils/smeterHelper';
 
 export default {
   name: 'FreqSMeter',
   data() {
-    const store = useRigStore()
+    const store = useRigStore();
     return {
       rigStore: store,
       isEditing: false,
       isTxEditing: false,
       unit: 'kHz',
-      smeterHelper: smeterHelper
-    }
+      smeterHelper: smeterHelper,
+    };
   },
   computed: {
     majorTicks(): MajorTick[] {
-      return this.smeterHelper.getMajorTicks()
-    }
-  }
-}
+      return this.smeterHelper.getMajorTicks();
+    },
+  },
+};
 </script>
 
 <template>
   <div class="header-center freq-s-meter">
     <div class="freq-s-meter-content">
       <div class="freq-display">
-        <button class="split-btn mode-badge" :class="{ active: rigStore.splitActive }"
-          @click="rigStore.toggleSplit()">SPLIT</button>
+        <button
+          class="split-btn mode-badge"
+          :class="{ active: rigStore.splitActive }"
+          @click="rigStore.toggleSplit()"
+        >
+          SPLIT
+        </button>
         <div class="rig-frequency" @click="isEditing = true">
           <div class="freq-main">
-            <input v-if="isEditing" type="text" :value="rigStore.frequency"
-              @input="e => rigStore.setFrequency((e.target as HTMLInputElement).value)" @blur="isEditing = false"
-              @keyup.enter="isEditing = false" class="freq-input">
+            <input
+              v-if="isEditing"
+              type="text"
+              :value="rigStore.frequency"
+              @input="e => rigStore.setFrequency((e.target as HTMLInputElement).value)"
+              @blur="isEditing = false"
+              @keyup.enter="isEditing = false"
+              class="freq-input"
+            />
             <template v-else>
               <span>{{ rigStore.frequency }}</span>
               <template v-if="rigStore.splitActive">
                 <span class="tx-freq" @click.stop="isTxEditing = true">
-                  <input v-if="isTxEditing" type="text" :value="rigStore.txFrequency"
+                  <input
+                    v-if="isTxEditing"
+                    type="text"
+                    :value="rigStore.txFrequency"
                     @input="e => rigStore.setTxFrequency((e.target as HTMLInputElement).value)"
-                    @blur="isTxEditing = false" @keyup.enter="isTxEditing = false"
-                    style="background: transparent; border: none; color: inherit; font: inherit; width: 60px;">
+                    @blur="isTxEditing = false"
+                    @keyup.enter="isTxEditing = false"
+                    style="
+                      background: transparent;
+                      border: none;
+                      color: inherit;
+                      font: inherit;
+                      width: 60px;
+                    "
+                  />
                   <span v-else>({{ rigStore.txFrequency }})</span>
                 </span>
               </template>
@@ -59,7 +81,10 @@ export default {
               <div class="tick-line"></div>
             </div>
 
-            <template v-for="(minorTick, minorIndex) in smeterHelper.generateMinorTicks(index)" :key="'minor-' + index + '-' + minorIndex">
+            <template
+              v-for="(minorTick, minorIndex) in smeterHelper.generateMinorTicks(index)"
+              :key="'minor-' + index + '-' + minorIndex"
+            >
               <div class="tick minor-tick">
                 <div class="tick-box" :style="{ background: minorTick.color }"></div>
               </div>
@@ -68,11 +93,15 @@ export default {
         </div>
       </div>
 
-
       <div class="rig-mode-badges">
         <template v-for="mode in rigStore.modes" :key="mode.value">
-          <input type="radio" :id="'mode-' + mode.value.toLowerCase()" :value="mode.value"
-            v-model="rigStore.selectedMode" name="rig-mode" />
+          <input
+            type="radio"
+            :id="'mode-' + mode.value.toLowerCase()"
+            :value="mode.value"
+            v-model="rigStore.selectedMode"
+            name="rig-mode"
+          />
           <label :for="'mode-' + mode.value.toLowerCase()" class="mode-badge">
             {{ mode.label }}
           </label>
@@ -103,7 +132,7 @@ export default {
   gap: 0.5rem;
 }
 
-.rig-mode-badges input[type="radio"] {
+.rig-mode-badges input[type='radio'] {
   display: none;
 }
 
@@ -119,7 +148,7 @@ export default {
   border: 1px solid var(--main-color);
 }
 
-.rig-mode-badges input[type="radio"]:checked+.mode-badge {
+.rig-mode-badges input[type='radio']:checked + .mode-badge {
   background: var(--main-color);
   color: #000;
 }
@@ -200,7 +229,7 @@ export default {
 
 .s-meter::before,
 .s-meter::after {
-  content: "";
+  content: '';
   position: absolute;
   left: 0;
   right: 0;

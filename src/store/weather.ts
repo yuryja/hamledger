@@ -1,25 +1,25 @@
-import { defineStore } from 'pinia'
+import { defineStore } from 'pinia';
 
 export const useWeatherStore = defineStore('weather', {
   state: () => ({
-    weatherInfo: '28°C Sunny'
+    weatherInfo: '28°C Sunny',
   }),
 
   actions: {
     async updateWeatherInfo(lat?: number, lon?: number) {
-      if (!lat || !lon) return
-      
+      if (!lat || !lon) return;
+
       try {
         const response = await fetch(
           `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`
-        )
-        const data = await response.json()
+        );
+        const data = await response.json();
         if (data?.current_weather) {
-          const { temperature, weathercode } = data.current_weather
-          this.weatherInfo = `${temperature}°C ${this.getWeatherDescription(weathercode)}`
+          const { temperature, weathercode } = data.current_weather;
+          this.weatherInfo = `${temperature}°C ${this.getWeatherDescription(weathercode)}`;
         }
       } catch (error) {
-        console.error('Failed to fetch weather:', error)
+        console.error('Failed to fetch weather:', error);
       }
     },
 
@@ -41,9 +41,9 @@ export const useWeatherStore = defineStore('weather', {
         71: 'Slight snow',
         73: 'Moderate snow',
         75: 'Heavy snow',
-        95: 'Thunderstorm'
-      }
-      return weatherCodes[code] || 'Unknown'
-    }
-  }
-})
+        95: 'Thunderstorm',
+      };
+      return weatherCodes[code] || 'Unknown';
+    },
+  },
+});

@@ -1,4 +1,4 @@
-import { QsoEntry } from "../types/qso";
+import { QsoEntry } from '../types/qso';
 
 interface AdifRecord {
   [key: string]: string;
@@ -6,7 +6,7 @@ interface AdifRecord {
 
 export function parseAdif(content: string): AdifRecord[] {
   const records: AdifRecord[] = [];
-  const headerEnd = content.toUpperCase().indexOf("<EOH>");
+  const headerEnd = content.toUpperCase().indexOf('<EOH>');
 
   if (headerEnd === -1) return records;
 
@@ -19,7 +19,7 @@ export function parseAdif(content: string): AdifRecord[] {
     const [_, name, length, type, value] = match;
     const fieldName = name.toLowerCase();
 
-    if (fieldName === "eor") {
+    if (fieldName === 'eor') {
       if (Object.keys(currentRecord).length > 0) {
         records.push(currentRecord);
         currentRecord = {};
@@ -37,39 +37,32 @@ export function formatAdif(qsos: QsoEntry[]): string {
 
   return qsos.reduce((adif, qso) => {
     const fields = [
-      { name: "CALL", value: qso.callsign || "" },
+      { name: 'CALL', value: qso.callsign || '' },
       {
-        name: "QSO_DATE",
-        value: new Date(qso.datetime)
-          .toISOString()
-          .split("T")[0]
-          .replace(/-/g, ""),
+        name: 'QSO_DATE',
+        value: new Date(qso.datetime).toISOString().split('T')[0].replace(/-/g, ''),
       },
       {
-        name: "TIME_ON",
-        value: new Date(qso.datetime)
-          .toISOString()
-          .split("T")[1]
-          .substring(0, 6)
-          .replace(/:/g, ""),
+        name: 'TIME_ON',
+        value: new Date(qso.datetime).toISOString().split('T')[1].substring(0, 6).replace(/:/g, ''),
       },
-      { name: "BAND", value: qso.band || "" },
-      { name: "MODE", value: qso.mode || "" },
-      { name: "FREQ", value: (qso.freqRx || 0).toString() },
-      { name: "RST_RCVD", value: qso.rstr || "" },
-      { name: "RST_SENT", value: qso.rstt || "" },
-      { name: "COMMENT", value: qso.remark || "" },
-      { name: "NOTES", value: qso.notes || "" },
-      { name: "APP_QRZLOG_LOGID", value: qso.qrzLogId || "" },
+      { name: 'BAND', value: qso.band || '' },
+      { name: 'MODE', value: qso.mode || '' },
+      { name: 'FREQ', value: (qso.freqRx || 0).toString() },
+      { name: 'RST_RCVD', value: qso.rstr || '' },
+      { name: 'RST_SENT', value: qso.rstt || '' },
+      { name: 'COMMENT', value: qso.remark || '' },
+      { name: 'NOTES', value: qso.notes || '' },
+      { name: 'APP_QRZLOG_LOGID', value: qso.qrzLogId || '' },
     ];
 
     const record = fields
-      .map((f) => {
-        const value = f.value || "";
+      .map(f => {
+        const value = f.value || '';
         return `<${f.name}:${value.length}>${value}`;
       })
-      .join("");
+      .join('');
 
-    return adif + record + "<EOR>\n";
+    return adif + record + '<EOR>\n';
   }, header);
 }

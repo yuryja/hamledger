@@ -1,24 +1,24 @@
 <script lang="ts">
-import SideBar from './components/SideBar.vue'
-import MainContent from './components/MainContent.vue'
-import { useQsoStore } from './store/qso'
+import SideBar from './components/SideBar.vue';
+import MainContent from './components/MainContent.vue';
+import { useQsoStore } from './store/qso';
 
 export default {
   name: 'App',
   components: {
     SideBar,
-    MainContent
+    MainContent,
   },
   async mounted() {
-    const qsoStore = useQsoStore()
-    await qsoStore.init()
-  }
-}
+    const qsoStore = useQsoStore();
+    await qsoStore.init();
+  },
+};
 </script>
 
 <template>
   <div class="app-container">
-    <SideBar @view-change="(view) => $refs.mainContent?.handleViewChange(view)" />
+    <SideBar @view-change="view => $refs.mainContent?.handleViewChange(view)" />
     <MainContent ref="mainContent" />
   </div>
 </template>

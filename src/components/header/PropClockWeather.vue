@@ -1,37 +1,37 @@
 <script lang="ts">
-import { usePropagationStore } from '../../store/propagation'
-import { useWeatherStore } from '../../store/weather'
-import { DateHelper } from '../../utils/dateHelper'
+import { usePropagationStore } from '../../store/propagation';
+import { useWeatherStore } from '../../store/weather';
+import { DateHelper } from '../../utils/dateHelper';
 
 export default {
   name: 'PropClockWeather',
   setup() {
-    const propStore = usePropagationStore()
-    const weatherStore = useWeatherStore()
-    return { propStore, weatherStore }
+    const propStore = usePropagationStore();
+    const weatherStore = useWeatherStore();
+    return { propStore, weatherStore };
   },
   data() {
     return {
       utcTime: '00:00:00',
-      clockInterval: 0
-    }
+      clockInterval: 0,
+    };
   },
   mounted() {
-    this.updateUTCClock()
-    this.clockInterval = window.setInterval(this.updateUTCClock, 1000)
-    this.propStore.updatePropagationData()
+    this.updateUTCClock();
+    this.clockInterval = window.setInterval(this.updateUTCClock, 1000);
+    this.propStore.updatePropagationData();
   },
   beforeUnmount() {
     if (this.clockInterval) {
-      clearInterval(this.clockInterval)
+      clearInterval(this.clockInterval);
     }
   },
   methods: {
     updateUTCClock() {
-      this.utcTime = DateHelper.getCurrentUTCTime()
-    }
-  }
-}
+      this.utcTime = DateHelper.getCurrentUTCTime();
+    },
+  },
+};
 </script>
 
 <template>

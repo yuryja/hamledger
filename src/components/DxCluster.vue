@@ -1,309 +1,315 @@
 <script setup lang="ts">
-import { ref, onMounted, computed, onUnmounted } from 'vue'
-import { useDxClusterStore, type DxSpot } from '../store/dxCluster'
-import { useQsoStore } from '../store/qso'
-import { useRigStore } from '../store/rig'
+import { ref, onMounted, computed, onUnmounted } from 'vue';
+import { useDxClusterStore, type DxSpot } from '../store/dxCluster';
+import { useQsoStore } from '../store/qso';
+import { useRigStore } from '../store/rig';
 
-const dxStore = useDxClusterStore()
-const qsoStore = useQsoStore()
-const rigStore = useRigStore()
+const dxStore = useDxClusterStore();
+const qsoStore = useQsoStore();
+const rigStore = useRigStore();
 
 // Get reactive data from store
-const spots = computed(() => dxStore.spots)
-const error = computed(() => dxStore.error)
-const filters = computed(() => dxStore.filters)
+const spots = computed(() => dxStore.spots);
+const error = computed(() => dxStore.error);
+const filters = computed(() => dxStore.filters);
 
 // Magnifier window state
-const magnifierVisible = ref(false)
-const magnifierSpots = ref<DxSpot[]>([])
-const magnifierPosition = ref({ x: 0, y: 0 })
-const magnifierFrequency = ref('')
+const magnifierVisible = ref(false);
+const magnifierSpots = ref<DxSpot[]>([]);
+const magnifierPosition = ref({ x: 0, y: 0 });
+const magnifierFrequency = ref('');
 // eslint-disable-next-line no-undef
-let magnifierTimeout: NodeJS.Timeout | null = null
-
+let magnifierTimeout: NodeJS.Timeout | null = null;
 
 // Available options
-const continents = ['EU', 'NA', 'SA', 'AS', 'AF', 'OC', 'AN']
-const bands = ['10', '15', '20', '40', '80', '160']
-const modes = ['PHONE', 'CW', 'FT8', 'FT4', 'RTTY', 'PSK31']
-const pageLengthOptions = [25, 50, 65, 100, 200]
-
+const continents = ['EU', 'NA', 'SA', 'AS', 'AF', 'OC', 'AN'];
+const bands = ['10', '15', '20', '40', '80', '160'];
+const modes = ['PHONE', 'CW', 'FT8', 'FT4', 'RTTY', 'PSK31'];
+const pageLengthOptions = [25, 50, 65, 100, 200];
 
 const formatFrequency = (freqStr: string) => {
-  const freq = parseFloat(freqStr)
+  const freq = parseFloat(freqStr);
   if (freq >= 1000) {
-    return `${(freq / 1000).toFixed(3)} MHz`
+    return `${(freq / 1000).toFixed(3)} MHz`;
   }
-  return `${freq} kHz`
-}
+  return `${freq} kHz`;
+};
 
 const formatTime = (timeStr: string, dateStr: string) => {
   try {
     // Format: "21:19" and "29/09/25"
-    const [day, month, year] = dateStr.split('/')
-    const fullYear = `20${year}` // Assuming 21st century
-    const isoDate = `${fullYear}-${month}-${day}T${timeStr}:00Z`
-    const date = new Date(isoDate)
-    
-    return date.toLocaleTimeString('hu-HU', { 
-      hour: '2-digit', 
-      minute: '2-digit',
-      timeZone: 'UTC'
-    }) + 'Z'
+    const [day, month, year] = dateStr.split('/');
+    const fullYear = `20${year}`; // Assuming 21st century
+    const isoDate = `${fullYear}-${month}-${day}T${timeStr}:00Z`;
+    const date = new Date(isoDate);
+
+    return (
+      date.toLocaleTimeString('hu-HU', {
+        hour: '2-digit',
+        minute: '2-digit',
+        timeZone: 'UTC',
+      }) + 'Z'
+    );
   } catch {
-    return `${timeStr}Z`
+    return `${timeStr}Z`;
   }
-}
+};
 
 const selectBand = (band: string) => {
-  dxStore.selectBand(band)
-}
+  dxStore.selectBand(band);
+};
 
 const toggleCdxFilter = (value: string) => {
-  dxStore.toggleFilter('selectedCdx', value)
-}
+  dxStore.toggleFilter('selectedCdx', value);
+};
 
 const toggleCdeFilter = (value: string) => {
-  dxStore.toggleFilter('selectedCde', value)
-}
+  dxStore.toggleFilter('selectedCde', value);
+};
 
 const toggleModeFilter = (value: string) => {
-  dxStore.toggleFilter('selectedModes', value)
-}
+  dxStore.toggleFilter('selectedModes', value);
+};
 
 const updateValidatedOnly = (value: boolean) => {
-  dxStore.updateFilters({ validatedOnly: value })
-}
+  dxStore.updateFilters({ validatedOnly: value });
+};
 
 const updatePageLength = (value: number) => {
-  dxStore.updateFilters({ pageLength: value })
-}
+  dxStore.updateFilters({ pageLength: value });
+};
 
 const getSpotPosition = (frequency: string) => {
-  const freq = parseFloat(frequency)
-  const range = dxStore.actualFrequencyRange
-  if (!range) return 0
-  
-  const percentage = ((freq - range.min) / (range.max - range.min)) * 100
-  return Math.max(0, Math.min(100, percentage))
-}
+  const freq = parseFloat(frequency);
+  const range = dxStore.actualFrequencyRange;
+  if (!range) return 0;
+
+  const percentage = ((freq - range.min) / (range.max - range.min)) * 100;
+  return Math.max(0, Math.min(100, percentage));
+};
 
 const getSpotOpacity = (timeStr: string, dateStr: string) => {
   try {
-    const [day, month, year] = dateStr.split('/')
-    const fullYear = `20${year}`
-    const isoDate = `${fullYear}-${month}-${day}T${timeStr}:00Z`
-    const spotTime = new Date(isoDate)
-    const now = new Date()
-    const ageInHours = (now.getTime() - spotTime.getTime()) / (1000 * 60 * 60)
-    
+    const [day, month, year] = dateStr.split('/');
+    const fullYear = `20${year}`;
+    const isoDate = `${fullYear}-${month}-${day}T${timeStr}:00Z`;
+    const spotTime = new Date(isoDate);
+    const now = new Date();
+    const ageInHours = (now.getTime() - spotTime.getTime()) / (1000 * 60 * 60);
+
     // Fade from 1.0 to 0.3 over 24 hours
-    const opacity = Math.max(0.3, 1.0 - (ageInHours / 24) * 0.7)
-    return opacity
+    const opacity = Math.max(0.3, 1.0 - (ageInHours / 24) * 0.7);
+    return opacity;
   } catch {
-    return 0.5
+    return 0.5;
   }
-}
+};
 
 const isSpotWorked = (callsign: string) => {
-  return qsoStore.currentSession.some(qso => 
-    qso.callsign.toUpperCase() === callsign.toUpperCase()
-  )
-}
+  return qsoStore.currentSession.some(qso => qso.callsign.toUpperCase() === callsign.toUpperCase());
+};
 
 const getSpotLayout = () => {
   // Sort spots by age (newest first)
   const sortedSpots = [...spots.value].sort((a, b) => {
-    const timeA = new Date(`20${a.Date.split('/')[2]}-${a.Date.split('/')[1]}-${a.Date.split('/')[0]}T${a.Time}:00Z`)
-    const timeB = new Date(`20${b.Date.split('/')[2]}-${b.Date.split('/')[1]}-${b.Date.split('/')[0]}T${b.Time}:00Z`)
-    return timeB.getTime() - timeA.getTime() // Newest first
-  })
+    const timeA = new Date(
+      `20${a.Date.split('/')[2]}-${a.Date.split('/')[1]}-${a.Date.split('/')[0]}T${a.Time}:00Z`
+    );
+    const timeB = new Date(
+      `20${b.Date.split('/')[2]}-${b.Date.split('/')[1]}-${b.Date.split('/')[0]}T${b.Time}:00Z`
+    );
+    return timeB.getTime() - timeA.getTime(); // Newest first
+  });
 
-  const layoutSpots = [] as any
-  const halfPoint = Math.ceil(sortedSpots.length / 2)
+  const layoutSpots = [] as any;
+  const halfPoint = Math.ceil(sortedSpots.length / 2);
 
   for (let i = 0; i < sortedSpots.length; i++) {
-    const spot = sortedSpots[i]
-    const position = getSpotPosition(spot.Frequency)
-    
+    const spot = sortedSpots[i];
+    const position = getSpotPosition(spot.Frequency);
+
     // First half goes to column 0, second half to column 1
-    const column = i < halfPoint ? 0 : 1
-    const leftOffset = 35 + (column * 90) // Base position + column spacing
-    
+    const column = i < halfPoint ? 0 : 1;
+    const leftOffset = 35 + column * 90; // Base position + column spacing
+
     // Calculate opacity for second column based on age within that column
-    let opacity = getSpotOpacity(spot.Time, spot.Date)
+    let opacity = getSpotOpacity(spot.Time, spot.Date);
     if (column === 1) {
-      const indexInSecondColumn = i - halfPoint
-      const totalInSecondColumn = sortedSpots.length - halfPoint
+      const indexInSecondColumn = i - halfPoint;
+      const totalInSecondColumn = sortedSpots.length - halfPoint;
       // Linear interpolation from normal opacity to 15% for oldest
-      const ageFactor = indexInSecondColumn / (totalInSecondColumn - 1)
-      opacity = Math.max(0.15, opacity * (1 - ageFactor * 0.85))
+      const ageFactor = indexInSecondColumn / (totalInSecondColumn - 1);
+      opacity = Math.max(0.15, opacity * (1 - ageFactor * 0.85));
     }
-    
+
     layoutSpots.push({
       ...spot,
       position,
       leftOffset,
       column,
       customOpacity: opacity,
-      worked: isSpotWorked(spot.DXCall)
-    })
+      worked: isSpotWorked(spot.DXCall),
+    });
   }
-  
-  return layoutSpots
-}
 
-const layoutSpots = computed(() => getSpotLayout())
+  return layoutSpots;
+};
+
+const layoutSpots = computed(() => getSpotLayout());
 
 const showMagnifier = (event: MouseEvent, frequency: string) => {
   // Clear any pending hide timeout
   if (magnifierTimeout) {
-    clearTimeout(magnifierTimeout)
-    magnifierTimeout = null
+    clearTimeout(magnifierTimeout);
+    magnifierTimeout = null;
   }
-  
-  const freq = parseFloat(frequency)
-  const range = dxStore.actualFrequencyRange
-  if (!range) return
-  
+
+  const freq = parseFloat(frequency);
+  const range = dxStore.actualFrequencyRange;
+  if (!range) return;
+
   // Find all spots within ±5 kHz range
-  const nearbySpots = spots.value.filter(spot => {
-    const spotFreq = parseFloat(spot.Frequency)
-    return Math.abs(spotFreq - freq) <= 5
-  }).sort((a, b) => {
-    // Sort by age (newest first)
-    const timeA = new Date(`20${a.Date.split('/')[2]}-${a.Date.split('/')[1]}-${a.Date.split('/')[0]}T${a.Time}:00Z`)
-    const timeB = new Date(`20${b.Date.split('/')[2]}-${b.Date.split('/')[1]}-${b.Date.split('/')[0]}T${b.Time}:00Z`)
-    return timeB.getTime() - timeA.getTime()
-  })
-  
-  if (nearbySpots.length <= 1) return
-  
-  magnifierSpots.value = nearbySpots
-  magnifierFrequency.value = `${(freq / 1000).toFixed(3)} MHz környéke`
-  
+  const nearbySpots = spots.value
+    .filter(spot => {
+      const spotFreq = parseFloat(spot.Frequency);
+      return Math.abs(spotFreq - freq) <= 5;
+    })
+    .sort((a, b) => {
+      // Sort by age (newest first)
+      const timeA = new Date(
+        `20${a.Date.split('/')[2]}-${a.Date.split('/')[1]}-${a.Date.split('/')[0]}T${a.Time}:00Z`
+      );
+      const timeB = new Date(
+        `20${b.Date.split('/')[2]}-${b.Date.split('/')[1]}-${b.Date.split('/')[0]}T${b.Time}:00Z`
+      );
+      return timeB.getTime() - timeA.getTime();
+    });
+
+  if (nearbySpots.length <= 1) return;
+
+  magnifierSpots.value = nearbySpots;
+  magnifierFrequency.value = `${(freq / 1000).toFixed(3)} MHz környéke`;
+
   // Position magnifier near mouse but keep it in viewport
   magnifierPosition.value = {
     x: Math.min(event.clientX + 20, window.innerWidth - 300),
-    y: Math.max(event.clientY - 100, 20)
-  }
-  
-  magnifierVisible.value = true
-}
+    y: Math.max(event.clientY - 100, 20),
+  };
+
+  magnifierVisible.value = true;
+};
 
 const hideMagnifier = () => {
   // Delay hiding to prevent flickering
   magnifierTimeout = setTimeout(() => {
-    magnifierVisible.value = false
-    magnifierSpots.value = []
-  }, 100)
-}
+    magnifierVisible.value = false;
+    magnifierSpots.value = [];
+  }, 100);
+};
 
 const keepMagnifierVisible = () => {
   // Clear hide timeout when mouse enters magnifier
   if (magnifierTimeout) {
-    clearTimeout(magnifierTimeout)
-    magnifierTimeout = null
+    clearTimeout(magnifierTimeout);
+    magnifierTimeout = null;
   }
-}
+};
 
 const generateScaleTicks = () => {
-  const range = dxStore.actualFrequencyRange
-  if (!range) return { major: [], minor: [] }
-  
-  const majorTicks = [] as any
-  const minorTicks = [] as any
-  const step = (range.max - range.min) / 10
-  
+  const range = dxStore.actualFrequencyRange;
+  if (!range) return { major: [], minor: [] };
+
+  const majorTicks = [] as any;
+  const minorTicks = [] as any;
+  const step = (range.max - range.min) / 10;
+
   for (let i = 0; i <= 10; i++) {
-    const freq = range.min + (step * i)
-    const position = (i / 10) * 100
-    
+    const freq = range.min + step * i;
+    const position = (i / 10) * 100;
+
     if (i % 2 === 0) {
       majorTicks.push({
         frequency: freq,
         position: position,
-        label: `${(freq / 1000).toFixed(3)}`
-      })
+        label: `${(freq / 1000).toFixed(3)}`,
+      });
     } else {
       minorTicks.push({
         frequency: freq,
-        position: position
-      })
+        position: position,
+      });
     }
   }
-  
-  return { major: majorTicks, minor: minorTicks }
-}
 
-const scaleTicks = computed(() => generateScaleTicks())
+  return { major: majorTicks, minor: minorTicks };
+};
+
+const scaleTicks = computed(() => generateScaleTicks());
 
 const handleSpotClick = (spot: DxSpot) => {
   // Convert frequency from kHz to MHz for rig
-  const freqInMHz = (parseFloat(spot.Frequency) / 1000).toFixed(3)
-  
+  const freqInMHz = (parseFloat(spot.Frequency) / 1000).toFixed(3);
+
   // Set rig frequency
-  rigStore.setFrequency(freqInMHz)
-  
+  rigStore.setFrequency(freqInMHz);
+
   // Map DX spot mode to rig mode
-  let rigMode = spot.Mode
+  let rigMode = spot.Mode;
   if (spot.Mode === 'LSB' || spot.Mode === 'USB') {
-    rigMode = spot.Mode
+    rigMode = spot.Mode;
   } else if (spot.Mode === 'PHONE') {
     // Determine LSB/USB based on frequency
-    const freqKHz = parseFloat(spot.Frequency)
-    rigMode = freqKHz < 10000 ? 'LSB' : 'USB'
+    const freqKHz = parseFloat(spot.Frequency);
+    rigMode = freqKHz < 10000 ? 'LSB' : 'USB';
   } else if (spot.Mode === 'CW') {
-    rigMode = 'CW'
+    rigMode = 'CW';
   } else if (spot.Mode.includes('FT') || spot.Mode === 'RTTY' || spot.Mode === 'PSK31') {
-    rigMode = 'DATA'
+    rigMode = 'DATA';
   } else {
-    rigMode = 'USB' // Default fallback
+    rigMode = 'USB'; // Default fallback
   }
-  
+
   // Set rig mode
-  rigStore.setMode(rigMode)
-  
+  rigStore.setMode(rigMode);
+
   // Set callsign in QSO form
-  qsoStore.updateQsoForm('callsign', spot.DXCall)
-  
+  qsoStore.updateQsoForm('callsign', spot.DXCall);
+
   // Fetch station info for the callsign
-  qsoStore.fetchStationInfo(spot.DXCall)
-}
+  qsoStore.fetchStationInfo(spot.DXCall);
+};
 
 onMounted(() => {
-  dxStore.startAutoRefresh()
-})
+  dxStore.startAutoRefresh();
+});
 
 onUnmounted(() => {
-  dxStore.stopAutoRefresh()
-})
+  dxStore.stopAutoRefresh();
+});
 </script>
 
 <template>
   <div class="dx-cluster">
     <h2 class="section-title">DX Cluster - {{ filters.selectedBand }}m band</h2>
-    
+
     <div class="dx-cluster-main">
       <!-- Frequency Scale and Spots -->
-      <div class="spots-column">       
+      <div class="spots-column">
         <div v-if="error" class="error">
           Error: {{ error }}
           <button @click="dxStore.fetchSpots" class="retry-btn">Try again!</button>
         </div>
-        
-        <div v-else-if="spots.length === 0" class="no-spots">
-          No spots available.
-        </div>
-        
+
+        <div v-else-if="spots.length === 0" class="no-spots">No spots available.</div>
+
         <div v-else class="frequency-scale">
           <!-- Scale -->
           <div class="scale-container">
             <div class="scale-line"></div>
-            
+
             <!-- Major ticks -->
-            <div 
-              v-for="tick in scaleTicks.major" 
+            <div
+              v-for="tick in scaleTicks.major"
               :key="`major-${tick.frequency}`"
               class="major-tick"
               :style="{ top: `${100 - tick.position}%` }"
@@ -311,33 +317,33 @@ onUnmounted(() => {
               <div class="tick-mark major"></div>
               <div class="tick-label">{{ tick.label }}</div>
             </div>
-            
+
             <!-- Minor ticks -->
-            <div 
-              v-for="tick in scaleTicks.minor" 
+            <div
+              v-for="tick in scaleTicks.minor"
               :key="`minor-${tick.frequency}`"
               class="minor-tick"
               :style="{ top: `${100 - tick.position}%` }"
             >
               <div class="tick-mark minor"></div>
             </div>
-            
+
             <!-- Spots -->
-            <div 
-              v-for="spot in layoutSpots" 
+            <div
+              v-for="spot in layoutSpots"
               :key="spot.Nr"
               class="spot-label"
-              :style="{ 
+              :style="{
                 top: `${100 - spot.position}%`,
                 left: `${spot.leftOffset}px`,
                 opacity: spot.customOpacity,
-                zIndex: spot.column + 1
+                zIndex: spot.column + 1,
               }"
               :class="{
                 worked: spot.worked,
                 lotw: spot.LOTW,
                 eqsl: spot.EQSL,
-                [`column-${spot.column}`]: true
+                [`column-${spot.column}`]: true,
               }"
               :title="`${spot.DXCall} - ${formatFrequency(spot.Frequency)} - Spotters: ${spot.Spotters.join(', ')} - ${spot.Comment}`"
               @mouseenter="showMagnifier($event, spot.Frequency)"
@@ -349,14 +355,14 @@ onUnmounted(() => {
           </div>
         </div>
       </div>
-      
+
       <!-- Magnifier Window -->
-      <div 
+      <div
         v-if="magnifierVisible"
         class="magnifier-window"
         :style="{
           left: `${magnifierPosition.x}px`,
-          top: `${magnifierPosition.y}px`
+          top: `${magnifierPosition.y}px`,
         }"
         @mouseenter="keepMagnifierVisible"
         @mouseleave="hideMagnifier"
@@ -366,14 +372,14 @@ onUnmounted(() => {
           <span class="spot-count">{{ magnifierSpots.length }} spot</span>
         </div>
         <div class="magnifier-content">
-          <div 
-            v-for="spot in magnifierSpots" 
+          <div
+            v-for="spot in magnifierSpots"
             :key="`mag-${spot.Nr}`"
             class="magnifier-spot"
             :class="{
               worked: isSpotWorked(spot.DXCall),
               lotw: spot.LOTW,
-              eqsl: spot.EQSL
+              eqsl: spot.EQSL,
             }"
           >
             <div class="spot-info" @click="handleSpotClick(spot)">
@@ -399,15 +405,15 @@ onUnmounted(() => {
           </div>
         </div>
       </div>
-      
+
       <!-- Filters Column -->
       <div class="filters-column">
         <!-- Band Selection -->
         <div class="filter-group">
           <label class="filter-label">Band:</label>
           <div class="filter-buttons-column">
-            <button 
-              v-for="band in bands" 
+            <button
+              v-for="band in bands"
               :key="`band-${band}`"
               :class="['filter-btn-small', { active: filters.selectedBand === band }]"
               @click="selectBand(band)"
@@ -421,8 +427,8 @@ onUnmounted(() => {
         <div class="filter-group">
           <label class="filter-label">DX:</label>
           <div class="filter-buttons-column">
-            <button 
-              v-for="continent in continents" 
+            <button
+              v-for="continent in continents"
               :key="`cdx-${continent}`"
               :class="['filter-btn-small', { active: filters.selectedCdx.includes(continent) }]"
               @click="toggleCdxFilter(continent)"
@@ -436,8 +442,8 @@ onUnmounted(() => {
         <div class="filter-group">
           <label class="filter-label">DE:</label>
           <div class="filter-buttons-column">
-            <button 
-              v-for="continent in continents" 
+            <button
+              v-for="continent in continents"
               :key="`cde-${continent}`"
               :class="['filter-btn-small', { active: filters.selectedCde.includes(continent) }]"
               @click="toggleCdeFilter(continent)"
@@ -451,8 +457,8 @@ onUnmounted(() => {
         <div class="filter-group">
           <label class="filter-label">Mode:</label>
           <div class="filter-buttons-column">
-            <button 
-              v-for="mode in modes" 
+            <button
+              v-for="mode in modes"
               :key="`mode-${mode}`"
               :class="['filter-btn-small', { active: filters.selectedModes.includes(mode) }]"
               @click="toggleModeFilter(mode)"
@@ -465,17 +471,22 @@ onUnmounted(() => {
         <!-- Additional Options -->
         <div class="filter-group">
           <label class="checkbox-label">
-            <input 
+            <input
               type="checkbox"
               :checked="filters.validatedOnly"
               @change="updateValidatedOnly(($event.target as HTMLInputElement)?.checked ?? false)"
             />
             Valid
           </label>
-          
+
           <div class="page-length-selector">
             <label>Spots:</label>
-            <select :value="filters.pageLength" @change="updatePageLength(parseInt(($event.target as HTMLSelectElement)?.value ?? '25'))">
+            <select
+              :value="filters.pageLength"
+              @change="
+                updatePageLength(parseInt(($event.target as HTMLSelectElement)?.value ?? '25'))
+              "
+            >
               <option v-for="length in pageLengthOptions" :key="length" :value="length">
                 {{ length }}
               </option>
@@ -624,7 +635,8 @@ onUnmounted(() => {
   background: var(--main-color);
 }
 
-.major-tick, .minor-tick {
+.major-tick,
+.minor-tick {
   position: absolute;
   left: 0px;
 }
@@ -666,7 +678,7 @@ onUnmounted(() => {
   border-radius: var(--border-radius);
   font-size: 0.7rem;
   font-weight: 600;
-  border: 1px solid rgba(255, 165, 0, 0.30);
+  border: 1px solid rgba(255, 165, 0, 0.3);
   cursor: pointer;
   transition: all 0.2s ease;
   white-space: nowrap;
@@ -714,7 +726,9 @@ onUnmounted(() => {
   box-shadow: inset -3px 0 0 #f59e0b;
 }
 
-.loading, .error, .no-spots {
+.loading,
+.error,
+.no-spots {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -924,18 +938,18 @@ onUnmounted(() => {
   .dx-cluster-main {
     flex-direction: column;
   }
-  
+
   .filters-column {
     width: auto;
     height: auto;
     max-height: 200px;
   }
-  
+
   .filter-buttons-column {
     flex-direction: row;
     flex-wrap: wrap;
   }
-  
+
   .magnifier-window {
     min-width: 250px;
     max-width: 90vw;

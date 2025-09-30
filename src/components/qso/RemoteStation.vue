@@ -1,32 +1,32 @@
 <script lang="ts">
-import { useQsoStore } from '../../store/qso'
-import { StationData } from '../../types/station'
+import { useQsoStore } from '../../store/qso';
+import { StationData } from '../../types/station';
 
 export default {
   name: 'RemoteStation',
   setup() {
-    const qsoStore = useQsoStore()
-    return { qsoStore }
+    const qsoStore = useQsoStore();
+    return { qsoStore };
   },
   computed: {
     callsign() {
-      return this.qsoStore.qsoForm.callsign
+      return this.qsoStore.qsoForm.callsign;
     },
     isValid() {
-      return this.qsoStore.isCallsignValid
+      return this.qsoStore.isCallsignValid;
     },
     stationInfo(): StationData | null {
-      return this.qsoStore.stationInfo
+      return this.qsoStore.stationInfo;
     },
   },
   watch: {
     async callsign(newCallsign: string) {
       if (this.isValid && newCallsign) {
-        await this.qsoStore.fetchStationInfo(newCallsign)
+        await this.qsoStore.fetchStationInfo(newCallsign);
       }
-    }
-  }
-}
+    },
+  },
+};
 </script>
 
 <template>
@@ -35,28 +35,45 @@ export default {
     <div v-if="isValid && callsign" class="remote-station-boxes">
       <!-- Station details with integrated location -->
       <div class="station-block station-remote" :class="{ 'qrz-error': stationInfo?.qrzError }">
-        <img v-if="stationInfo?.flag" :src="stationInfo.flag" :alt="stationInfo.baseData.country" class="station-flag" />
+        <img
+          v-if="stationInfo?.flag"
+          :src="stationInfo.flag"
+          :alt="stationInfo.baseData.country"
+          class="station-flag"
+        />
         <div class="station-info">
           <p class="station-name">Remote: {{ stationInfo?.baseData?.name }}</p>
           <p class="station-qth">QTH: {{ stationInfo?.baseData?.qth || 'Loading...' }}</p>
-          <p class="station-country">Country: {{ stationInfo?.baseData?.country || 'Loading...' }}</p>
+          <p class="station-country">
+            Country: {{ stationInfo?.baseData?.country || 'Loading...' }}
+          </p>
           <template v-if="stationInfo?.geodata">
             <p class="station-coords-text">Lat: {{ stationInfo.geodata.lat?.toFixed(4) }}°</p>
             <p class="station-coords-text">Lon: {{ stationInfo.geodata.lon?.toFixed(4) }}°</p>
-            <p v-if="stationInfo.geodata.display_name" class="station-coords-text">Location: {{
-              stationInfo.geodata.display_name }}</p>
+            <p v-if="stationInfo.geodata.display_name" class="station-coords-text">
+              Location: {{ stationInfo.geodata.display_name }}
+            </p>
           </template>
-          <p v-if="stationInfo?.baseData?.grid" class="station-coords-text">Grid: {{ stationInfo.baseData.grid }}</p>
-          <p v-if="stationInfo?.distance" class="station-distance">Distance: {{ stationInfo.distance }} km</p>
+          <p v-if="stationInfo?.baseData?.grid" class="station-coords-text">
+            Grid: {{ stationInfo.baseData.grid }}
+          </p>
+          <p v-if="stationInfo?.distance" class="station-distance">
+            Distance: {{ stationInfo.distance }} km
+          </p>
         </div>
       </div>
 
       <!-- Weather and Time -->
-      <div v-if="stationInfo?.weather || stationInfo?.localTime" class="station-block station-weather">
+      <div
+        v-if="stationInfo?.weather || stationInfo?.localTime"
+        class="station-block station-weather"
+      >
         <div class="station-info">
           <p class="station-weather-title">Local Info</p>
           <p v-if="stationInfo.weather" class="station-weather-text">{{ stationInfo.weather }}</p>
-          <p v-if="stationInfo.localTime" class="station-time">Local time: {{ stationInfo.localTime }}</p>
+          <p v-if="stationInfo.localTime" class="station-time">
+            Local time: {{ stationInfo.localTime }}
+          </p>
         </div>
       </div>
     </div>

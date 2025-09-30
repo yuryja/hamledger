@@ -1,4 +1,4 @@
-import { BaseStationData } from "../types/station";
+import { BaseStationData } from '../types/station';
 
 export abstract class OnlineStationService {
   protected abstract baseUrl: string;

@@ -1,14 +1,14 @@
 <script lang="ts">
-import QsoInput from './qso/QsoInput.vue'
-import RemoteStation from './qso/RemoteStation.vue'
+import QsoInput from './qso/QsoInput.vue';
+import RemoteStation from './qso/RemoteStation.vue';
 
 export default {
   name: 'QsoPanel',
   components: {
     QsoInput,
-    RemoteStation
-  }
-}
+    RemoteStation,
+  },
+};
 </script>
 
 <template>

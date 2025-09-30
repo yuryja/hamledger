@@ -1,6 +1,6 @@
 <script lang="ts">
-import { ConfigField } from '../types/config'
-import { configHelper } from '../utils/configHelper'
+import { ConfigField } from '../types/config';
+import { configHelper } from '../utils/configHelper';
 
 export default {
   name: 'ConfigView',
@@ -9,43 +9,43 @@ export default {
       selectedCategory: 'station',
       searchQuery: '',
       configFields: [] as ConfigField[],
-    }
+    };
   },
   computed: {
     categories() {
-      return configHelper.getCategorizedFields(this.configFields)
+      return configHelper.getCategorizedFields(this.configFields);
     },
     filteredFields() {
       if (!this.searchQuery) {
-        return this.categories.find(cat => cat.name === this.selectedCategory)?.fields || []
+        return this.categories.find(cat => cat.name === this.selectedCategory)?.fields || [];
       }
       return this.configFields.filter(field => {
-        const searchStr = this.searchQuery.toLowerCase()
-        const fieldPath = [...field.path, field.key].join(' ').toLowerCase()
-        return fieldPath.includes(searchStr)
-      })
-    }
+        const searchStr = this.searchQuery.toLowerCase();
+        const fieldPath = [...field.path, field.key].join(' ').toLowerCase();
+        return fieldPath.includes(searchStr);
+      });
+    },
   },
   mounted() {
-    this.configFields = configHelper.flattenConfig()
+    this.configFields = configHelper.flattenConfig();
   },
   methods: {
     getFieldId(field: ConfigField): string {
-      return configHelper.getFieldId(field)
+      return configHelper.getFieldId(field);
     },
     getFieldLabel(field: ConfigField): string {
-      return configHelper.getFieldLabel(field)
+      return configHelper.getFieldLabel(field);
     },
     async handleChange(field: ConfigField, event: Event) {
-      const target = event.target as HTMLInputElement
+      const target = event.target as HTMLInputElement;
       const value = configHelper.processConfigValue(
         field,
         target.type === 'checkbox' ? String(target.checked) : target.value
-      )
-      await configHelper.updateSetting(field.path, field.key, value)
-    }
-  }
-}
+      );
+      await configHelper.updateSetting(field.path, field.key, value);
+    },
+  },
+};
 </script>
 
 <template>
@@ -54,7 +54,12 @@ export default {
       <div class="config-header">
         <h2 class="section-title">Configuration</h2>
         <div class="search-box">
-          <input type="text" v-model="searchQuery" placeholder="Search settings..." class="search-input">
+          <input
+            type="text"
+            v-model="searchQuery"
+            placeholder="Search settings..."
+            class="search-input"
+          />
         </div>
       </div>
 
@@ -62,9 +67,12 @@ export default {
         <!-- Categories sidebar -->
         <nav class="config-sidebar">
           <ul class="category-list">
-            <li v-for="category in categories" :key="category.name"
+            <li
+              v-for="category in categories"
+              :key="category.name"
               :class="['category-item', { active: category.name === selectedCategory }]"
-              @click="selectedCategory = category.name">
+              @click="selectedCategory = category.name"
+            >
               {{ category.name.charAt(0).toUpperCase() + category.name.slice(1) }}
             </li>
           </ul>
@@ -76,31 +84,52 @@ export default {
             <div v-for="field in filteredFields" :key="getFieldId(field)" class="config-field">
               <div class="field-header">
                 <label :for="getFieldId(field)">{{ getFieldLabel(field) }}</label>
-                <span v-if="field.description" class="field-description">{{ field.description }}</span>
+                <span v-if="field.description" class="field-description">{{
+                  field.description
+                }}</span>
               </div>
 
               <!-- Boolean -->
               <div v-if="field.type === 'boolean'" class="toggle-switch">
-                <input type="checkbox" :id="getFieldId(field)" :checked="field.value"
-                  @change="handleChange(field, $event)">
+                <input
+                  type="checkbox"
+                  :id="getFieldId(field)"
+                  :checked="field.value"
+                  @change="handleChange(field, $event)"
+                />
                 <span class="slider"></span>
               </div>
 
               <!-- Number -->
-              <input v-else-if="field.type === 'number'" type="number" :id="getFieldId(field)" :value="field.value"
-                @input="handleChange(field, $event)">
+              <input
+                v-else-if="field.type === 'number'"
+                type="number"
+                :id="getFieldId(field)"
+                :value="field.value"
+                @input="handleChange(field, $event)"
+              />
 
               <!-- Array (as select) -->
-              <select v-else-if="field.type === 'array' && field.value.every((v: any) => typeof v !== 'object')"
-                :id="getFieldId(field)" @change="handleChange(field, $event)">
+              <select
+                v-else-if="
+                  field.type === 'array' && field.value.every((v: any) => typeof v !== 'object')
+                "
+                :id="getFieldId(field)"
+                @change="handleChange(field, $event)"
+              >
                 <option v-for="option in field.value" :key="option" :value="option">
                   {{ option }}
                 </option>
               </select>
 
               <!-- String -->
-              <input v-else type="text" :id="getFieldId(field)" :value="field.value"
-                @input="handleChange(field, $event)">
+              <input
+                v-else
+                type="text"
+                :id="getFieldId(field)"
+                :value="field.value"
+                @input="handleChange(field, $event)"
+              />
             </div>
           </div>
         </div>
@@ -230,8 +259,8 @@ export default {
   color: #666;
 }
 
-.config-field input[type="text"],
-.config-field input[type="number"],
+.config-field input[type='text'],
+.config-field input[type='number'],
 .config-field select {
   background: #444;
   border: 1px solid #555;
@@ -262,27 +291,27 @@ export default {
   right: 0;
   bottom: 0;
   background-color: #444;
-  transition: .4s;
+  transition: 0.4s;
   border-radius: 34px;
 }
 
 .slider:before {
   position: absolute;
-  content: "";
+  content: '';
   height: 26px;
   width: 26px;
   left: 4px;
   bottom: 4px;
   background-color: white;
-  transition: .4s;
+  transition: 0.4s;
   border-radius: 50%;
 }
 
-input:checked+.slider {
+input:checked + .slider {
   background-color: var(--main-color);
 }
 
-input:checked+.slider:before {
+input:checked + .slider:before {
   transform: translateX(26px);
 }
 </style>

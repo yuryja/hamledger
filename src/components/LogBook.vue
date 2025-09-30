@@ -1,17 +1,17 @@
 <script lang="ts">
-import { useQsoStore } from '../store/qso'
-import { getCountryCodeForCallsign } from '../utils/callsign'
-import { DateHelper } from '../utils/dateHelper'
-import QsoDetailDialog from './qso/QsoDetailDialog.vue'
+import { useQsoStore } from '../store/qso';
+import { getCountryCodeForCallsign } from '../utils/callsign';
+import { DateHelper } from '../utils/dateHelper';
+import QsoDetailDialog from './qso/QsoDetailDialog.vue';
 
 export default {
   components: {
-    QsoDetailDialog
+    QsoDetailDialog,
   },
   name: 'LogBook',
   setup() {
-    const qsoStore = useQsoStore()
-    return { qsoStore }
+    const qsoStore = useQsoStore();
+    return { qsoStore };
   },
   data() {
     return {
@@ -19,16 +19,16 @@ export default {
       sortKey: 'datetime',
       sortOrder: 'desc',
       selectedQso: null,
-      showEditDialog: false
-    }
+      showEditDialog: false,
+    };
   },
   computed: {
     allQsos() {
-      return this.qsoStore.allQsos
+      return this.qsoStore.allQsos;
     },
     totalCount() {
-      return this.qsoStore.totalCount
-    }
+      return this.qsoStore.totalCount;
+    },
   },
   methods: {
     getCountryCodeForCallsign,
@@ -56,9 +56,9 @@ export default {
       if (!result.success) {
         console.error('ADIF import failed:', result.error);
       }
-    }
-  }
-}
+    },
+  },
+};
 </script>
 
 <template>
@@ -121,13 +121,23 @@ export default {
           </tr>
         </thead>
         <tbody>
-          <tr v-for="entry in getSortedQsos()" :key="entry._id" @click="selectedQso = entry; showEditDialog = true">
+          <tr
+            v-for="entry in getSortedQsos()"
+            :key="entry._id"
+            @click="
+              selectedQso = entry;
+              showEditDialog = true;
+            "
+          >
             <td>{{ this.DateHelper.formatUTCDate(new Date(entry.datetime)) }}</td>
             <td>{{ this.DateHelper.formatUTCTime(new Date(entry.datetime)) }}</td>
             <td>
-              <img v-if="getCountryCodeForCallsign(entry.callsign) !== 'xx'"
+              <img
+                v-if="getCountryCodeForCallsign(entry.callsign) !== 'xx'"
                 :src="`https://flagcdn.com/h40/${getCountryCodeForCallsign(entry.callsign)}.png`"
-                :alt="getCountryCodeForCallsign(entry.callsign)" class="callsign-flag" />
+                :alt="getCountryCodeForCallsign(entry.callsign)"
+                class="callsign-flag"
+              />
               {{ entry.callsign }}
             </td>
             <td>{{ entry.band }}</td>
@@ -143,7 +153,12 @@ export default {
       </table>
     </div>
 
-    <QsoEditDialog v-if="selectedQso" :qso="selectedQso" :show="showEditDialog" @close="showEditDialog = false" />
+    <QsoEditDialog
+      v-if="selectedQso"
+      :qso="selectedQso"
+      :show="showEditDialog"
+      @close="showEditDialog = false"
+    />
   </main>
 </template>
 

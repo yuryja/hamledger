@@ -1,63 +1,63 @@
 <script lang="ts">
-import { useQsoStore } from '../../store/qso'
-import { useRigStore } from '../../store/rig'
-import { BAND_RANGES } from '../../utils/bands'
-import { QsoEntry } from '../../types/qso'
+import { useQsoStore } from '../../store/qso';
+import { useRigStore } from '../../store/rig';
+import { BAND_RANGES } from '../../utils/bands';
+import { QsoEntry } from '../../types/qso';
 
 export default {
   name: 'QsoEditDialog',
   props: {
     qso: {
       type: Object as () => QsoEntry,
-      required: true
+      required: true,
     },
     show: {
       type: Boolean,
-      required: true
-    }
+      required: true,
+    },
   },
   setup() {
-    const qsoStore = useQsoStore()
-    const rigStore = useRigStore()
-    return { qsoStore, rigStore }
+    const qsoStore = useQsoStore();
+    const rigStore = useRigStore();
+    return { qsoStore, rigStore };
   },
   data() {
     return {
       editedQso: {} as QsoEntry,
       bands: BAND_RANGES.map(band => ({
         value: band.name,
-        label: band.name.toUpperCase()
-      }))
-    }
+        label: band.name.toUpperCase(),
+      })),
+    };
   },
   watch: {
     show(newVal) {
       if (newVal) {
-        this.editedQso = { ...this.qso }
+        this.editedQso = { ...this.qso };
       }
-    }
+    },
   },
   methods: {
     async saveChanges() {
       try {
-        await this.qsoStore.updateQso(this.editedQso)
-        this.$emit('close')
+        await this.qsoStore.updateQso(this.editedQso);
+        this.$emit('close');
       } catch (error) {
-        console.error('Failed to update QSO:', error)
+        console.error('Failed to update QSO:', error);
       }
     },
     close() {
-      this.$emit('close')
-    }
-  }
-}
+      this.$emit('close');
+    },
+  },
+};
 </script>
 
 <template>
   <div v-if="show" class="dialog-overlay" @click="close">
     <div class="dialog-content" @click.stop>
       <h2>Edit QSO</h2>
-      
+
       <div class="form-grid">
         <div class="form-group">
           <label for="callsign">Callsign</label>

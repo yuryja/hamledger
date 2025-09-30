@@ -1,18 +1,18 @@
-import { ConfigField, ConfigCategory } from "../types/config";
-import schema_json from "../settings.schema.json";
-import defaultSettings from "../settings.json";
+import { ConfigField, ConfigCategory } from '../types/config';
+import schema_json from '../settings.schema.json';
+import defaultSettings from '../settings.json';
 
 declare global {
   interface Window {
     electronAPI: {
       addQso: (qso: any) => Promise<any>;
       getAllDocs: () => Promise<any>;
-      importAdif: () => Promise<{imported: boolean, count?: number, error?: any}>;
+      importAdif: () => Promise<{ imported: boolean; count?: number; error?: any }>;
       loadSettings: () => Promise<any>;
       saveSettings: (settings: any) => Promise<void>;
       updateQso: (qso: any) => Promise<any>;
-      fetchDxSpots: (params: string) => Promise<any>
-    }
+      fetchDxSpots: (params: string) => Promise<any>;
+    };
   }
 }
 
@@ -32,7 +32,7 @@ export class ConfigHelper {
         this.settings = settings;
       }
     } catch (error) {
-      console.error("Error loading settings:", error);
+      console.error('Error loading settings:', error);
       this.settings = defaultSettings;
     }
   }
@@ -42,15 +42,11 @@ export class ConfigHelper {
       await window.electronAPI.saveSettings(newSettings);
       this.settings = newSettings;
     } catch (error) {
-      console.error("Error saving settings:", error);
+      console.error('Error saving settings:', error);
     }
   }
 
-  public async updateSetting(
-    path: string[],
-    key: string,
-    value: any
-  ): Promise<void> {
+  public async updateSetting(path: string[], key: string, value: any): Promise<void> {
     let current = this.settings;
 
     // Navigate to the correct nested object
@@ -81,12 +77,9 @@ export class ConfigHelper {
     return current[key];
   }
 
-  public flattenConfig(
-    obj: any = this.settings,
-    path: string[] = []
-  ): ConfigField[] {
+  public flattenConfig(obj: any = this.settings, path: string[] = []): ConfigField[] {
     return Object.entries(obj).reduce((acc: ConfigField[], [key, value]) => {
-      if (value && typeof value === "object" && !Array.isArray(value)) {
+      if (value && typeof value === 'object' && !Array.isArray(value)) {
         return [...acc, ...this.flattenConfig(value, [...path, key])];
       }
       return [
@@ -95,7 +88,7 @@ export class ConfigHelper {
           key,
           path,
           value,
-          type: Array.isArray(value) ? "array" : typeof value,
+          type: Array.isArray(value) ? 'array' : typeof value,
           description: this.getFieldDescription({
             key,
             path,
@@ -116,29 +109,26 @@ export class ConfigHelper {
     }
 
     if (current.properties && current.properties[field.key]) {
-      return current.properties[field.key].description || "";
+      return current.properties[field.key].description || '';
     }
 
-    return "";
+    return '';
   }
 
   public getFieldId(field: ConfigField): string {
-    return [...field.path, field.key].join("-");
+    return [...field.path, field.key].join('-');
   }
 
   public getFieldLabel(field: ConfigField): string {
-    return (
-      field.key.charAt(0).toUpperCase() +
-      field.key.slice(1).replace(/([A-Z])/g, " $1")
-    );
+    return field.key.charAt(0).toUpperCase() + field.key.slice(1).replace(/([A-Z])/g, ' $1');
   }
 
   public processConfigValue(field: ConfigField, value: string): any {
     switch (field.type) {
-      case "number":
+      case 'number':
         return Number(value);
-      case "boolean":
-        return value === "true";
+      case 'boolean':
+        return value === 'true';
       default:
         return value;
     }
@@ -147,7 +137,7 @@ export class ConfigHelper {
   public getCategorizedFields(configFields: ConfigField[]): ConfigCategory[] {
     const categoriesMap = new Map<string, ConfigField[]>();
 
-    configFields.forEach((field) => {
+    configFields.forEach(field => {
       const category = field.path[0];
       if (!categoriesMap.has(category)) {
         categoriesMap.set(category, []);

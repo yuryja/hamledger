@@ -10,16 +10,11 @@
     "resolveJsonModule": true,
     "isolatedModules": false,
     "esModuleInterop": true,
-    "lib": [
-      "esnext",
-      "dom"
-    ],
+    "lib": ["esnext", "dom"],
     "skipLibCheck": true,
     "outDir": "dist/electron"
   },
-  "include": [
-    "src/electron/**/*"
-  ],
+  "include": ["src/electron/**/*"],
   "references": [
     {
       "path": "./tsconfig.node.json"

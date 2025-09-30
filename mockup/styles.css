@@ -48,7 +48,9 @@
   justify-content: center;
   padding: 0.75rem 0;
   cursor: pointer;
-  transition: background 0.2s, color 0.2s;
+  transition:
+    background 0.2s,
+    color 0.2s;
   color: var(--gray-color);
 }
 .sidebar-item:hover {
@@ -160,7 +162,7 @@ body {
   display: inline-flex;
   gap: 0.5rem;
 }
-.rig-mode-badges input[type="radio"] {
+.rig-mode-badges input[type='radio'] {
   display: none;
 }
 .mode-badge {
@@ -173,9 +175,11 @@ body {
   font-size: 0.9rem;
   text-transform: uppercase;
   border: 1px solid var(--main-color);
-  transition: background 0.2s, color 0.2s;
+  transition:
+    background 0.2s,
+    color 0.2s;
 }
-.rig-mode-badges input[type="radio"]:checked + .mode-badge {
+.rig-mode-badges input[type='radio']:checked + .mode-badge {
   background: var(--main-color);
   color: #000;
 }
@@ -211,7 +215,7 @@ body {
 }
 .s-meter::before,
 .s-meter::after {
-  content: "";
+  content: '';
   position: absolute;
   left: 0;
   right: 0;

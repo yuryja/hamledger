@@ -1,16 +1,16 @@
 <script lang="ts">
-import RigControl from './header/RigControl.vue'
-import FreqSMeter from './header/FreqSMeter.vue'
-import PropClockWeather from './header/PropClockWeather.vue'
+import RigControl from './header/RigControl.vue';
+import FreqSMeter from './header/FreqSMeter.vue';
+import PropClockWeather from './header/PropClockWeather.vue';
 
 export default {
   name: 'AppHeader',
   components: {
     RigControl,
     FreqSMeter,
-    PropClockWeather
-  }
-}
+    PropClockWeather,
+  },
+};
 </script>
 
 <template>
