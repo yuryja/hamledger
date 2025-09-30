@@ -21,6 +21,8 @@
     "app:preview": "npm run vite:build && tsc && electron .",
     "test": "vitest --environment jsdom",
     "test:coverage": "vitest run --coverage --environment jsdom",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "build:win": "npm run app:build && electron-builder --win",
     "build:mac": "npm run app:build && electron-builder --mac",
     "build:linux": "npm run app:build && electron-builder --linux",
