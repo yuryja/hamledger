@@ -22,6 +22,7 @@ declare global {
       loadSettings: () => Promise<any>;
       saveSettings: (settings: any) => Promise<void>;
       updateQso: (qso: any) => Promise<any>;
+      fetchDxSpots: (params: string) => Promise<any>
     }
   }
 }

@@ -105,7 +105,7 @@ ipcMain.handle("adif:import", async () => {
 });
 
 // DX Spots API handler
-ipcMain.handle("fetch-dx-spots", async (event, params: string) => {
+ipcMain.handle("fetchDxSpots", async (event, params: string) => {
   try {
     const url = `https://dxheat.com/source/spots/?${params}`;
     

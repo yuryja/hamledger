@@ -561,9 +561,9 @@ onUnmounted(() => {
 .scale-line {
   position: absolute;
   left: 25px;
-  top: 0px;
-  bottom: 0px;
-  width: 1px;
+  top: 20px;
+  bottom: 20px;
+  width: 2px;
   background: var(--main-color);
 }
 
@@ -579,7 +579,7 @@ onUnmounted(() => {
 
 .tick-mark.major {
   width: 20px;
-  height: 1px;
+  height: 2px;
   left: 0px;
 }
 
@@ -591,13 +591,13 @@ onUnmounted(() => {
 
 .tick-label {
   position: absolute;
-  left: 5px;
-  top: -15px;
+  left: -20px;
+  top: -10px;
   font-size: 0.7rem;
   color: var(--main-color);
   white-space: nowrap;
   text-align: center;
-  width: 20px;
+  width: 40px;
 }
 
 .spot-label {

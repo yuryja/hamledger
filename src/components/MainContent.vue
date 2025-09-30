@@ -62,6 +62,7 @@ export default {
 
 .qso-layout {
   height: 100%;
+  width: auto;
   display: flex;
   gap: var(--spacing-md, 1rem);
 }

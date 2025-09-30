@@ -22,5 +22,5 @@ contextBridge.exposeInMainWorld('electronAPI', {
   loadSettings: () => ipcRenderer.invoke('settings:load'),
   saveSettings: (settings: any) => ipcRenderer.invoke('settings:save', settings),
   updateQso: (qso: any) => ipcRenderer.invoke('qso:update', qso),
-  fetchDxSpots: (params: string) => ipcRenderer.invoke('fetch-dx-spots', params)
+  fetchDxSpots: (params: string) => ipcRenderer.invoke('fetchDxSpots', params)
 })

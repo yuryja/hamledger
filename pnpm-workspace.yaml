@@ -1,0 +1,8 @@
+ignoredBuiltDependencies:
+  - electron
+  - esbuild
+  - leveldown
+  - vue-demi
+
+onlyBuiltDependencies:
+  - electron

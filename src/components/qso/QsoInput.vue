@@ -84,7 +84,7 @@ export default {
 </script>
 
 <template>
-  <section class="qso_input_area">
+  <section class="qso_input_area panel">
     <h2 class="section-title">QSO Input</h2>
     <div class="qso-input-content">
       <div class="qso-input-group">
@@ -155,7 +155,6 @@ export default {
 .qso_input_area {
   flex: 1;
   background: #333;
-  padding: 1rem;
   border-radius: 5px;
   display: flex;
   flex-direction: column;
