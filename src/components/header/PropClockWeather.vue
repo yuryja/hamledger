@@ -2,6 +2,8 @@
 import { usePropagationStore } from '../../store/propagation';
 import { useWeatherStore } from '../../store/weather';
 import { DateHelper } from '../../utils/dateHelper';
+import { configHelper } from '../../utils/configHelper';
+import { MaidenheadLocator } from '../../utils/maidenhead';
 
 export default {
   name: 'PropClockWeather',
@@ -39,6 +41,9 @@ export default {
     setInterval(() => {
       this.propStore.updatePropagationData();
     }, 15 * 60 * 1000);
+
+    // Betöltjük a helyi időjárást a config maidenhead locator alapján
+    await this.loadLocalWeather();
   },
   beforeUnmount() {
     if (this.clockInterval) {
@@ -48,6 +53,19 @@ export default {
   methods: {
     updateUTCClock() {
       this.utcTime = DateHelper.getCurrentUTCTime();
+    },
+    async loadLocalWeather() {
+      try {
+        await configHelper.initSettings();
+        const grid = configHelper.getSetting(['station'], 'grid');
+        
+        if (grid) {
+          const coords = MaidenheadLocator.gridToLatLon(grid);
+          await this.weatherStore.updateWeatherInfo(coords.lat, coords.lon);
+        }
+      } catch (error) {
+        console.error('Error loading local weather:', error);
+      }
     },
   },
 };
