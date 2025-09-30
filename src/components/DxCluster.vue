@@ -1,33 +1,14 @@
 <script setup lang="ts">
-import { ref, onMounted, computed, watch } from 'vue'
+import { ref, onMounted, computed, onUnmounted } from 'vue'
+import { useDxClusterStore, type DxSpot } from '../store/dxCluster'
 
-interface DxSpot {
-  Nr: number
-  Spotter: string
-  Frequency: string
-  DXCall: string
-  Time: string
-  Date: string
-  Beacon: boolean
-  MM: boolean
-  AM: boolean
-  Valid: boolean
-  EQSL?: boolean
-  LOTW?: boolean
-  LOTW_Date?: string
-  DXHomecall: string
-  Comment: string
-  Flag: string
-  Band: number
-  Mode: string
-  Continent_dx: string
-  Continent_spotter: string
-  DXLocator?: string
-}
+const dxStore = useDxClusterStore()
 
-const spots = ref<DxSpot[]>([])
-const loading = ref(false)
-const error = ref<string | null>(null)
+// Get reactive data from store
+const spots = computed(() => dxStore.spots)
+const loading = computed(() => dxStore.loading)
+const error = computed(() => dxStore.error)
+const filters = computed(() => dxStore.filters)
 
 // Magnifier window state
 const magnifierVisible = ref(false)
@@ -36,13 +17,6 @@ const magnifierPosition = ref({ x: 0, y: 0 })
 const magnifierFrequency = ref('')
 let magnifierTimeout: NodeJS.Timeout | null = null
 
-// Filter states
-const selectedCdx = ref<string[]>(['EU', 'NA', 'SA', 'AS', 'AF', 'OC', 'AN'])
-const selectedCde = ref<string[]>(['EU', 'NA', 'SA', 'AS', 'AF', 'OC', 'AN'])
-const selectedBand = ref<string>('40') // Single band selection
-const selectedModes = ref<string[]>(['PHONE'])
-const validatedOnly = ref(true)
-const pageLength = ref(65)
 
 // Available options
 const continents = ['EU', 'NA', 'SA', 'AS', 'AF', 'OC', 'AN']
@@ -50,69 +24,6 @@ const bands = ['10', '15', '20', '40', '80', '160']
 const modes = ['PHONE', 'CW', 'FT8', 'FT4', 'RTTY', 'PSK31']
 const pageLengthOptions = [25, 50, 65, 100, 200]
 
-// Band frequency ranges in kHz
-const bandRanges: { [key: string]: { min: number, max: number } } = {
-  '10': { min: 28000, max: 29700 },
-  '15': { min: 21000, max: 21450 },
-  '20': { min: 14000, max: 14350 },
-  '40': { min: 7000, max: 7300 },
-  '80': { min: 3500, max: 4000 },
-  '160': { min: 1800, max: 2000 }
-}
-
-const fetchSpots = async () => {
-  loading.value = true
-  error.value = null
-  
-  try {
-    const params = new URLSearchParams()
-    params.append('a', pageLength.value.toString())
-    
-    params.append('b', selectedBand.value) // Single band
-    selectedCdx.value.forEach(cdx => params.append('cdx', cdx))
-    selectedCde.value.forEach(cde => params.append('cde', cde))
-    selectedModes.value.forEach(mode => params.append('m', mode))
-    
-    if (validatedOnly.value) {
-      params.append('valid', '1')
-    }
-    
-    const result = await window.electronAPI.fetchDxSpots(params.toString())
-    
-    if (!result.success) {
-      throw new Error(result.error || 'API hívás sikertelen')
-    }
-    
-    spots.value = result.data.map((spot: any) => ({
-      Nr: spot.Nr || 0,
-      Spotter: spot.Spotter || '',
-      Frequency: spot.Frequency || '0',
-      DXCall: spot.DXCall || '',
-      Time: spot.Time || '',
-      Date: spot.Date || '',
-      Beacon: spot.Beacon || false,
-      MM: spot.MM || false,
-      AM: spot.AM || false,
-      Valid: spot.Valid || false,
-      EQSL: spot.EQSL,
-      LOTW: spot.LOTW,
-      LOTW_Date: spot.LOTW_Date,
-      DXHomecall: spot.DXHomecall || '',
-      Comment: spot.Comment || '',
-      Flag: spot.Flag || '',
-      Band: spot.Band || 0,
-      Mode: spot.Mode || 'UNKNOWN',
-      Continent_dx: spot.Continent_dx || '',
-      Continent_spotter: spot.Continent_spotter || '',
-      DXLocator: spot.DXLocator
-    }))
-  } catch (err) {
-    error.value = err instanceof Error ? err.message : 'Ismeretlen hiba történt'
-    console.error('DX Cluster fetch error:', err)
-  } finally {
-    loading.value = false
-  }
-}
 
 const formatFrequency = (freqStr: string) => {
   const freq = parseFloat(freqStr)
@@ -140,22 +51,33 @@ const formatTime = (timeStr: string, dateStr: string) => {
   }
 }
 
-const toggleFilter = (filterArray: string[], value: string) => {
-  const index = filterArray.indexOf(value)
-  if (index > -1) {
-    filterArray.splice(index, 1)
-  } else {
-    filterArray.push(value)
-  }
+const selectBand = (band: string) => {
+  dxStore.selectBand(band)
 }
 
-const selectBand = (band: string) => {
-  selectedBand.value = band
+const toggleCdxFilter = (value: string) => {
+  dxStore.toggleFilter('selectedCdx', value)
+}
+
+const toggleCdeFilter = (value: string) => {
+  dxStore.toggleFilter('selectedCde', value)
+}
+
+const toggleModeFilter = (value: string) => {
+  dxStore.toggleFilter('selectedModes', value)
+}
+
+const updateValidatedOnly = (value: boolean) => {
+  dxStore.updateFilters({ validatedOnly: value })
+}
+
+const updatePageLength = (value: number) => {
+  dxStore.updateFilters({ pageLength: value })
 }
 
 const getSpotPosition = (frequency: string) => {
   const freq = parseFloat(frequency)
-  const range = getActualFrequencyRange()
+  const range = dxStore.actualFrequencyRange
   if (!range) return 0
   
   const percentage = ((freq - range.min) / (range.max - range.min)) * 100
@@ -224,7 +146,7 @@ const showMagnifier = (event: MouseEvent, frequency: string) => {
   }
   
   const freq = parseFloat(frequency)
-  const range = getActualFrequencyRange()
+  const range = dxStore.actualFrequencyRange
   if (!range) return
   
   // Find all spots within ±5 kHz range
@@ -263,27 +185,8 @@ const keepMagnifierVisible = () => {
   }
 }
 
-const getActualFrequencyRange = () => {
-  if (spots.value.length === 0) {
-    // Fallback to band ranges if no spots
-    return bandRanges[selectedBand.value] || { min: 14000, max: 14350 }
-  }
-  
-  const frequencies = spots.value.map(spot => parseFloat(spot.Frequency))
-  const minFreq = Math.min(...frequencies)
-  const maxFreq = Math.max(...frequencies)
-  
-  // Add 5% padding on both sides
-  const padding = (maxFreq - minFreq) * 0.05
-  
-  return {
-    min: Math.max(minFreq - padding, 0),
-    max: maxFreq + padding
-  }
-}
-
 const generateScaleTicks = () => {
-  const range = getActualFrequencyRange()
+  const range = dxStore.actualFrequencyRange
   if (!range) return { major: [], minor: [] }
   
   const majorTicks = [] as any
@@ -313,22 +216,18 @@ const generateScaleTicks = () => {
 
 const scaleTicks = computed(() => generateScaleTicks())
 
-// Watch for filter changes and refetch
-watch([selectedCdx, selectedCde, selectedBand, selectedModes, validatedOnly, pageLength], 
-  () => {
-    fetchSpots()
-  }, 
-  { deep: true }
-)
-
 onMounted(() => {
-  fetchSpots()
+  dxStore.startAutoRefresh()
+})
+
+onUnmounted(() => {
+  dxStore.stopAutoRefresh()
 })
 </script>
 
 <template>
   <div class="dx-cluster">
-    <h2 class="section-title">DX Cluster - {{ selectedBand }}m band</h2>
+    <h2 class="section-title">DX Cluster - {{ filters.selectedBand }}m band</h2>
     
     <div class="dx-cluster-main">
       <!-- Frequency Scale and Spots -->
@@ -339,7 +238,7 @@ onMounted(() => {
         
         <div v-else-if="error" class="error">
           Error: {{ error }}
-          <button @click="fetchSpots" class="retry-btn">Try again!</button>
+          <button @click="dxStore.fetchSpots" class="retry-btn">Try again!</button>
         </div>
         
         <div v-else-if="spots.length === 0" class="no-spots">
@@ -453,7 +352,7 @@ onMounted(() => {
             <button 
               v-for="band in bands" 
               :key="`band-${band}`"
-              :class="['filter-btn-small', { active: selectedBand === band }]"
+              :class="['filter-btn-small', { active: filters.selectedBand === band }]"
               @click="selectBand(band)"
             >
               {{ band }}m
@@ -468,8 +367,8 @@ onMounted(() => {
             <button 
               v-for="continent in continents" 
               :key="`cdx-${continent}`"
-              :class="['filter-btn-small', { active: selectedCdx.includes(continent) }]"
-              @click="toggleFilter(selectedCdx, continent)"
+              :class="['filter-btn-small', { active: filters.selectedCdx.includes(continent) }]"
+              @click="toggleCdxFilter(continent)"
             >
               {{ continent }}
             </button>
@@ -483,8 +382,8 @@ onMounted(() => {
             <button 
               v-for="continent in continents" 
               :key="`cde-${continent}`"
-              :class="['filter-btn-small', { active: selectedCde.includes(continent) }]"
-              @click="toggleFilter(selectedCde, continent)"
+              :class="['filter-btn-small', { active: filters.selectedCde.includes(continent) }]"
+              @click="toggleCdeFilter(continent)"
             >
               {{ continent }}
             </button>
@@ -498,8 +397,8 @@ onMounted(() => {
             <button 
               v-for="mode in modes" 
               :key="`mode-${mode}`"
-              :class="['filter-btn-small', { active: selectedModes.includes(mode) }]"
-              @click="toggleFilter(selectedModes, mode)"
+              :class="['filter-btn-small', { active: filters.selectedModes.includes(mode) }]"
+              @click="toggleModeFilter(mode)"
             >
               {{ mode }}
             </button>
@@ -511,14 +410,15 @@ onMounted(() => {
           <label class="checkbox-label">
             <input 
               type="checkbox" 
-              v-model="validatedOnly"
+              :checked="filters.validatedOnly"
+              @change="updateValidatedOnly($event.target.checked)"
             />
             Validált
           </label>
           
           <div class="page-length-selector">
             <label>Spotok:</label>
-            <select v-model="pageLength">
+            <select :value="filters.pageLength" @change="updatePageLength(parseInt($event.target.value))">
               <option v-for="length in pageLengthOptions" :key="length" :value="length">
                 {{ length }}
               </option>
