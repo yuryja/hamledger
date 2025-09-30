@@ -18,7 +18,8 @@ const magnifierVisible = ref(false)
 const magnifierSpots = ref<DxSpot[]>([])
 const magnifierPosition = ref({ x: 0, y: 0 })
 const magnifierFrequency = ref('')
-let magnifierTimeout: number | null = null
+##AI! define NodeJS
+let magnifierTimeout: NodeJS.Timeout | null = null
 
 
 // Available options
