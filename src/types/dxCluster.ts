@@ -3,6 +3,8 @@ export interface MagnifierPosition {
   y: number;
 }
 
+export type TimerHandle = ReturnType<typeof setTimeout>;
+
 export interface ScaleTick {
   frequency: number;
   position: number;

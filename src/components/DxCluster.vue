@@ -4,7 +4,7 @@ import { useDxClusterStore } from '../store/dxCluster';
 import type { DxSpot } from '../types/dxCluster';
 import { useQsoStore } from '../store/qso';
 import { useRigStore } from '../store/rig';
-import type { MagnifierPosition, ScaleTick, LayoutSpot } from '../types/dxCluster';
+import type { MagnifierPosition, ScaleTick, LayoutSpot, TimerHandle } from '../types/dxCluster';
 
 export default defineComponent({
   name: 'DxCluster',
@@ -27,7 +27,7 @@ export default defineComponent({
       magnifierSpots: [] as DxSpot[],
       magnifierPosition: { x: 0, y: 0 } as MagnifierPosition,
       magnifierFrequency: '' as string,
-      magnifierTimeout: null as NodeJS.Timeout | null,
+      magnifierTimeout: null as TimerHandle | null,
       
       // Available options
       continents: ['EU', 'NA', 'SA', 'AS', 'AF', 'OC', 'AN'] as readonly string[],

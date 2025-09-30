@@ -204,4 +204,4 @@ export const useDxClusterStore = defineStore('dxCluster', {
 });
 
 // Auto-refresh interval - moved outside store to avoid reactivity issues
-let refreshInterval: NodeJS.Timeout | null = null;
+let refreshInterval: ReturnType<typeof setInterval> | null = null;
