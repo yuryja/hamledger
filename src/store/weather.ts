@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { defineStore } from 'pinia';
-import { getWeather } from '../utils/weather';
 
 declare global {
   interface Window {
@@ -37,13 +36,33 @@ export const useWeatherStore = defineStore('weather', {
         
         if (response.success && response.data?.current_weather) {
           const { temperature, weathercode } = response.data.current_weather;
-          const weatherResult = await getWeather(lat, lon);
           
-          if (weatherResult) {
-            this.weatherInfo = `${Math.round(weatherResult.temperature)}°C ${weatherResult.description}`;
-          } else {
-            this.weatherInfo = `${Math.round(temperature)}°C Unknown`;
-          }
+          // Use the weather description mapping from utils/weather.ts
+          const WMO_CODES: { [key: number]: string } = {
+            0: 'Clear sky',
+            1: 'Mainly clear',
+            2: 'Partly cloudy',
+            3: 'Overcast',
+            45: 'Foggy',
+            48: 'Depositing rime fog',
+            51: 'Light drizzle',
+            53: 'Moderate drizzle',
+            55: 'Dense drizzle',
+            61: 'Slight rain',
+            63: 'Moderate rain',
+            65: 'Heavy rain',
+            71: 'Slight snow',
+            73: 'Moderate snow',
+            75: 'Heavy snow',
+            77: 'Snow grains',
+            80: 'Slight rain showers',
+            81: 'Moderate rain showers',
+            82: 'Violent rain showers',
+            95: 'Thunderstorm',
+          };
+          
+          const description = WMO_CODES[weathercode] || 'Unknown';
+          this.weatherInfo = `${Math.round(temperature)}°C ${description}`;
         } else {
           this.error = response.error || 'Failed to load weather data';
           this.weatherInfo = 'Weather unavailable';
