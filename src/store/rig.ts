@@ -1,5 +1,4 @@
 import { defineStore } from 'pinia'
-import { Mode } from '../types/rig'
 
 export const useRigStore = defineStore('rig', {
   state: () => ({
@@ -10,7 +9,7 @@ export const useRigStore = defineStore('rig', {
       { value: 'AM', label: 'AM' },
       { value: 'FM', label: 'FM' },
       { value: 'DATA', label: 'DATA' }
-    ] as Mode[],
+    ],
     selectedMode: 'CW',
     frequency: '7.093',
     txFrequency: '7.095',
