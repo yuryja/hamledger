@@ -110,7 +110,7 @@ const getSpotLayout = () => {
 
   const layoutSpots = [] as any
   const minDistance = 3 // Minimum distance between spots in percentage
-  const maxColumns = 4 // Maximum number of columns for overlapping spots
+  const maxColumns = 2 // Maximum number of columns for overlapping spots
 
   for (let i = 0; i < sortedSpots.length; i++) {
     const spot = sortedSpots[i]
@@ -123,7 +123,7 @@ const getSpotLayout = () => {
     
     // Calculate column offset
     const column = overlapping.length % maxColumns
-    const leftOffset = 35 + (column * 80) // Base position + column spacing
+    const leftOffset = 35 + (column * 90) // Base position + column spacing
     
     layoutSpots.push({
       ...spot,
