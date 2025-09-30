@@ -96,7 +96,9 @@ export default {
         </div>
         <div class="local-weather">
           <span class="weather-label">Local WX:</span>
-          <span class="weather-value">{{ weatherStore.weatherInfo }}</span>
+          <span v-if="weatherStore.isLoading" class="weather-loading">Betöltés...</span>
+          <span v-else-if="weatherStore.error" class="weather-error">{{ weatherStore.error }}</span>
+          <span v-else class="weather-value">{{ weatherStore.weatherInfo }}</span>
         </div>
       </div>
     </div>
@@ -210,5 +212,16 @@ export default {
 .weather-value {
   font-size: 0.9rem;
   color: #eee;
+}
+
+.weather-loading {
+  font-size: 0.8rem;
+  color: #ccc;
+  font-style: italic;
+}
+
+.weather-error {
+  font-size: 0.8rem;
+  color: #ff6b6b;
 }
 </style>

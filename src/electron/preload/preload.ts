@@ -13,6 +13,7 @@ declare global {
       updateQso: (qso: any) => Promise<any>;
       fetchDxSpots: (params: string) => Promise<{ success: boolean; data?: any; error?: string }>;
       fetchPropagationData: () => Promise<{ success: boolean; data?: any; error?: string }>;
+      fetchWeather: (lat: number, lon: number) => Promise<{ success: boolean; data?: any; error?: string }>;
     };
   }
 }
@@ -26,4 +27,5 @@ contextBridge.exposeInMainWorld('electronAPI', {
   updateQso: (qso: any) => ipcRenderer.invoke('qso:update', qso),
   fetchDxSpots: (params: string) => ipcRenderer.invoke('fetchDxSpots', params),
   fetchPropagationData: () => ipcRenderer.invoke('fetchPropagationData'),
+  fetchWeather: (lat: number, lon: number) => ipcRenderer.invoke('fetchWeather', lat, lon),
 });

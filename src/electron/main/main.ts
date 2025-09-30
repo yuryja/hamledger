@@ -147,6 +147,36 @@ ipcMain.handle('fetchPropagationData', async () => {
   }
 });
 
+// Weather API handler
+ipcMain.handle('fetchWeather', async (event, lat: number, lon: number) => {
+  try {
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`;
+
+    const fetchOptions: any = {
+      headers: {
+        'User-Agent': 'HamLogger/1.0',
+        Accept: 'application/json',
+      },
+      timeout: 30000, // 30 second timeout
+    };
+
+    const response = await fetch(url, fetchOptions);
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return { success: true, data };
+  } catch (error) {
+    console.error('Weather API error:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error',
+    };
+  }
+});
+
 // DX Spots API handler
 ipcMain.handle('fetchDxSpots', async (event, params: string) => {
   try {
