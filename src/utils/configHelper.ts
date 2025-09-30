@@ -77,9 +77,9 @@ export class ConfigHelper {
     return current[key];
   }
 
-  public getIARURegion(): 'region1' | 'region2' | 'region3' {
+  public getIARURegion(): 'IARU1' | 'IARU2' | 'IARU3' {
     const region = this.getSetting(['station'], 'iaruRegion');
-    return region || 'region1';
+    return region || 'IARU1';
   }
 
   public flattenConfig(obj: any = this.settings, path: string[] = []): ConfigField[] {

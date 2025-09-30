@@ -5,7 +5,7 @@
     "qth": "Budapest, Hungary",
     "grid": "JN97MM",
     "timezone": "Europe/Budapest",
-    "iaruRegion": "region1"
+    "iaruRegion": "IARU1"
   },
   "rig": {
     "model": "YAESU FT-450D",
