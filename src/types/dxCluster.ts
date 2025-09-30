@@ -43,6 +43,23 @@ export interface DxClusterFilters {
   pageLength: number;
 }
 
+export interface FrequencyRange {
+  min: number;
+  max: number;
+}
+
+export interface BandRanges {
+  readonly [key: string]: FrequencyRange;
+}
+
+export type FilterArrayKey = keyof Pick<DxClusterFilters, 'selectedCdx' | 'selectedCde' | 'selectedModes'>;
+
+export interface DxSpotApiResponse {
+  success: boolean;
+  data?: DxSpot[];
+  error?: string;
+}
+
 export interface LayoutSpot extends DxSpot {
   position: number;
   leftOffset: number;

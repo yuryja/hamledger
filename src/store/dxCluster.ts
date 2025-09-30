@@ -1,5 +1,12 @@
 import { defineStore } from 'pinia';
-import type { DxClusterFilters, DxSpot } from '../types/dxCluster';
+import type { 
+  DxClusterFilters, 
+  DxSpot, 
+  FrequencyRange, 
+  BandRanges, 
+  FilterArrayKey,
+  DxSpotApiResponse 
+} from '../types/dxCluster';
 
 interface DxClusterState {
   spots: DxSpot[];
@@ -8,6 +15,16 @@ interface DxClusterState {
   lastFetchTime: Date | null;
   filters: DxClusterFilters;
 }
+
+// Strongly typed band ranges
+const BAND_RANGES: BandRanges = {
+  '10': { min: 28000, max: 29700 },
+  '15': { min: 21000, max: 21450 },
+  '20': { min: 14000, max: 14350 },
+  '40': { min: 7000, max: 7300 },
+  '80': { min: 3500, max: 4000 },
+  '160': { min: 1800, max: 2000 },
+} as const;
 
 export const useDxClusterStore = defineStore('dxCluster', {
   state: (): DxClusterState => ({
@@ -26,26 +43,18 @@ export const useDxClusterStore = defineStore('dxCluster', {
   }),
 
   getters: {
-    actualFrequencyRange(): { min: number; max: number } {
+    actualFrequencyRange(): FrequencyRange {
       if (this.spots.length === 0) {
         // Fallback to band ranges if no spots
-        const bandRanges: { [key: string]: { min: number; max: number } } = {
-          '10': { min: 28000, max: 29700 },
-          '15': { min: 21000, max: 21450 },
-          '20': { min: 14000, max: 14350 },
-          '40': { min: 7000, max: 7300 },
-          '80': { min: 3500, max: 4000 },
-          '160': { min: 1800, max: 2000 },
-        };
-        return bandRanges[this.filters.selectedBand] || { min: 14000, max: 14350 };
+        return BAND_RANGES[this.filters.selectedBand] || BAND_RANGES['20'];
       }
 
-      const frequencies = this.spots.map(spot => parseFloat(spot.Frequency));
-      const minFreq = Math.min(...frequencies);
-      const maxFreq = Math.max(...frequencies);
+      const frequencies: number[] = this.spots.map((spot: DxSpot) => parseFloat(spot.Frequency));
+      const minFreq: number = Math.min(...frequencies);
+      const maxFreq: number = Math.max(...frequencies);
 
       // Add 5% padding on both sides
-      const padding = (maxFreq - minFreq) * 0.05;
+      const padding: number = (maxFreq - minFreq) * 0.05;
 
       return {
         min: Math.max(minFreq - padding, 0),
@@ -55,31 +64,31 @@ export const useDxClusterStore = defineStore('dxCluster', {
   },
 
   actions: {
-    async fetchSpots() {
+    async fetchSpots(): Promise<void> {
       this.loading = true;
       this.error = null;
 
       try {
-        const params = new URLSearchParams();
+        const params: URLSearchParams = new URLSearchParams();
         params.append('a', this.filters.pageLength.toString());
         params.append('b', this.filters.selectedBand);
 
-        this.filters.selectedCdx.forEach(cdx => params.append('cdx', cdx));
-        this.filters.selectedCde.forEach(cde => params.append('cde', cde));
-        this.filters.selectedModes.forEach(mode => params.append('m', mode));
+        this.filters.selectedCdx.forEach((cdx: string) => params.append('cdx', cdx));
+        this.filters.selectedCde.forEach((cde: string) => params.append('cde', cde));
+        this.filters.selectedModes.forEach((mode: string) => params.append('m', mode));
 
         if (this.filters.validatedOnly) {
           params.append('valid', '1');
         }
 
-        const result = await window.electronAPI.fetchDxSpots(params.toString());
+        const result: DxSpotApiResponse = await window.electronAPI.fetchDxSpots(params.toString());
 
-        if (!result.success) {
+        if (!result.success || !result.data) {
           throw new Error(result.error || 'API hívás sikertelen');
         }
 
         // Process and deduplicate spots
-        const rawSpots = result.data.map((spot: DxSpot) => ({
+        const rawSpots: DxSpot[] = result.data.map((spot: DxSpot): DxSpot => ({
           Nr: spot.Nr || 0,
           Spotter: spot.Spotter || '',
           Frequency: spot.Frequency || '0',
@@ -101,25 +110,26 @@ export const useDxClusterStore = defineStore('dxCluster', {
           Continent_dx: spot.Continent_dx || '',
           Continent_spotter: spot.Continent_spotter || '',
           DXLocator: spot.DXLocator,
+          Spotters: [], // Initialize empty array, will be populated during deduplication
         }));
 
         // Deduplicate spots by callsign and frequency
         const spotMap = new Map<string, DxSpot>();
 
         rawSpots.forEach((spot: DxSpot) => {
-          const key = `${spot.DXCall}-${spot.Frequency}`;
+          const key: string = `${spot.DXCall}-${spot.Frequency}`;
 
           if (spotMap.has(key)) {
-            const existingSpot = spotMap.get(key)!;
+            const existingSpot: DxSpot = spotMap.get(key)!;
             // Add spotter to the list if not already present
             if (!existingSpot.Spotters.includes(spot.Spotter)) {
               existingSpot.Spotters.push(spot.Spotter);
             }
             // Keep the most recent time
-            const existingTime = new Date(
+            const existingTime: Date = new Date(
               `20${existingSpot.Date.split('/')[2]}-${existingSpot.Date.split('/')[1]}-${existingSpot.Date.split('/')[0]}T${existingSpot.Time}:00Z`
             );
-            const newTime = new Date(
+            const newTime: Date = new Date(
               `20${spot.Date.split('/')[2]}-${spot.Date.split('/')[1]}-${spot.Date.split('/')[0]}T${spot.Time}:00Z`
             );
 
@@ -139,7 +149,7 @@ export const useDxClusterStore = defineStore('dxCluster', {
 
         this.spots = Array.from(spotMap.values());
         this.lastFetchTime = new Date();
-      } catch (err) {
+      } catch (err: unknown) {
         this.error = err instanceof Error ? err.message : 'Ismeretlen hiba történt';
         console.error('DX Cluster fetch error:', err);
       } finally {
@@ -147,7 +157,7 @@ export const useDxClusterStore = defineStore('dxCluster', {
       }
     },
 
-    startAutoRefresh() {
+    startAutoRefresh(): void {
       if (refreshInterval) {
         clearInterval(refreshInterval);
       }
@@ -156,34 +166,31 @@ export const useDxClusterStore = defineStore('dxCluster', {
       this.fetchSpots();
 
       // Set up 10-second interval
-      refreshInterval = setInterval(() => {
+      refreshInterval = setInterval((): void => {
         this.fetchSpots();
       }, 10000);
     },
 
-    stopAutoRefresh() {
+    stopAutoRefresh(): void {
       if (refreshInterval) {
         clearInterval(refreshInterval);
         refreshInterval = null;
       }
     },
 
-    updateFilters(newFilters: Partial<DxClusterFilters>) {
+    updateFilters(newFilters: Partial<DxClusterFilters>): void {
       this.filters = { ...this.filters, ...newFilters };
       // Trigger immediate refresh when filters change
       this.fetchSpots();
     },
 
-    selectBand(band: string) {
+    selectBand(band: string): void {
       this.updateFilters({ selectedBand: band });
     },
 
-    toggleFilter(
-      filterArray: keyof Pick<DxClusterFilters, 'selectedCdx' | 'selectedCde' | 'selectedModes'>,
-      value: string
-    ) {
-      const currentArray = [...this.filters[filterArray]];
-      const index = currentArray.indexOf(value);
+    toggleFilter(filterArray: FilterArrayKey, value: string): void {
+      const currentArray: string[] = [...this.filters[filterArray]];
+      const index: number = currentArray.indexOf(value);
 
       if (index > -1) {
         currentArray.splice(index, 1);
