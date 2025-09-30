@@ -1,6 +1,7 @@
 <script lang="ts">
 import { defineComponent } from 'vue';
-import { useDxClusterStore, type DxSpot } from '../store/dxCluster';
+import { useDxClusterStore } from '../store/dxCluster';
+import type { DxSpot } from '../types/dxCluster';
 import { useQsoStore } from '../store/qso';
 import { useRigStore } from '../store/rig';
 import type { MagnifierPosition, ScaleTick, LayoutSpot } from '../types/dxCluster';
