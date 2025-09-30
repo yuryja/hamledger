@@ -196,10 +196,9 @@ export const useQsoStore = defineStore('qso', {
         const countryCode = CallsignHelper.getCountryCodeForCallsign(callsign);
         const countryName = countries.getName(countryCode.toUpperCase(), 'en') || 'Unknown';
 
-        // Set country and flag
+        // Set country and flag (handling portable prefixes)
         this.stationInfo.baseData.country = countryName;
-        this.stationInfo.flag =
-          countryCode !== 'xx' ? `https://flagcdn.com/h80/${countryCode}.png` : '';
+        this.stationInfo.flag = CallsignHelper.getFlagUrl(callsign);
 
         // Try to get additional info from QRZ
         // First try with the full callsign (including portable prefixes/suffixes)

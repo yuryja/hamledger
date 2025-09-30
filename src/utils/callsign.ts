@@ -397,6 +397,132 @@ export class CallsignHelper {
   public static looksLikeBaseCallsign(call: string): boolean {
     return call.length >= 3 && /\d/.test(call) && /[A-Z]/.test(call);
   }
+
+  /**
+   * Get flag URL for callsign, handling portable prefixes
+   * For portable operations (e.g., DL/HA5XB), creates a composite flag
+   * @param callsign - The callsign to get flag for
+   * @returns Flag URL or composite flag data URL
+   */
+  public static getFlagUrl(callsign: string): string {
+    const upperCallsign = callsign.toUpperCase();
+    
+    // Check if it's a portable operation
+    if (upperCallsign.includes('/')) {
+      const parts = upperCallsign.split('/');
+      
+      if (parts.length === 2) {
+        const [first, second] = parts;
+        
+        // Determine which is prefix and which is base callsign
+        let prefixCountry = '';
+        let baseCountry = '';
+        
+        if (this.looksLikeBaseCallsign(first) && this.looksLikeBaseCallsign(second)) {
+          // Both look like callsigns, treat first as prefix
+          prefixCountry = this.getCountryCodeForCallsign(first);
+          baseCountry = this.getCountryCodeForCallsign(second);
+        } else if (this.looksLikeBaseCallsign(second)) {
+          // Second is base callsign, first is prefix
+          prefixCountry = this.getCountryCodeForCallsign(first);
+          baseCountry = this.getCountryCodeForCallsign(second);
+        } else if (this.looksLikeBaseCallsign(first)) {
+          // First is base callsign, second is suffix
+          baseCountry = this.getCountryCodeForCallsign(first);
+          prefixCountry = this.getCountryCodeForCallsign(second);
+        }
+        
+        // If we have two different countries, create composite flag
+        if (prefixCountry && baseCountry && prefixCountry !== baseCountry && 
+            prefixCountry !== 'xx' && baseCountry !== 'xx') {
+          return this.createCompositeFlagUrl(prefixCountry, baseCountry);
+        }
+      }
+    }
+    
+    // Regular single country flag
+    const countryCode = this.getCountryCodeForCallsign(upperCallsign);
+    return countryCode !== 'xx' ? `https://flagcdn.com/h80/${countryCode}.png` : '';
+  }
+
+  /**
+   * Create a composite flag from two country codes
+   * The composite is divided diagonally from bottom-left to top-right
+   * @param prefixCountry - Country code for the prefix
+   * @param baseCountry - Country code for the base callsign
+   * @returns Data URL for the composite flag
+   */
+  private static createCompositeFlagUrl(prefixCountry: string, baseCountry: string): string {
+    // Create a canvas element
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return '';
+    
+    canvas.width = 80;
+    canvas.height = 60;
+    
+    // Create image elements for both flags
+    const prefixImg = new Image();
+    const baseImg = new Image();
+    
+    // Set CORS to allow loading external images
+    prefixImg.crossOrigin = 'anonymous';
+    baseImg.crossOrigin = 'anonymous';
+    
+    return new Promise<string>((resolve) => {
+      let loadedCount = 0;
+      
+      const onImageLoad = () => {
+        loadedCount++;
+        if (loadedCount === 2) {
+          // Both images loaded, create composite
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          
+          // Draw base country flag (bottom-left triangle)
+          ctx.save();
+          ctx.beginPath();
+          ctx.moveTo(0, canvas.height); // bottom-left
+          ctx.lineTo(0, 0); // top-left
+          ctx.lineTo(canvas.width, canvas.height); // bottom-right
+          ctx.closePath();
+          ctx.clip();
+          ctx.drawImage(baseImg, 0, 0, canvas.width, canvas.height);
+          ctx.restore();
+          
+          // Draw prefix country flag (top-right triangle)
+          ctx.save();
+          ctx.beginPath();
+          ctx.moveTo(0, 0); // top-left
+          ctx.lineTo(canvas.width, 0); // top-right
+          ctx.lineTo(canvas.width, canvas.height); // bottom-right
+          ctx.closePath();
+          ctx.clip();
+          ctx.drawImage(prefixImg, 0, 0, canvas.width, canvas.height);
+          ctx.restore();
+          
+          // Add a diagonal line to separate the flags
+          ctx.strokeStyle = '#333';
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(0, canvas.height);
+          ctx.lineTo(canvas.width, 0);
+          ctx.stroke();
+          
+          resolve(canvas.toDataURL());
+        }
+      };
+      
+      prefixImg.onload = onImageLoad;
+      baseImg.onload = onImageLoad;
+      
+      // Handle errors - fallback to base country flag
+      prefixImg.onerror = () => resolve(`https://flagcdn.com/h80/${baseCountry}.png`);
+      baseImg.onerror = () => resolve(`https://flagcdn.com/h80/${baseCountry}.png`);
+      
+      prefixImg.src = `https://flagcdn.com/h80/${prefixCountry}.png`;
+      baseImg.src = `https://flagcdn.com/h80/${baseCountry}.png`;
+    }).catch(() => `https://flagcdn.com/h80/${baseCountry}.png`);
+  }
 }
 
 // Backward compatibility - export the original function
