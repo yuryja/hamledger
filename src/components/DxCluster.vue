@@ -328,22 +328,22 @@ onMounted(() => {
 
 <template>
   <div class="dx-cluster">
-    <h2 class="section-title">DX Cluster - {{ selectedBand }}m sáv</h2>
+    <h2 class="section-title">DX Cluster - {{ selectedBand }}m band</h2>
     
     <div class="dx-cluster-main">
       <!-- Frequency Scale and Spots -->
       <div class="spots-column">
         <div v-if="loading" class="loading">
-          Betöltés...
+          Loading...
         </div>
         
         <div v-else-if="error" class="error">
-          Hiba: {{ error }}
-          <button @click="fetchSpots" class="retry-btn">Újrapróbálás</button>
+          Error: {{ error }}
+          <button @click="fetchSpots" class="retry-btn">Try again!</button>
         </div>
         
         <div v-else-if="spots.length === 0" class="no-spots">
-          Nincsenek spotok a kiválasztott szűrőkkel.
+          No spots available.
         </div>
         
         <div v-else class="frequency-scale">
@@ -543,13 +543,6 @@ onMounted(() => {
   padding: 1rem;
 }
 
-.section-title {
-  margin: 0 0 1rem 0;
-  color: var(--text-primary);
-  font-size: 1.2rem;
-  font-weight: 600;
-}
-
 .dx-cluster-main {
   display: flex;
   flex: 1;
@@ -668,9 +661,9 @@ onMounted(() => {
 .scale-line {
   position: absolute;
   left: 25px;
-  top: 20px;
-  bottom: 20px;
-  width: 2px;
+  top: 0px;
+  bottom: 0px;
+  width: 1px;
   background: var(--main-color);
 }
 
@@ -686,7 +679,7 @@ onMounted(() => {
 
 .tick-mark.major {
   width: 20px;
-  height: 2px;
+  height: 1px;
   left: 0px;
 }
 
