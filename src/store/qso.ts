@@ -207,6 +207,9 @@ export const useQsoStore = defineStore('qso', {
         this.stationInfo.portableSuffix = portableSuffix;
 
         // Try to get additional info from QRZ
+        // Reset QRZ error state at the beginning of each lookup
+        this.stationInfo.qrzError = false;
+        
         // First try with the full callsign (including portable prefixes/suffixes)
         let qrzData = await qrzService.lookupStationByCallsign(callsign);
         
@@ -222,6 +225,8 @@ export const useQsoStore = defineStore('qso', {
           this.stationInfo.qrzError = true;
           console.error('QRZ lookup failed:', qrzData);
         } else {
+          // Explicitly set qrzError to false on successful lookup
+          this.stationInfo.qrzError = false;
           this.stationInfo.baseData.name = qrzData.name;
           this.stationInfo.baseData.grid = qrzData.grid;
           this.stationInfo.baseData.qth = qrzData.qth;
