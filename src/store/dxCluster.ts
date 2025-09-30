@@ -3,10 +3,10 @@ import type {
   DxClusterFilters, 
   DxSpot, 
   FrequencyRange, 
-  BandRanges, 
   FilterArrayKey,
   DxSpotApiResponse 
 } from '../types/dxCluster';
+import { getBandFrequencyRange, getAllBandShortNames } from '../utils/bands';
 
 interface DxClusterState {
   spots: DxSpot[];
@@ -16,15 +16,6 @@ interface DxClusterState {
   filters: DxClusterFilters;
 }
 
-// Strongly typed band ranges
-const BAND_RANGES: BandRanges = {
-  '10': { min: 28000, max: 29700 },
-  '15': { min: 21000, max: 21450 },
-  '20': { min: 14000, max: 14350 },
-  '40': { min: 7000, max: 7300 },
-  '80': { min: 3500, max: 4000 },
-  '160': { min: 1800, max: 2000 },
-} as const;
 
 export const useDxClusterStore = defineStore('dxCluster', {
   state: (): DxClusterState => ({
@@ -46,7 +37,8 @@ export const useDxClusterStore = defineStore('dxCluster', {
     actualFrequencyRange(): FrequencyRange {
       if (this.spots.length === 0) {
         // Fallback to band ranges if no spots
-        return BAND_RANGES[this.filters.selectedBand] || BAND_RANGES['20'];
+        const bandRange = getBandFrequencyRange(this.filters.selectedBand);
+        return bandRange || { min: 14000, max: 14350 }; // Default to 20m
       }
 
       const frequencies: number[] = this.spots.map((spot: DxSpot) => parseFloat(spot.Frequency));
@@ -60,6 +52,10 @@ export const useDxClusterStore = defineStore('dxCluster', {
         min: Math.max(minFreq - padding, 0),
         max: maxFreq + padding,
       };
+    },
+
+    availableBands(): string[] {
+      return getAllBandShortNames();
     },
   },
 

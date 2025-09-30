@@ -5,6 +5,7 @@ import type { DxSpot } from '../types/dxCluster';
 import { useQsoStore } from '../store/qso';
 import { useRigStore } from '../store/rig';
 import type { MagnifierPosition, ScaleTick, LayoutSpot, TimerHandle } from '../types/dxCluster';
+import { getBandFromFrequency } from '../utils/bands';
 
 export default defineComponent({
   name: 'DxCluster',
@@ -31,7 +32,6 @@ export default defineComponent({
       
       // Available options
       continents: ['EU', 'NA', 'SA', 'AS', 'AF', 'OC', 'AN'] as readonly string[],
-      bands: ['10', '15', '20', '40', '80', '160'] as readonly string[],
       modes: ['PHONE', 'CW', 'FT8', 'FT4', 'RTTY', 'PSK31'] as readonly string[],
       pageLengthOptions: [25, 50, 65, 100, 200] as readonly number[],
     };
@@ -48,6 +48,10 @@ export default defineComponent({
     
     filters() {
       return this.dxStore.filters;
+    },
+    
+    availableBands(): string[] {
+      return this.dxStore.availableBands;
     },
     
     layoutSpots(): LayoutSpot[] {
@@ -446,7 +450,7 @@ export default defineComponent({
           <label class="filter-label">Band:</label>
           <div class="filter-buttons-column">
             <button
-              v-for="band in bands"
+              v-for="band in availableBands"
               :key="`band-${band}`"
               :class="['filter-btn-small', { active: filters.selectedBand === band }]"
               @click="selectBand(band)"
