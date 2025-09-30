@@ -13,6 +13,7 @@ declare global {
       updateQso: (qso: any) => Promise<any>;
       fetchDxSpots: (params: string) => Promise<{ success: boolean; data?: any; error?: string }>;
       fetchPropagationData: () => Promise<{ success: boolean; data?: any; error?: string }>;
+      fetchWeather: (lat: number, lon: number) => Promise<{ success: boolean; data?: any; error?: string }>;
     };
   }
 }

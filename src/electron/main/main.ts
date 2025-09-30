@@ -152,6 +152,13 @@ ipcMain.handle('fetchWeather', async (event, lat: number, lon: number) => {
   try {
     const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`;
 
+        // Check for proxy environment variables
+    const proxyUrl =
+      process.env.HTTPS_PROXY ||
+      process.env.https_proxy ||
+      process.env.HTTP_PROXY ||
+      process.env.http_proxy;
+  
     const fetchOptions: any = {
       headers: {
         'User-Agent': 'HamLogger/1.0',
@@ -159,6 +166,12 @@ ipcMain.handle('fetchWeather', async (event, lat: number, lon: number) => {
       },
       timeout: 30000, // 30 second timeout
     };
+
+    // Use proxy agent if proxy is configured
+    if (proxyUrl) {
+      fetchOptions.agent = new HttpsProxyAgent(proxyUrl);
+      console.log(`Using proxy: ${proxyUrl}`);
+    }
 
     const response = await fetch(url, fetchOptions);
 
