@@ -481,23 +481,23 @@ export class CallsignHelper {
           // Both images loaded, create composite
           ctx.clearRect(0, 0, canvas.width, canvas.height);
           
-          // Draw base country flag (bottom-left triangle)
+          // Draw base country flag (top-left triangle)
           ctx.save();
           ctx.beginPath();
-          ctx.moveTo(0, canvas.height); // bottom-left
-          ctx.lineTo(0, 0); // top-left
-          ctx.lineTo(canvas.width, canvas.height); // bottom-right
+          ctx.moveTo(0, 0); // top-left
+          ctx.lineTo(canvas.width, 0); // top-right
+          ctx.lineTo(0, canvas.height); // bottom-left
           ctx.closePath();
           ctx.clip();
           ctx.drawImage(baseImg, 0, 0, canvas.width, canvas.height);
           ctx.restore();
           
-          // Draw prefix country flag (top-right triangle)
+          // Draw prefix country flag (bottom-right triangle)
           ctx.save();
           ctx.beginPath();
-          ctx.moveTo(0, 0); // top-left
-          ctx.lineTo(canvas.width, 0); // top-right
+          ctx.moveTo(canvas.width, 0); // top-right
           ctx.lineTo(canvas.width, canvas.height); // bottom-right
+          ctx.lineTo(0, canvas.height); // bottom-left
           ctx.closePath();
           ctx.clip();
           ctx.drawImage(prefixImg, 0, 0, canvas.width, canvas.height);
@@ -507,8 +507,8 @@ export class CallsignHelper {
           ctx.strokeStyle = '#333';
           ctx.lineWidth = 1;
           ctx.beginPath();
-          ctx.moveTo(0, canvas.height);
-          ctx.lineTo(canvas.width, 0);
+          ctx.moveTo(0, 0);
+          ctx.lineTo(canvas.width, canvas.height);
           ctx.stroke();
           
           resolve(canvas.toDataURL());
