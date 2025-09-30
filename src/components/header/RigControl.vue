@@ -1,12 +1,18 @@
 <script lang="ts">
 import { useRigStore } from '../../store/rig';
+import { configHelper } from '../../utils/configHelper';
 
 export default {
   name: 'RigControl',
   data() {
     return {
       rigStore: useRigStore(),
+      rigModel: '',
+      rigPort: '',
     };
+  },
+  async mounted() {
+    await this.loadRigConfig();
   },
   computed: {
     modes() {
@@ -20,14 +26,16 @@ export default {
         this.rigStore.setMode(newMode);
       },
     },
-    rigModel() {
-      return this.rigStore.rigModel;
-    },
     splitActive() {
       return this.rigStore.splitActive;
     },
   },
   methods: {
+    async loadRigConfig() {
+      await configHelper.initSettings();
+      this.rigModel = configHelper.getSetting(['rig'], 'model') || 'Unknown Rig';
+      this.rigPort = configHelper.getSetting(['rig'], 'port') || 'Unknown Port';
+    },
     handleReconnect() {
       this.rigStore.handleReconnect();
     },
@@ -45,7 +53,7 @@ export default {
       <div class="rig-info">
         <div class="rig-title">
           {{ rigModel }}
-          <span class="port-badge">COM5</span>
+          <span class="port-badge">{{ rigPort }}</span>
         </div>
       </div>
 
