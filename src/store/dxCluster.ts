@@ -1,39 +1,6 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
-
-export interface DxSpot {
-  Nr: number;
-  Spotter: string;
-  Spotters: string[]; // Array of all spotters for this callsign/frequency
-  Frequency: string;
-  DXCall: string;
-  Time: string;
-  Date: string;
-  Beacon: boolean;
-  MM: boolean;
-  AM: boolean;
-  Valid: boolean;
-  EQSL?: boolean;
-  LOTW?: boolean;
-  LOTW_Date?: string;
-  DXHomecall: string;
-  Comment: string;
-  Flag: string;
-  Band: number;
-  Mode: string;
-  Continent_dx: string;
-  Continent_spotter: string;
-  DXLocator?: string;
-}
-
-export interface DxClusterFilters {
-  selectedCdx: string[];
-  selectedCde: string[];
-  selectedBand: string;
-  selectedModes: string[];
-  validatedOnly: boolean;
-  pageLength: number;
-}
+import { DxClusterFilters, DxSpot } from '../types/dxCluster';
 
 export const useDxClusterStore = defineStore('dxCluster', () => {
   // State
@@ -80,7 +47,7 @@ export const useDxClusterStore = defineStore('dxCluster', () => {
       }
 
       // Process and deduplicate spots
-      const rawSpots = result.data.map((spot: any) => ({
+      const rawSpots = result.data.map((spot: DxSpot) => ({
         Nr: spot.Nr || 0,
         Spotter: spot.Spotter || '',
         Frequency: spot.Frequency || '0',
@@ -107,7 +74,7 @@ export const useDxClusterStore = defineStore('dxCluster', () => {
       // Deduplicate spots by callsign and frequency
       const spotMap = new Map<string, DxSpot>();
 
-      rawSpots.forEach((spot: any) => {
+      rawSpots.forEach((spot: DxSpot) => {
         const key = `${spot.DXCall}-${spot.Frequency}`;
 
         if (spotMap.has(key)) {
