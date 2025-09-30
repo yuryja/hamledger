@@ -104,6 +104,49 @@ ipcMain.handle('adif:import', async () => {
   }
 });
 
+// Propagation Data API handler
+ipcMain.handle('fetchPropagationData', async () => {
+  try {
+    const url = 'https://dxheat.com/wwv/source/';
+
+    // Check for proxy environment variables
+    const proxyUrl =
+      process.env.HTTPS_PROXY ||
+      process.env.https_proxy ||
+      process.env.HTTP_PROXY ||
+      process.env.http_proxy;
+
+    const fetchOptions: any = {
+      headers: {
+        'User-Agent': 'HamLogger/1.0',
+        Accept: 'application/json',
+      },
+      timeout: 30000, // 30 second timeout
+    };
+
+    // Use proxy agent if proxy is configured
+    if (proxyUrl) {
+      fetchOptions.agent = new HttpsProxyAgent(proxyUrl);
+      console.log(`Using proxy: ${proxyUrl}`);
+    }
+
+    const response = await fetch(url, fetchOptions);
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return { success: true, data };
+  } catch (error) {
+    console.error('Propagation Data API error:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error',
+    };
+  }
+});
+
 // DX Spots API handler
 ipcMain.handle('fetchDxSpots', async (event, params: string) => {
   try {

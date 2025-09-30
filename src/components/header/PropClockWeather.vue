@@ -16,10 +16,15 @@ export default {
       clockInterval: 0,
     };
   },
-  mounted() {
+  async mounted() {
     this.updateUTCClock();
     this.clockInterval = window.setInterval(this.updateUTCClock, 1000);
-    this.propStore.updatePropagationData();
+    await this.propStore.updatePropagationData();
+    
+    // Frissítjük a propagációs adatokat 15 percenként
+    setInterval(() => {
+      this.propStore.updatePropagationData();
+    }, 15 * 60 * 1000);
   },
   beforeUnmount() {
     if (this.clockInterval) {
@@ -39,17 +44,28 @@ export default {
     <h2 class="section-title">Propagation, Clock & WX</h2>
     <div class="prop-clock-weather-content">
       <div class="propagation-info">
-        <div class="prop-item">
-          <span class="prop-label">SFI</span>
-          <span class="prop-value">{{ propStore.propData.sfi }}</span>
+        <div v-if="propStore.isLoading" class="prop-loading">
+          <span>Betöltés...</span>
         </div>
-        <div class="prop-item">
-          <span class="prop-label">A</span>
-          <span class="prop-value">{{ propStore.propData.aIndex }}</span>
+        <div v-else-if="propStore.error" class="prop-error">
+          <span>{{ propStore.error }}</span>
         </div>
-        <div class="prop-item">
-          <span class="prop-label">K</span>
-          <span class="prop-value">{{ propStore.propData.kIndex }}</span>
+        <div v-else class="prop-data">
+          <div class="prop-item">
+            <span class="prop-label">SFI</span>
+            <span class="prop-value">{{ propStore.propData.sfi }}</span>
+          </div>
+          <div class="prop-item">
+            <span class="prop-label">A</span>
+            <span class="prop-value">{{ propStore.propData.aIndex }}</span>
+          </div>
+          <div class="prop-item">
+            <span class="prop-label">K</span>
+            <span class="prop-value">{{ propStore.propData.kIndex }}</span>
+          </div>
+        </div>
+        <div v-if="propStore.propData.station" class="prop-station">
+          <span class="station-label">{{ propStore.propData.station }}</span>
         </div>
       </div>
 
@@ -87,6 +103,13 @@ export default {
 /* Prop info */
 .propagation-info {
   display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.5rem;
+}
+
+.prop-data {
+  display: flex;
   gap: 1.5rem;
 }
 
@@ -105,6 +128,26 @@ export default {
   font-size: 1.2rem;
   font-weight: bold;
   color: var(--main-color);
+}
+
+.prop-loading {
+  font-size: 0.8rem;
+  color: #ccc;
+  font-style: italic;
+}
+
+.prop-error {
+  font-size: 0.8rem;
+  color: #ff6b6b;
+}
+
+.prop-station {
+  font-size: 0.7rem;
+  color: #999;
+}
+
+.station-label {
+  font-style: italic;
 }
 
 /* Clock & weather */

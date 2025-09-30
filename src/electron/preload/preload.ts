@@ -11,6 +11,7 @@ declare global {
       saveSettings: (settings: any) => Promise<void>;
       updateQso: (qso: any) => Promise<any>;
       fetchDxSpots: (params: string) => Promise<{ success: boolean; data?: any; error?: string }>;
+      fetchPropagationData: () => Promise<{ success: boolean; data?: any; error?: string }>;
     };
   }
 }
@@ -23,4 +24,5 @@ contextBridge.exposeInMainWorld('electronAPI', {
   saveSettings: (settings: any) => ipcRenderer.invoke('settings:save', settings),
   updateQso: (qso: any) => ipcRenderer.invoke('qso:update', qso),
   fetchDxSpots: (params: string) => ipcRenderer.invoke('fetchDxSpots', params),
+  fetchPropagationData: () => ipcRenderer.invoke('fetchPropagationData'),
 });
