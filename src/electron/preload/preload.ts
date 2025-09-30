@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // src/electron/preload/preload.ts
 import { contextBridge, ipcRenderer } from 'electron';
 

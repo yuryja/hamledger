@@ -80,7 +80,7 @@ export default {
           <div v-if="propStore.propData.aurora !== undefined" class="prop-item">
             <span class="prop-label">Aurora</span>
             <span class="prop-value aurora" :class="{ active: propStore.propData.aurora }">
-              {{ propStore.propData.aurora ? 'IGEN' : 'NEM' }}
+              {{ propStore.propData.aurora ? 'POSITIVE' : 'NEGATIVE' }}
             </span>
           </div>
         </div>
