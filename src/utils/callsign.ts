@@ -519,7 +519,7 @@ export class CallsignHelper {
         
         iconImg.onload = () => {
           // Draw portable icon in bottom-right corner
-          const iconSize = 16;
+          const iconSize = 20;
           const iconX = canvas.width - iconSize - 2;
           const iconY = canvas.height - iconSize - 2;
           
