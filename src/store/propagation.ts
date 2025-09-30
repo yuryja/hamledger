@@ -51,11 +51,11 @@ export const usePropagationStore = defineStore('propagation', {
             aurora: latestData.aurora,
           };
         } else {
-          this.error = response.error || 'Nem sikerült betölteni a propagációs adatokat';
+          this.error = response.error || 'Failed to load propagation data';
         }
       } catch (error) {
-        console.error('Hiba a propagációs adatok betöltésekor:', error);
-        this.error = 'Hálózati hiba történt';
+        console.error('Error loading propagation data:', error);
+        this.error = 'Network error occurred';
       } finally {
         this.isLoading = false;
       }
