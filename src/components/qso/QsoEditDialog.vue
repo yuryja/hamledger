@@ -36,6 +36,19 @@ export default {
         this.editedQso = { ...this.qso };
       }
     },
+    qso: {
+      handler(newQso) {
+        if (newQso && this.show) {
+          this.editedQso = { ...newQso };
+        }
+      },
+      immediate: true,
+    },
+  },
+  created() {
+    if (this.qso) {
+      this.editedQso = { ...this.qso };
+    }
   },
   methods: {
     async saveChanges() {
