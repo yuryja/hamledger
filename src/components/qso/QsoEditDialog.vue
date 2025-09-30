@@ -53,10 +53,25 @@ export default {
   methods: {
     async saveChanges() {
       try {
-        await this.qsoStore.updateQso(this.editedQso);
+        // Ensure all required fields are present
+        const qsoToUpdate = {
+          ...this.editedQso,
+          // Ensure numeric fields are properly converted
+          freqRx: typeof this.editedQso.freqRx === 'string' 
+            ? parseFloat(this.editedQso.freqRx) 
+            : this.editedQso.freqRx,
+          freqTx: typeof this.editedQso.freqTx === 'string' 
+            ? (this.editedQso.freqTx === '--' ? '--' : parseFloat(this.editedQso.freqTx))
+            : this.editedQso.freqTx,
+        };
+
+        console.log('Saving QSO:', qsoToUpdate);
+        await this.qsoStore.updateQso(qsoToUpdate);
+        console.log('QSO saved successfully');
         this.$emit('close');
       } catch (error) {
         console.error('Failed to update QSO:', error);
+        alert('Hiba történt a QSO mentése során: ' + (error.message || error));
       }
     },
     close() {

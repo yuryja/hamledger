@@ -153,11 +153,11 @@ export default {
       </table>
     </div>
 
-    <QsoEditDialog
+    <QsoDetailDialog
       v-if="selectedQso"
       :qso="selectedQso"
       :show="showEditDialog"
-      @close="showEditDialog = false"
+      @close="showEditDialog = false; selectedQso = null"
     />
   </main>
 </template>
