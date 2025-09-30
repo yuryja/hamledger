@@ -304,7 +304,7 @@ onUnmounted(() => {
                 eqsl: spot.EQSL,
                 [`column-${spot.column}`]: true
               }"
-              :title="`${spot.DXCall} - ${formatFrequency(spot.Frequency)} - ${spot.Comment}`"
+              :title="`${spot.DXCall} - ${formatFrequency(spot.Frequency)} - Spotters: ${spot.Spotters.join(', ')} - ${spot.Comment}`"
               @mouseenter="showMagnifier($event, spot.Frequency)"
               @mouseleave="hideMagnifier"
             >
@@ -346,7 +346,7 @@ onUnmounted(() => {
               <div class="spot-details">
                 <span class="spot-mode">{{ spot.Mode }}</span>
                 <span class="spot-time">{{ formatTime(spot.Time, spot.Date) }}</span>
-                <span class="spot-spotter">{{ spot.Spotter }}</span>
+                <span class="spot-spotter">{{ spot.Spotters.join(', ') }}</span>
               </div>
               <div class="spot-comment" v-if="spot.Comment">{{ spot.Comment }}</div>
             </div>

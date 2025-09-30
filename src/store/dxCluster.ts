@@ -4,6 +4,7 @@ import { ref, computed } from 'vue'
 export interface DxSpot {
   Nr: number
   Spotter: string
+  Spotters: string[] // Array of all spotters for this callsign/frequency
   Frequency: string
   DXCall: string
   Time: string
@@ -78,7 +79,8 @@ export const useDxClusterStore = defineStore('dxCluster', () => {
         throw new Error(result.error || 'API hívás sikertelen')
       }
       
-      spots.value = result.data.map((spot: any) => ({
+      // Process and deduplicate spots
+      const rawSpots = result.data.map((spot: any) => ({
         Nr: spot.Nr || 0,
         Spotter: spot.Spotter || '',
         Frequency: spot.Frequency || '0',
@@ -101,6 +103,38 @@ export const useDxClusterStore = defineStore('dxCluster', () => {
         Continent_spotter: spot.Continent_spotter || '',
         DXLocator: spot.DXLocator
       }))
+
+      // Deduplicate spots by callsign and frequency
+      const spotMap = new Map<string, DxSpot>()
+      
+      rawSpots.forEach((spot: any) => {
+        const key = `${spot.DXCall}-${spot.Frequency}`
+        
+        if (spotMap.has(key)) {
+          const existingSpot = spotMap.get(key)!
+          // Add spotter to the list if not already present
+          if (!existingSpot.Spotters.includes(spot.Spotter)) {
+            existingSpot.Spotters.push(spot.Spotter)
+          }
+          // Keep the most recent time
+          const existingTime = new Date(`20${existingSpot.Date.split('/')[2]}-${existingSpot.Date.split('/')[1]}-${existingSpot.Date.split('/')[0]}T${existingSpot.Time}:00Z`)
+          const newTime = new Date(`20${spot.Date.split('/')[2]}-${spot.Date.split('/')[1]}-${spot.Date.split('/')[0]}T${spot.Time}:00Z`)
+          
+          if (newTime > existingTime) {
+            existingSpot.Time = spot.Time
+            existingSpot.Date = spot.Date
+            existingSpot.Spotter = spot.Spotter // Update primary spotter to most recent
+          }
+        } else {
+          // First occurrence of this callsign/frequency combination
+          spotMap.set(key, {
+            ...spot,
+            Spotters: [spot.Spotter]
+          })
+        }
+      })
+      
+      spots.value = Array.from(spotMap.values())
       
       lastFetchTime.value = new Date()
     } catch (err) {
