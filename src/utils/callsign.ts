@@ -449,23 +449,17 @@ export class CallsignHelper {
         // Handle three-part callsigns like MM/HA5XB/MM
         const [first, middle, third] = parts;
         
-        // Check which parts are portable suffixes
-        const isFirstPortableSuffix = ['P', 'M', 'MM', 'AM'].includes(first);
-        const isThirdPortableSuffix = ['P', 'M', 'MM', 'AM'].includes(third);
-        
         // Middle part is usually the base callsign
         if (this.looksLikeBaseCallsign(middle)) {
           const baseCountry = this.getCountryCodeForCallsign(middle);
           
-          // If first part is not a portable suffix, it's a prefix country
-          if (!isFirstPortableSuffix && this.getCountryCodeForCallsign(first) !== 'xx') {
-            const prefixCountry = this.getCountryCodeForCallsign(first);
-            
-            // Create composite flag if different countries
-            if (prefixCountry !== baseCountry && prefixCountry !== 'xx' && baseCountry !== 'xx') {
-              flagUrl = await this.createCompositeFlagUrl(prefixCountry, baseCountry);
-              isComposite = true;
-            }
+          // Check if first part gives a valid country code (could be prefix like MM for UK)
+          const firstCountry = this.getCountryCodeForCallsign(first);
+          
+          // Create composite flag if first part is a valid country different from base
+          if (firstCountry !== 'xx' && firstCountry !== baseCountry && baseCountry !== 'xx') {
+            flagUrl = await this.createCompositeFlagUrl(firstCountry, baseCountry);
+            isComposite = true;
           }
         }
       }
