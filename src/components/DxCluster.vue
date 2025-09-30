@@ -468,14 +468,14 @@ onUnmounted(() => {
             <input 
               type="checkbox"
               :checked="filters.validatedOnly"
-              @change="updateValidatedOnly($event.target.checked)"
+              @change="updateValidatedOnly(($event.target as HTMLInputElement)?.checked ?? false)"
             />
             Valid
           </label>
           
           <div class="page-length-selector">
             <label>Spots:</label>
-            <select :value="filters.pageLength" @change="updatePageLength(parseInt($event.target.value))">
+            <select :value="filters.pageLength" @change="updatePageLength(parseInt(($event.target as HTMLSelectElement)?.value ?? '25'))">
               <option v-for="length in pageLengthOptions" :key="length" :value="length">
                 {{ length }}
               </option>
