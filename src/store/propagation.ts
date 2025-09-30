@@ -1,10 +1,18 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { defineStore } from 'pinia';
-import type { PropagationData, WWVData } from '../types/propagation';
+import type { PropagationData } from '../types/propagation';
 
 declare global {
   interface Window {
     electronAPI: {
-      fetchPropagationData: () => Promise<{ success: boolean; data?: WWVData[]; error?: string }>;
+      addQso: (qso: any) => Promise<any>;
+      getAllDocs: () => Promise<any>;
+      importAdif: () => Promise<{ imported: boolean; count?: number; error?: any }>;
+      loadSettings: () => Promise<any>;
+      saveSettings: (settings: any) => Promise<void>;
+      updateQso: (qso: any) => Promise<any>;
+      fetchDxSpots: (params: string) => Promise<{ success: boolean; data?: any; error?: string }>;
+      fetchPropagationData: () => Promise<{ success: boolean; data?: any; error?: string }>;
     };
   }
 }
