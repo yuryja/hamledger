@@ -68,21 +68,23 @@ export default {
         // Debug: Check if _id and _rev are present
         console.log('Original QSO:', this.qso);
         console.log('Edited QSO:', this.editedQso);
+        console.log('QSO keys:', Object.keys(this.qso));
         
-        if (!this.qso._id) {
-          throw new Error('QSO _id is missing');
-        }
+        // Check if we have the required PouchDB fields
+        const qsoId = this.qso._id || this.qso.id;
+        const qsoRev = this.qso._rev || this.qso.rev;
         
-        if (!this.qso._rev) {
-          throw new Error('QSO _rev is missing');
+        if (!qsoId) {
+          console.error('QSO _id is missing from:', this.qso);
+          throw new Error('QSO _id is missing - cannot update QSO without ID');
         }
 
         // Ensure all required fields are present, including PouchDB required fields
         const qsoToUpdate = {
           ...this.editedQso,
-          // Ensure PouchDB required fields are preserved from original QSO
-          _id: this.qso._id,
-          _rev: this.qso._rev,
+          // Ensure PouchDB required fields are preserved
+          _id: qsoId,
+          _rev: qsoRev,
           // Ensure numeric fields are properly converted
           freqRx: typeof this.editedQso.freqRx === 'string' 
             ? parseFloat(this.editedQso.freqRx) 

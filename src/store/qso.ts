@@ -120,7 +120,12 @@ export const useQsoStore = defineStore('qso', {
     async initializeStore() {
       try {
         const result = await window.electronAPI.getAllDocs();
-        this.allQsos = result.rows.map(row => row.doc as QsoEntry);
+        console.log('Raw database result:', result);
+        this.allQsos = result.rows.map(row => {
+          const qso = row.doc as QsoEntry;
+          console.log('QSO from DB:', qso);
+          return qso;
+        });
         this.initialized = true;
       } catch (error) {
         console.error('Failed to initialize QSO store:', error);
@@ -130,30 +135,38 @@ export const useQsoStore = defineStore('qso', {
     async updateQso(updatedQso: QsoEntry) {
       try {
         console.log('Store updateQso called with:', updatedQso);
+        console.log('QSO keys:', Object.keys(updatedQso));
         
-        if (!updatedQso._id) {
+        const qsoId = updatedQso._id || updatedQso.id;
+        const qsoRev = updatedQso._rev || updatedQso.rev;
+        
+        if (!qsoId) {
+          console.error('QSO object:', updatedQso);
           throw new Error('QSO _id is required for update');
         }
         
-        if (!updatedQso._rev) {
-          throw new Error('QSO _rev is required for update');
-        }
+        // Ensure the QSO has the correct _id format
+        const qsoToUpdate = {
+          ...updatedQso,
+          _id: qsoId,
+          _rev: qsoRev,
+        };
         
-        const response = await window.electronAPI.updateQso(updatedQso);
+        const response = await window.electronAPI.updateQso(qsoToUpdate);
         console.log('Update response:', response);
         
         if (response.ok) {
           // Update the _rev with the new revision from the response
-          const updatedQsoWithNewRev = { ...updatedQso, _rev: response.rev };
+          const updatedQsoWithNewRev = { ...qsoToUpdate, _rev: response.rev };
           
           // Update in current session if present
-          const sessionIndex = this.currentSession.findIndex(qso => qso._id === updatedQso._id);
+          const sessionIndex = this.currentSession.findIndex(qso => (qso._id || qso.id) === qsoId);
           if (sessionIndex !== -1) {
             this.currentSession[sessionIndex] = updatedQsoWithNewRev;
           }
 
           // Update in all QSOs
-          const allIndex = this.allQsos.findIndex(qso => qso._id === updatedQso._id);
+          const allIndex = this.allQsos.findIndex(qso => (qso._id || qso.id) === qsoId);
           if (allIndex !== -1) {
             this.allQsos[allIndex] = updatedQsoWithNewRev;
           }
