@@ -506,44 +506,46 @@ export class CallsignHelper {
         // Draw the base flag
         ctx.drawImage(flagImg, 0, 0, canvas.width, canvas.height);
         
-        // Draw portable icon in bottom-right corner
-        const iconSize = 16;
-        const iconX = canvas.width - iconSize - 2;
-        const iconY = canvas.height - iconSize - 2;
-        
-        // Draw background circle for icon
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
-        ctx.beginPath();
-        ctx.arc(iconX + iconSize/2, iconY + iconSize/2, iconSize/2, 0, 2 * Math.PI);
-        ctx.fill();
-        
-        // Draw border
-        ctx.strokeStyle = '#333';
-        ctx.lineWidth = 1;
-        ctx.stroke();
-        
-        // Draw the appropriate icon
-        ctx.fillStyle = '#333';
-        ctx.font = 'bold 10px Arial';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        
-        switch (suffix) {
-          case 'P': // Portable - walking person
-            this.drawPortableIcon(ctx, iconX, iconY, iconSize);
-            break;
-          case 'M': // Mobile - handheld radio
-            this.drawMobileIcon(ctx, iconX, iconY, iconSize);
-            break;
-          case 'MM': // Maritime Mobile - ship
-            this.drawMaritimeMobileIcon(ctx, iconX, iconY, iconSize);
-            break;
-          case 'AM': // Aeronautical Mobile - airplane
-            this.drawAeronauticalMobileIcon(ctx, iconX, iconY, iconSize);
-            break;
+        // Get the appropriate icon URL
+        const iconUrl = this.getPortableIconUrl(suffix);
+        if (!iconUrl) {
+          resolve(canvas.toDataURL());
+          return;
         }
         
-        resolve(canvas.toDataURL());
+        // Load and draw the icon
+        const iconImg = new Image();
+        iconImg.crossOrigin = 'anonymous';
+        
+        iconImg.onload = () => {
+          // Draw portable icon in bottom-right corner
+          const iconSize = 16;
+          const iconX = canvas.width - iconSize - 2;
+          const iconY = canvas.height - iconSize - 2;
+          
+          // Draw background circle for icon
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+          ctx.beginPath();
+          ctx.arc(iconX + iconSize/2, iconY + iconSize/2, iconSize/2 + 1, 0, 2 * Math.PI);
+          ctx.fill();
+          
+          // Draw border
+          ctx.strokeStyle = '#333';
+          ctx.lineWidth = 1;
+          ctx.stroke();
+          
+          // Draw the icon
+          ctx.drawImage(iconImg, iconX, iconY, iconSize, iconSize);
+          
+          resolve(canvas.toDataURL());
+        };
+        
+        iconImg.onerror = () => {
+          // Fallback to original flag if icon fails to load
+          resolve(canvas.toDataURL());
+        };
+        
+        iconImg.src = iconUrl;
       };
       
       flagImg.onerror = () => resolve(flagUrl);
@@ -552,137 +554,21 @@ export class CallsignHelper {
   }
 
   /**
-   * Draw portable icon (walking person)
+   * Get the appropriate icon URL for portable suffix
+   * @param suffix - The portable suffix (P, M, MM, AM)
+   * @returns Icon URL or null
    */
-  private static drawPortableIcon(ctx: CanvasRenderingContext2D, x: number, y: number, size: number): void {
-    ctx.strokeStyle = '#333';
-    ctx.lineWidth = 1.5;
-    ctx.lineCap = 'round';
+  private static getPortableIconUrl(suffix: string): string | null {
+    const iconUrls = {
+      'P': 'https://img.icons8.com/?size=100&id=25055&format=png&color=000000', // Portable - walking person
+      'M': 'https://img.icons8.com/?size=100&id=1548&format=png&color=000000',  // Mobile - handheld radio
+      'MM': 'https://img.icons8.com/?size=100&id=17856&format=png&color=000000', // Maritime Mobile - ship
+      'AM': 'https://img.icons8.com/?size=100&id=2487&format=png&color=000000'   // Aeronautical Mobile - airplane
+    };
     
-    const centerX = x + size/2;
-    const centerY = y + size/2;
-    
-    // Head
-    ctx.beginPath();
-    ctx.arc(centerX, centerY - 4, 2, 0, 2 * Math.PI);
-    ctx.stroke();
-    
-    // Body
-    ctx.beginPath();
-    ctx.moveTo(centerX, centerY - 2);
-    ctx.lineTo(centerX, centerY + 3);
-    ctx.stroke();
-    
-    // Arms
-    ctx.beginPath();
-    ctx.moveTo(centerX - 3, centerY - 1);
-    ctx.lineTo(centerX + 3, centerY - 1);
-    ctx.stroke();
-    
-    // Legs (walking position)
-    ctx.beginPath();
-    ctx.moveTo(centerX, centerY + 3);
-    ctx.lineTo(centerX - 2, centerY + 6);
-    ctx.moveTo(centerX, centerY + 3);
-    ctx.lineTo(centerX + 2, centerY + 5);
-    ctx.stroke();
+    return iconUrls[suffix] || null;
   }
 
-  /**
-   * Draw mobile icon (handheld radio)
-   */
-  private static drawMobileIcon(ctx: CanvasRenderingContext2D, x: number, y: number, size: number): void {
-    ctx.fillStyle = '#333';
-    ctx.strokeStyle = '#333';
-    ctx.lineWidth = 1;
-    
-    const centerX = x + size/2;
-    const centerY = y + size/2;
-    
-    // Radio body
-    ctx.fillRect(centerX - 2, centerY - 3, 4, 6);
-    
-    // Antenna
-    ctx.beginPath();
-    ctx.moveTo(centerX, centerY - 3);
-    ctx.lineTo(centerX, centerY - 6);
-    ctx.stroke();
-    
-    // Speaker grille
-    ctx.fillStyle = '#fff';
-    ctx.fillRect(centerX - 1, centerY - 2, 2, 1);
-  }
-
-  /**
-   * Draw maritime mobile icon (ship)
-   */
-  private static drawMaritimeMobileIcon(ctx: CanvasRenderingContext2D, x: number, y: number, size: number): void {
-    ctx.strokeStyle = '#333';
-    ctx.fillStyle = '#333';
-    ctx.lineWidth = 1.5;
-    ctx.lineCap = 'round';
-    
-    const centerX = x + size/2;
-    const centerY = y + size/2;
-    
-    // Hull
-    ctx.beginPath();
-    ctx.moveTo(centerX - 4, centerY + 2);
-    ctx.lineTo(centerX + 4, centerY + 2);
-    ctx.lineTo(centerX + 3, centerY + 4);
-    ctx.lineTo(centerX - 3, centerY + 4);
-    ctx.closePath();
-    ctx.fill();
-    
-    // Mast
-    ctx.beginPath();
-    ctx.moveTo(centerX, centerY + 2);
-    ctx.lineTo(centerX, centerY - 4);
-    ctx.stroke();
-    
-    // Sail
-    ctx.beginPath();
-    ctx.moveTo(centerX, centerY - 4);
-    ctx.lineTo(centerX + 3, centerY - 2);
-    ctx.lineTo(centerX, centerY);
-    ctx.closePath();
-    ctx.fill();
-  }
-
-  /**
-   * Draw aeronautical mobile icon (airplane)
-   */
-  private static drawAeronauticalMobileIcon(ctx: CanvasRenderingContext2D, x: number, y: number, size: number): void {
-    ctx.strokeStyle = '#333';
-    ctx.fillStyle = '#333';
-    ctx.lineWidth = 1.5;
-    ctx.lineCap = 'round';
-    
-    const centerX = x + size/2;
-    const centerY = y + size/2;
-    
-    // Fuselage
-    ctx.beginPath();
-    ctx.moveTo(centerX - 4, centerY);
-    ctx.lineTo(centerX + 4, centerY);
-    ctx.stroke();
-    
-    // Wings
-    ctx.beginPath();
-    ctx.moveTo(centerX - 2, centerY - 3);
-    ctx.lineTo(centerX + 2, centerY + 3);
-    ctx.moveTo(centerX + 2, centerY - 3);
-    ctx.lineTo(centerX - 2, centerY + 3);
-    ctx.stroke();
-    
-    // Tail
-    ctx.beginPath();
-    ctx.moveTo(centerX + 4, centerY);
-    ctx.lineTo(centerX + 5, centerY - 2);
-    ctx.moveTo(centerX + 4, centerY);
-    ctx.lineTo(centerX + 5, centerY + 2);
-    ctx.stroke();
-  }
 
   /**
    * Create a composite flag from two country codes
