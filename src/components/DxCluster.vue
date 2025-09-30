@@ -350,10 +350,15 @@ onUnmounted(() => {
               </div>
               <div class="spot-comment" v-if="spot.Comment">{{ spot.Comment }}</div>
             </div>
-            <div class="spot-badges">
-              <span v-if="isSpotWorked(spot.DXCall)" class="badge worked">✓</span>
-              <span v-if="spot.LOTW" class="badge lotw">L</span>
-              <span v-if="spot.EQSL" class="badge eqsl">E</span>
+            <div class="spot-status">
+              <div class="worked-status">
+                <span v-if="isSpotWorked(spot.DXCall)" class="status-text worked">Worked</span>
+                <span v-else class="status-text not-worked">Not worked</span>
+              </div>
+              <div class="spot-badges">
+                <span v-if="spot.LOTW" class="badge lotw">L</span>
+                <span v-if="spot.EQSL" class="badge eqsl">E</span>
+              </div>
             </div>
           </div>
         </div>
@@ -802,11 +807,43 @@ onUnmounted(() => {
   word-break: break-word;
 }
 
-.spot-badges {
+.spot-status {
   display: flex;
   flex-direction: column;
-  gap: 0.2rem;
+  align-items: flex-end;
+  gap: 0.3rem;
   margin-left: 0.5rem;
+}
+
+.worked-status {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.status-text {
+  font-size: 0.65rem;
+  font-weight: 600;
+  padding: 0.2rem 0.4rem;
+  border-radius: var(--border-radius-sm);
+  text-transform: uppercase;
+}
+
+.status-text.worked {
+  background: rgba(34, 197, 94, 0.2);
+  color: #22c55e;
+  border: 1px solid rgba(34, 197, 94, 0.4);
+}
+
+.status-text.not-worked {
+  background: rgba(255, 165, 0, 0.2);
+  color: var(--main-color);
+  border: 1px solid rgba(255, 165, 0, 0.4);
+}
+
+.spot-badges {
+  display: flex;
+  flex-direction: row;
+  gap: 0.2rem;
 }
 
 .badge {
