@@ -74,9 +74,14 @@ export default {
         const qsoId = this.qso._id || this.qso.id;
         const qsoRev = this.qso._rev || this.qso.rev;
         
+        console.log('Available QSO fields:', Object.keys(this.qso));
+        console.log('QSO _id:', qsoId);
+        console.log('QSO _rev:', qsoRev);
+        
         if (!qsoId) {
           console.error('QSO _id is missing from:', this.qso);
-          throw new Error('QSO _id is missing - cannot update QSO without ID');
+          console.error('All QSO keys:', Object.keys(this.qso));
+          throw new Error('QSO _id is missing - cannot update QSO without ID. Available keys: ' + Object.keys(this.qso).join(', '));
         }
 
         // Ensure all required fields are present, including PouchDB required fields

@@ -122,8 +122,8 @@ export default {
         </thead>
         <tbody>
           <tr
-            v-for="entry in getSortedQsos()"
-            :key="entry._id"
+            v-for="(entry, index) in getSortedQsos()"
+            :key="entry._id || entry.datetime + entry.callsign || index"
             @click="
               selectedQso = entry;
               showEditDialog = true;

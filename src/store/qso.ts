@@ -124,6 +124,15 @@ export const useQsoStore = defineStore('qso', {
         this.allQsos = result.rows.map(row => {
           const qso = row.doc as QsoEntry;
           console.log('QSO from DB:', qso);
+          console.log('QSO _id:', qso._id);
+          console.log('QSO _rev:', qso._rev);
+          // Ensure _id exists
+          if (!qso._id) {
+            qso._id = row.id;
+          }
+          if (!qso._rev) {
+            qso._rev = row.value.rev;
+          }
           return qso;
         });
         this.initialized = true;
