@@ -77,6 +77,11 @@ export class ConfigHelper {
     return current[key];
   }
 
+  public getIARURegion(): 'region1' | 'region2' | 'region3' {
+    const region = this.getSetting(['station'], 'iaruRegion');
+    return region || 'region1';
+  }
+
   public flattenConfig(obj: any = this.settings, path: string[] = []): ConfigField[] {
     return Object.entries(obj).reduce((acc: ConfigField[], [key, value]) => {
       if (value && typeof value === 'object' && !Array.isArray(value)) {

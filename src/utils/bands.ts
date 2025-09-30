@@ -47,6 +47,24 @@ export const BAND_RANGES: BandRange[] = [
     region3: { min: 14000, max: 14350 },
   },
   {
+    name: '30m',
+    shortName: '30',
+    min: 10100,
+    max: 10150,
+    region1: { min: 10100, max: 10150 },
+    region2: { min: 10100, max: 10150 },
+    region3: { min: 10100, max: 10150 },
+  },
+  {
+    name: '17m',
+    shortName: '17',
+    min: 18068,
+    max: 18168,
+    region1: { min: 18068, max: 18168 },
+    region2: { min: 18068, max: 18168 },
+    region3: { min: 18068, max: 18168 },
+  },
+  {
     name: '15m',
     shortName: '15',
     min: 21000,
@@ -54,6 +72,15 @@ export const BAND_RANGES: BandRange[] = [
     region1: { min: 21000, max: 21450 },
     region2: { min: 21000, max: 21450 },
     region3: { min: 21000, max: 21450 },
+  },
+  {
+    name: '12m',
+    shortName: '12',
+    min: 24890,
+    max: 24990,
+    region1: { min: 24890, max: 24990 },
+    region2: { min: 24890, max: 24990 },
+    region3: { min: 24890, max: 24990 },
   },
   {
     name: '10m',
@@ -76,9 +103,24 @@ export function getBandByShortName(shortName: string): BandRange | null {
   return BAND_RANGES.find(band => band.shortName === shortName) || null;
 }
 
-export function getRegionalBandRange(shortName: string, region: IARURegion = 'region1'): { min: number; max: number } | null {
+export function getRegionalBandRange(shortName: string, region?: IARURegion): { min: number; max: number } | null {
   const band = getBandByShortName(shortName);
-  return band ? band[region] : null;
+  if (!band) return null;
+  
+  // Use provided region or try to get from config, fallback to region1
+  const targetRegion = region || getConfiguredRegion();
+  return band[targetRegion];
+}
+
+export function getConfiguredRegion(): IARURegion {
+  try {
+    // Import configHelper dynamically to avoid circular dependencies
+    const { configHelper } = require('./configHelper');
+    return configHelper.getIARURegion();
+  } catch {
+    // Fallback to region1 if configHelper is not available
+    return 'region1';
+  }
 }
 
 export function getAllBandShortNames(): string[] {

@@ -25,6 +25,11 @@
         "timezone": {
           "type": "string",
           "description": "Local timezone in IANA format (e.g. Europe/London)"
+        },
+        "iaruRegion": {
+          "type": "string",
+          "enum": ["region1", "region2", "region3"],
+          "description": "IARU region (region1: Europe/Africa/Middle East/Northern Asia, region2: Americas, region3: Asia-Pacific)"
         }
       }
     },

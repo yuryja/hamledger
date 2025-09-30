@@ -4,7 +4,8 @@
     "operator": "Balazs",
     "qth": "Budapest, Hungary",
     "grid": "JN97MM",
-    "timezone": "Europe/Budapest"
+    "timezone": "Europe/Budapest",
+    "iaruRegion": "region1"
   },
   "rig": {
     "model": "YAESU FT-450D",
