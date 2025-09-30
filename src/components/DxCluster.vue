@@ -1,290 +1,340 @@
-<script setup lang="ts">
-import { ref, onMounted, computed, onUnmounted } from 'vue';
+<script lang="ts">
+import { defineComponent } from 'vue';
 import { useDxClusterStore, type DxSpot } from '../store/dxCluster';
 import { useQsoStore } from '../store/qso';
 import { useRigStore } from '../store/rig';
 
-const dxStore = useDxClusterStore();
-const qsoStore = useQsoStore();
-const rigStore = useRigStore();
+interface MagnifierPosition {
+  x: number;
+  y: number;
+}
 
-// Get reactive data from store
-const spots = computed(() => dxStore.spots);
-const error = computed(() => dxStore.error);
-const filters = computed(() => dxStore.filters);
+interface ScaleTick {
+  frequency: number;
+  position: number;
+  label?: string;
+}
 
-// Magnifier window state
-const magnifierVisible = ref(false);
-const magnifierSpots = ref<DxSpot[]>([]);
-const magnifierPosition = ref({ x: 0, y: 0 });
-const magnifierFrequency = ref('');
-// eslint-disable-next-line no-undef
-let magnifierTimeout: NodeJS.Timeout | null = null;
+interface LayoutSpot extends DxSpot {
+  position: number;
+  leftOffset: number;
+  column: number;
+  customOpacity: number;
+  worked: boolean;
+}
 
-// Available options
-const continents = ['EU', 'NA', 'SA', 'AS', 'AF', 'OC', 'AN'];
-const bands = ['10', '15', '20', '40', '80', '160'];
-const modes = ['PHONE', 'CW', 'FT8', 'FT4', 'RTTY', 'PSK31'];
-const pageLengthOptions = [25, 50, 65, 100, 200];
+export default defineComponent({
+  name: 'DxCluster',
+  
+  data() {
+    return {
+      magnifierVisible: false as boolean,
+      magnifierSpots: [] as DxSpot[],
+      magnifierPosition: { x: 0, y: 0 } as MagnifierPosition,
+      magnifierFrequency: '' as string,
+      magnifierTimeout: null as NodeJS.Timeout | null,
+      
+      // Available options
+      continents: ['EU', 'NA', 'SA', 'AS', 'AF', 'OC', 'AN'] as readonly string[],
+      bands: ['10', '15', '20', '40', '80', '160'] as readonly string[],
+      modes: ['PHONE', 'CW', 'FT8', 'FT4', 'RTTY', 'PSK31'] as readonly string[],
+      pageLengthOptions: [25, 50, 65, 100, 200] as readonly number[],
+    };
+  },
 
-const formatFrequency = (freqStr: string) => {
-  const freq = parseFloat(freqStr);
-  if (freq >= 1000) {
-    return `${(freq / 1000).toFixed(3)} MHz`;
-  }
-  return `${freq} kHz`;
-};
+  computed: {
+    dxStore() {
+      return useDxClusterStore();
+    },
+    
+    qsoStore() {
+      return useQsoStore();
+    },
+    
+    rigStore() {
+      return useRigStore();
+    },
+    
+    spots(): DxSpot[] {
+      return this.dxStore.spots;
+    },
+    
+    error(): string | null {
+      return this.dxStore.error;
+    },
+    
+    filters() {
+      return this.dxStore.filters;
+    },
+    
+    layoutSpots(): LayoutSpot[] {
+      return this.getSpotLayout();
+    },
+    
+    scaleTicks(): { major: ScaleTick[]; minor: ScaleTick[] } {
+      return this.generateScaleTicks();
+    },
+  },
 
-const formatTime = (timeStr: string, dateStr: string) => {
-  try {
-    // Format: "21:19" and "29/09/25"
-    const [day, month, year] = dateStr.split('/');
-    const fullYear = `20${year}`; // Assuming 21st century
-    const isoDate = `${fullYear}-${month}-${day}T${timeStr}:00Z`;
-    const date = new Date(isoDate);
+  methods: {
+    formatFrequency(freqStr: string): string {
+      const freq = parseFloat(freqStr);
+      if (freq >= 1000) {
+        return `${(freq / 1000).toFixed(3)} MHz`;
+      }
+      return `${freq} kHz`;
+    },
 
-    return (
-      date.toLocaleTimeString('hu-HU', {
-        hour: '2-digit',
-        minute: '2-digit',
-        timeZone: 'UTC',
-      }) + 'Z'
-    );
-  } catch {
-    return `${timeStr}Z`;
-  }
-};
+    formatTime(timeStr: string, dateStr: string): string {
+      try {
+        // Format: "21:19" and "29/09/25"
+        const [day, month, year] = dateStr.split('/');
+        const fullYear = `20${year}`; // Assuming 21st century
+        const isoDate = `${fullYear}-${month}-${day}T${timeStr}:00Z`;
+        const date = new Date(isoDate);
 
-const selectBand = (band: string) => {
-  dxStore.selectBand(band);
-};
+        return (
+          date.toLocaleTimeString('hu-HU', {
+            hour: '2-digit',
+            minute: '2-digit',
+            timeZone: 'UTC',
+          }) + 'Z'
+        );
+      } catch {
+        return `${timeStr}Z`;
+      }
+    },
 
-const toggleCdxFilter = (value: string) => {
-  dxStore.toggleFilter('selectedCdx', value);
-};
+    selectBand(band: string): void {
+      this.dxStore.selectBand(band);
+    },
 
-const toggleCdeFilter = (value: string) => {
-  dxStore.toggleFilter('selectedCde', value);
-};
+    toggleCdxFilter(value: string): void {
+      this.dxStore.toggleFilter('selectedCdx', value);
+    },
 
-const toggleModeFilter = (value: string) => {
-  dxStore.toggleFilter('selectedModes', value);
-};
+    toggleCdeFilter(value: string): void {
+      this.dxStore.toggleFilter('selectedCde', value);
+    },
 
-const updateValidatedOnly = (value: boolean) => {
-  dxStore.updateFilters({ validatedOnly: value });
-};
+    toggleModeFilter(value: string): void {
+      this.dxStore.toggleFilter('selectedModes', value);
+    },
 
-const updatePageLength = (value: number) => {
-  dxStore.updateFilters({ pageLength: value });
-};
+    updateValidatedOnly(value: boolean): void {
+      this.dxStore.updateFilters({ validatedOnly: value });
+    },
 
-const getSpotPosition = (frequency: string) => {
-  const freq = parseFloat(frequency);
-  const range = dxStore.actualFrequencyRange;
-  if (!range) return 0;
+    updatePageLength(value: number): void {
+      this.dxStore.updateFilters({ pageLength: value });
+    },
 
-  const percentage = ((freq - range.min) / (range.max - range.min)) * 100;
-  return Math.max(0, Math.min(100, percentage));
-};
+    getSpotPosition(frequency: string): number {
+      const freq = parseFloat(frequency);
+      const range = this.dxStore.actualFrequencyRange;
+      if (!range) return 0;
 
-const getSpotOpacity = (timeStr: string, dateStr: string) => {
-  try {
-    const [day, month, year] = dateStr.split('/');
-    const fullYear = `20${year}`;
-    const isoDate = `${fullYear}-${month}-${day}T${timeStr}:00Z`;
-    const spotTime = new Date(isoDate);
-    const now = new Date();
-    const ageInHours = (now.getTime() - spotTime.getTime()) / (1000 * 60 * 60);
+      const percentage = ((freq - range.min) / (range.max - range.min)) * 100;
+      return Math.max(0, Math.min(100, percentage));
+    },
 
-    // Fade from 1.0 to 0.3 over 24 hours
-    const opacity = Math.max(0.3, 1.0 - (ageInHours / 24) * 0.7);
-    return opacity;
-  } catch {
-    return 0.5;
-  }
-};
+    getSpotOpacity(timeStr: string, dateStr: string): number {
+      try {
+        const [day, month, year] = dateStr.split('/');
+        const fullYear = `20${year}`;
+        const isoDate = `${fullYear}-${month}-${day}T${timeStr}:00Z`;
+        const spotTime = new Date(isoDate);
+        const now = new Date();
+        const ageInHours = (now.getTime() - spotTime.getTime()) / (1000 * 60 * 60);
 
-const isSpotWorked = (callsign: string) => {
-  return qsoStore.currentSession.some(qso => qso.callsign.toUpperCase() === callsign.toUpperCase());
-};
+        // Fade from 1.0 to 0.3 over 24 hours
+        const opacity = Math.max(0.3, 1.0 - (ageInHours / 24) * 0.7);
+        return opacity;
+      } catch {
+        return 0.5;
+      }
+    },
 
-const getSpotLayout = () => {
-  // Sort spots by age (newest first)
-  const sortedSpots = [...spots.value].sort((a, b) => {
-    const timeA = new Date(
-      `20${a.Date.split('/')[2]}-${a.Date.split('/')[1]}-${a.Date.split('/')[0]}T${a.Time}:00Z`
-    );
-    const timeB = new Date(
-      `20${b.Date.split('/')[2]}-${b.Date.split('/')[1]}-${b.Date.split('/')[0]}T${b.Time}:00Z`
-    );
-    return timeB.getTime() - timeA.getTime(); // Newest first
-  });
-
-  const layoutSpots = [] as any;
-  const halfPoint = Math.ceil(sortedSpots.length / 2);
-
-  for (let i = 0; i < sortedSpots.length; i++) {
-    const spot = sortedSpots[i];
-    const position = getSpotPosition(spot.Frequency);
-
-    // First half goes to column 0, second half to column 1
-    const column = i < halfPoint ? 0 : 1;
-    const leftOffset = 35 + column * 90; // Base position + column spacing
-
-    // Calculate opacity for second column based on age within that column
-    let opacity = getSpotOpacity(spot.Time, spot.Date);
-    if (column === 1) {
-      const indexInSecondColumn = i - halfPoint;
-      const totalInSecondColumn = sortedSpots.length - halfPoint;
-      // Linear interpolation from normal opacity to 15% for oldest
-      const ageFactor = indexInSecondColumn / (totalInSecondColumn - 1);
-      opacity = Math.max(0.15, opacity * (1 - ageFactor * 0.85));
-    }
-
-    layoutSpots.push({
-      ...spot,
-      position,
-      leftOffset,
-      column,
-      customOpacity: opacity,
-      worked: isSpotWorked(spot.DXCall),
-    });
-  }
-
-  return layoutSpots;
-};
-
-const layoutSpots = computed(() => getSpotLayout());
-
-const showMagnifier = (event: MouseEvent, frequency: string) => {
-  // Clear any pending hide timeout
-  if (magnifierTimeout) {
-    clearTimeout(magnifierTimeout);
-    magnifierTimeout = null;
-  }
-
-  const freq = parseFloat(frequency);
-  const range = dxStore.actualFrequencyRange;
-  if (!range) return;
-
-  // Find all spots within ±5 kHz range
-  const nearbySpots = spots.value
-    .filter(spot => {
-      const spotFreq = parseFloat(spot.Frequency);
-      return Math.abs(spotFreq - freq) <= 5;
-    })
-    .sort((a, b) => {
-      // Sort by age (newest first)
-      const timeA = new Date(
-        `20${a.Date.split('/')[2]}-${a.Date.split('/')[1]}-${a.Date.split('/')[0]}T${a.Time}:00Z`
+    isSpotWorked(callsign: string): boolean {
+      return this.qsoStore.currentSession.some(
+        qso => qso.callsign.toUpperCase() === callsign.toUpperCase()
       );
-      const timeB = new Date(
-        `20${b.Date.split('/')[2]}-${b.Date.split('/')[1]}-${b.Date.split('/')[0]}T${b.Time}:00Z`
-      );
-      return timeB.getTime() - timeA.getTime();
-    });
+    },
 
-  if (nearbySpots.length <= 1) return;
-
-  magnifierSpots.value = nearbySpots;
-  magnifierFrequency.value = `${(freq / 1000).toFixed(3)} MHz környéke`;
-
-  // Position magnifier near mouse but keep it in viewport
-  magnifierPosition.value = {
-    x: Math.min(event.clientX + 20, window.innerWidth - 300),
-    y: Math.max(event.clientY - 100, 20),
-  };
-
-  magnifierVisible.value = true;
-};
-
-const hideMagnifier = () => {
-  // Delay hiding to prevent flickering
-  magnifierTimeout = setTimeout(() => {
-    magnifierVisible.value = false;
-    magnifierSpots.value = [];
-  }, 100);
-};
-
-const keepMagnifierVisible = () => {
-  // Clear hide timeout when mouse enters magnifier
-  if (magnifierTimeout) {
-    clearTimeout(magnifierTimeout);
-    magnifierTimeout = null;
-  }
-};
-
-const generateScaleTicks = () => {
-  const range = dxStore.actualFrequencyRange;
-  if (!range) return { major: [], minor: [] };
-
-  const majorTicks = [] as any;
-  const minorTicks = [] as any;
-  const step = (range.max - range.min) / 10;
-
-  for (let i = 0; i <= 10; i++) {
-    const freq = range.min + step * i;
-    const position = (i / 10) * 100;
-
-    if (i % 2 === 0) {
-      majorTicks.push({
-        frequency: freq,
-        position: position,
-        label: `${(freq / 1000).toFixed(3)}`,
+    getSpotLayout(): LayoutSpot[] {
+      // Sort spots by age (newest first)
+      const sortedSpots = [...this.spots].sort((a, b) => {
+        const timeA = new Date(
+          `20${a.Date.split('/')[2]}-${a.Date.split('/')[1]}-${a.Date.split('/')[0]}T${a.Time}:00Z`
+        );
+        const timeB = new Date(
+          `20${b.Date.split('/')[2]}-${b.Date.split('/')[1]}-${b.Date.split('/')[0]}T${b.Time}:00Z`
+        );
+        return timeB.getTime() - timeA.getTime(); // Newest first
       });
-    } else {
-      minorTicks.push({
-        frequency: freq,
-        position: position,
-      });
-    }
-  }
 
-  return { major: majorTicks, minor: minorTicks };
-};
+      const layoutSpots: LayoutSpot[] = [];
+      const halfPoint = Math.ceil(sortedSpots.length / 2);
 
-const scaleTicks = computed(() => generateScaleTicks());
+      for (let i = 0; i < sortedSpots.length; i++) {
+        const spot = sortedSpots[i];
+        const position = this.getSpotPosition(spot.Frequency);
 
-const handleSpotClick = (spot: DxSpot) => {
-  // Convert frequency from kHz to MHz for rig
-  const freqInMHz = (parseFloat(spot.Frequency) / 1000).toFixed(3);
+        // First half goes to column 0, second half to column 1
+        const column = i < halfPoint ? 0 : 1;
+        const leftOffset = 35 + column * 90; // Base position + column spacing
 
-  // Set rig frequency
-  rigStore.setFrequency(freqInMHz);
+        // Calculate opacity for second column based on age within that column
+        let opacity = this.getSpotOpacity(spot.Time, spot.Date);
+        if (column === 1) {
+          const indexInSecondColumn = i - halfPoint;
+          const totalInSecondColumn = sortedSpots.length - halfPoint;
+          // Linear interpolation from normal opacity to 15% for oldest
+          const ageFactor = indexInSecondColumn / (totalInSecondColumn - 1);
+          opacity = Math.max(0.15, opacity * (1 - ageFactor * 0.85));
+        }
 
-  // Map DX spot mode to rig mode
-  let rigMode = spot.Mode;
-  if (spot.Mode === 'LSB' || spot.Mode === 'USB') {
-    rigMode = spot.Mode;
-  } else if (spot.Mode === 'PHONE') {
-    // Determine LSB/USB based on frequency
-    const freqKHz = parseFloat(spot.Frequency);
-    rigMode = freqKHz < 10000 ? 'LSB' : 'USB';
-  } else if (spot.Mode === 'CW') {
-    rigMode = 'CW';
-  } else if (spot.Mode.includes('FT') || spot.Mode === 'RTTY' || spot.Mode === 'PSK31') {
-    rigMode = 'DATA';
-  } else {
-    rigMode = 'USB'; // Default fallback
-  }
+        layoutSpots.push({
+          ...spot,
+          position,
+          leftOffset,
+          column,
+          customOpacity: opacity,
+          worked: this.isSpotWorked(spot.DXCall),
+        });
+      }
 
-  // Set rig mode
-  rigStore.setMode(rigMode);
+      return layoutSpots;
+    },
 
-  // Set callsign in QSO form
-  qsoStore.updateQsoForm('callsign', spot.DXCall);
+    showMagnifier(event: MouseEvent, frequency: string): void {
+      // Clear any pending hide timeout
+      if (this.magnifierTimeout) {
+        clearTimeout(this.magnifierTimeout);
+        this.magnifierTimeout = null;
+      }
 
-  // Fetch station info for the callsign
-  qsoStore.fetchStationInfo(spot.DXCall);
-};
+      const freq = parseFloat(frequency);
+      const range = this.dxStore.actualFrequencyRange;
+      if (!range) return;
 
-onMounted(() => {
-  dxStore.startAutoRefresh();
-});
+      // Find all spots within ±5 kHz range
+      const nearbySpots = this.spots
+        .filter(spot => {
+          const spotFreq = parseFloat(spot.Frequency);
+          return Math.abs(spotFreq - freq) <= 5;
+        })
+        .sort((a, b) => {
+          // Sort by age (newest first)
+          const timeA = new Date(
+            `20${a.Date.split('/')[2]}-${a.Date.split('/')[1]}-${a.Date.split('/')[0]}T${a.Time}:00Z`
+          );
+          const timeB = new Date(
+            `20${b.Date.split('/')[2]}-${b.Date.split('/')[1]}-${b.Date.split('/')[0]}T${b.Time}:00Z`
+          );
+          return timeB.getTime() - timeA.getTime();
+        });
 
-onUnmounted(() => {
-  dxStore.stopAutoRefresh();
+      if (nearbySpots.length <= 1) return;
+
+      this.magnifierSpots = nearbySpots;
+      this.magnifierFrequency = `${(freq / 1000).toFixed(3)} MHz környéke`;
+
+      // Position magnifier near mouse but keep it in viewport
+      this.magnifierPosition = {
+        x: Math.min(event.clientX + 20, window.innerWidth - 300),
+        y: Math.max(event.clientY - 100, 20),
+      };
+
+      this.magnifierVisible = true;
+    },
+
+    hideMagnifier(): void {
+      // Delay hiding to prevent flickering
+      this.magnifierTimeout = setTimeout(() => {
+        this.magnifierVisible = false;
+        this.magnifierSpots = [];
+      }, 100);
+    },
+
+    keepMagnifierVisible(): void {
+      // Clear hide timeout when mouse enters magnifier
+      if (this.magnifierTimeout) {
+        clearTimeout(this.magnifierTimeout);
+        this.magnifierTimeout = null;
+      }
+    },
+
+    generateScaleTicks(): { major: ScaleTick[]; minor: ScaleTick[] } {
+      const range = this.dxStore.actualFrequencyRange;
+      if (!range) return { major: [], minor: [] };
+
+      const majorTicks: ScaleTick[] = [];
+      const minorTicks: ScaleTick[] = [];
+      const step = (range.max - range.min) / 10;
+
+      for (let i = 0; i <= 10; i++) {
+        const freq = range.min + step * i;
+        const position = (i / 10) * 100;
+
+        if (i % 2 === 0) {
+          majorTicks.push({
+            frequency: freq,
+            position: position,
+            label: `${(freq / 1000).toFixed(3)}`,
+          });
+        } else {
+          minorTicks.push({
+            frequency: freq,
+            position: position,
+          });
+        }
+      }
+
+      return { major: majorTicks, minor: minorTicks };
+    },
+
+    handleSpotClick(spot: DxSpot): void {
+      // Convert frequency from kHz to MHz for rig
+      const freqInMHz = (parseFloat(spot.Frequency) / 1000).toFixed(3);
+
+      // Set rig frequency
+      this.rigStore.setFrequency(freqInMHz);
+
+      // Map DX spot mode to rig mode
+      let rigMode = spot.Mode;
+      if (spot.Mode === 'LSB' || spot.Mode === 'USB') {
+        rigMode = spot.Mode;
+      } else if (spot.Mode === 'PHONE') {
+        // Determine LSB/USB based on frequency
+        const freqKHz = parseFloat(spot.Frequency);
+        rigMode = freqKHz < 10000 ? 'LSB' : 'USB';
+      } else if (spot.Mode === 'CW') {
+        rigMode = 'CW';
+      } else if (spot.Mode.includes('FT') || spot.Mode === 'RTTY' || spot.Mode === 'PSK31') {
+        rigMode = 'DATA';
+      } else {
+        rigMode = 'USB'; // Default fallback
+      }
+
+      // Set rig mode
+      this.rigStore.setMode(rigMode);
+
+      // Set callsign in QSO form
+      this.qsoStore.updateQsoForm('callsign', spot.DXCall);
+
+      // Fetch station info for the callsign
+      this.qsoStore.fetchStationInfo(spot.DXCall);
+    },
+  },
+
+  mounted() {
+    this.dxStore.startAutoRefresh();
+  },
+
+  unmounted() {
+    this.dxStore.stopAutoRefresh();
+  },
 });
 </script>
 
