@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { ref, onMounted, computed, onUnmounted } from 'vue'
 import { useDxClusterStore, type DxSpot } from '../store/dxCluster'
+import { useQsoStore } from '../store/qso'
 
 const dxStore = useDxClusterStore()
+const qsoStore = useQsoStore()
 
 // Get reactive data from store
 const spots = computed(() => dxStore.spots)
@@ -101,6 +103,12 @@ const getSpotOpacity = (timeStr: string, dateStr: string) => {
   }
 }
 
+const isSpotWorked = (callsign: string) => {
+  return qsoStore.currentSession.some(qso => 
+    qso.callsign.toUpperCase() === callsign.toUpperCase()
+  )
+}
+
 const getSpotLayout = () => {
   // Sort spots by age (newest first)
   const sortedSpots = [...spots.value].sort((a, b) => {
@@ -135,7 +143,8 @@ const getSpotLayout = () => {
       position,
       leftOffset,
       column,
-      customOpacity: opacity
+      customOpacity: opacity,
+      worked: isSpotWorked(spot.DXCall)
     })
   }
   
@@ -290,7 +299,7 @@ onUnmounted(() => {
                 zIndex: spot.column + 1
               }"
               :class="{
-                validated: spot.Valid,
+                worked: spot.worked,
                 lotw: spot.LOTW,
                 eqsl: spot.EQSL,
                 [`column-${spot.column}`]: true
@@ -326,7 +335,7 @@ onUnmounted(() => {
             :key="`mag-${spot.Nr}`"
             class="magnifier-spot"
             :class="{
-              validated: spot.Valid,
+              worked: isSpotWorked(spot.DXCall),
               lotw: spot.LOTW,
               eqsl: spot.EQSL
             }"
@@ -342,7 +351,7 @@ onUnmounted(() => {
               <div class="spot-comment" v-if="spot.Comment">{{ spot.Comment }}</div>
             </div>
             <div class="spot-badges">
-              <span v-if="spot.Valid" class="badge valid">✓</span>
+              <span v-if="isSpotWorked(spot.DXCall)" class="badge worked">✓</span>
               <span v-if="spot.LOTW" class="badge lotw">L</span>
               <span v-if="spot.EQSL" class="badge eqsl">E</span>
             </div>
@@ -641,7 +650,7 @@ onUnmounted(() => {
   background: var(--bg-darker);
 }
 
-.spot-label.validated {
+.spot-label.worked {
   border-left: 3px solid #22c55e;
 }
 
@@ -741,7 +750,7 @@ onUnmounted(() => {
   margin-bottom: 0;
 }
 
-.magnifier-spot.validated {
+.magnifier-spot.worked {
   border-left: 3px solid #22c55e;
 }
 
@@ -811,7 +820,7 @@ onUnmounted(() => {
   font-weight: 600;
 }
 
-.badge.valid {
+.badge.worked {
   background: #22c55e;
   color: white;
 }
