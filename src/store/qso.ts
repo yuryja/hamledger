@@ -5,7 +5,6 @@ import { StationData, BaseStationData, GeoData } from '../types/station';
 import { qrzService } from '../services/QRZService';
 import { CallsignHelper } from '../utils/callsign';
 import { geocodeLocation } from '../utils/geocoding';
-import { getWeather } from '../utils/weather';
 import { QsoEntry } from '../types/qso';
 import { MaidenheadLocator } from '../utils/maidenhead';
 import { configHelper } from '../utils/configHelper';
@@ -284,13 +283,44 @@ export const useQsoStore = defineStore('qso', {
         }
 
         // Get weather if we have coordinates
-        if (this.stationInfo.geodata.lat !== undefined) {
-          const weatherData = await getWeather(
-            this.stationInfo.geodata.lat,
-            this.stationInfo.geodata.lon
-          );
-          if (weatherData) {
-            this.stationInfo.weather = `${weatherData.temperature}°C, ${weatherData.description}`;
+        if (this.stationInfo.geodata.lat !== undefined && this.stationInfo.geodata.lon !== undefined) {
+          try {
+            const response = await window.electronAPI.fetchWeather(
+              this.stationInfo.geodata.lat,
+              this.stationInfo.geodata.lon
+            );
+            if (response.success && response.data?.current_weather) {
+              const { temperature, weathercode } = response.data.current_weather;
+              
+              // Use the weather description mapping
+              const WMO_CODES: { [key: number]: string } = {
+                0: 'Clear sky',
+                1: 'Mainly clear',
+                2: 'Partly cloudy',
+                3: 'Overcast',
+                45: 'Foggy',
+                48: 'Depositing rime fog',
+                51: 'Light drizzle',
+                53: 'Moderate drizzle',
+                55: 'Dense drizzle',
+                61: 'Slight rain',
+                63: 'Moderate rain',
+                65: 'Heavy rain',
+                71: 'Slight snow',
+                73: 'Moderate snow',
+                75: 'Heavy snow',
+                77: 'Snow grains',
+                80: 'Slight rain showers',
+                81: 'Moderate rain showers',
+                82: 'Violent rain showers',
+                95: 'Thunderstorm',
+              };
+              
+              const description = WMO_CODES[weathercode] || 'Unknown';
+              this.stationInfo.weather = `${Math.round(temperature)}°C, ${description}`;
+            }
+          } catch (error) {
+            console.error('Weather fetch error:', error);
           }
         }
 
