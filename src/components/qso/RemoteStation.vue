@@ -1,12 +1,18 @@
 <script lang="ts">
 import { useQsoStore } from '../../store/qso';
 import { StationData } from '../../types/station';
+import { CallsignHelper } from '../../utils/callsign';
 
 export default {
   name: 'RemoteStation',
   setup() {
     const qsoStore = useQsoStore();
     return { qsoStore };
+  },
+  methods: {
+    getPortableSuffixMeaning(suffix: string): string {
+      return CallsignHelper.getPortableSuffixMeaning(suffix) || suffix;
+    },
   },
   computed: {
     callsign() {
@@ -57,8 +63,11 @@ export default {
           <p v-if="stationInfo?.baseData?.grid" class="station-coords-text">
             Grid: {{ stationInfo.baseData.grid }}
           </p>
-          <p v-if="stationInfo?.distance" class="station-distance">
+          <p v-if="stationInfo?.distance && !stationInfo?.portableSuffix" class="station-distance">
             Distance: {{ stationInfo.distance }} km
+          </p>
+          <p v-if="stationInfo?.portableSuffix" class="station-portable">
+            Operation: {{ getPortableSuffixMeaning(stationInfo.portableSuffix) }}
           </p>
         </div>
       </div>
@@ -143,7 +152,8 @@ export default {
   color: var(--gray-color);
 }
 
-.station-distance {
+.station-distance,
+.station-portable {
   color: var(--main-color);
   font-weight: bold;
   margin-top: 0.2rem;

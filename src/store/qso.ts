@@ -42,6 +42,7 @@ export const useQsoStore = defineStore('qso', {
       localTime: '',
       greetings: [],
       distance: undefined as number | undefined,
+      portableSuffix: null as string | null,
       qrzError: false,
     } satisfies StationData,
     qsoForm: {
@@ -189,6 +190,7 @@ export const useQsoStore = defineStore('qso', {
           localTime: '',
           greetings: [],
           distance: undefined,
+          portableSuffix: null,
           qrzError: false,
         };
 
@@ -199,6 +201,10 @@ export const useQsoStore = defineStore('qso', {
         // Set country and flag (handling portable prefixes)
         this.stationInfo.baseData.country = countryName;
         this.stationInfo.flag = await CallsignHelper.getFlagUrl(callsign);
+
+        // Check for portable suffix to determine if we should show distance or suffix meaning
+        const portableSuffix = CallsignHelper.getPortableSuffix(callsign);
+        this.stationInfo.portableSuffix = portableSuffix;
 
         // Try to get additional info from QRZ
         // First try with the full callsign (including portable prefixes/suffixes)

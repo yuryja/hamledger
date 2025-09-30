@@ -463,7 +463,7 @@ export class CallsignHelper {
    * @param callsign - The callsign to check
    * @returns Portable suffix or null
    */
-  private static getPortableSuffix(callsign: string): string | null {
+  public static getPortableSuffix(callsign: string): string | null {
     const upperCallsign = callsign.toUpperCase();
     
     if (upperCallsign.includes('/')) {
@@ -567,6 +567,22 @@ export class CallsignHelper {
     };
     
     return iconUrls[suffix] || null;
+  }
+
+  /**
+   * Get the meaning of portable suffix
+   * @param suffix - The portable suffix (P, M, MM, AM)
+   * @returns Human readable meaning or null
+   */
+  public static getPortableSuffixMeaning(suffix: string): string | null {
+    const meanings = {
+      'P': 'Portable',
+      'M': 'Mobile',
+      'MM': 'Maritime Mobile',
+      'AM': 'Aeronautical Mobile'
+    };
+    
+    return meanings[suffix] || null;
   }
 
 
