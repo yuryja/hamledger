@@ -31,11 +31,20 @@ export class DatabaseService {
     }
   }
 
-  public async updateQso(qso: QsoEntry): Promise<{ ok: boolean; id?: string; error?: any }> {
+  public async updateQso(qso: QsoEntry): Promise<{ ok: boolean; id?: string; rev?: string; error?: any }> {
     try {
-      const response = await this.db.put(qso);
+      // Get the latest version of the document to ensure we have the current _rev
+      const currentDoc = await this.db.get(qso._id!);
+      
+      // Merge the updates with the current document, preserving the latest _rev
+      const updatedQso = {
+        ...qso,
+        _rev: currentDoc._rev,
+      };
+      
+      const response = await this.db.put(updatedQso);
       await this.backupToJson();
-      return { ok: true, id: response.id };
+      return { ok: true, id: response.id, rev: response.rev };
     } catch (error) {
       console.error('Failed to update QSO:', error);
       return { ok: false, error };

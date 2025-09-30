@@ -51,6 +51,8 @@ export default {
     },
     async onEditComplete() {
       this.showEditMode = false;
+      // Refresh the QSO data from the store after edit
+      await this.qsoStore.initializeStore();
       // Refresh station info after edit
       if (this.qso.callsign) {
         await this.qsoStore.fetchStationInfo(this.qso.callsign);

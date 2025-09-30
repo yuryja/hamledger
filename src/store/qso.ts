@@ -177,6 +177,9 @@ export const useQsoStore = defineStore('qso', {
           if (allIndex !== -1) {
             this.allQsos[allIndex] = updatedQsoWithNewRev;
           }
+          
+          // Refresh the store to ensure we have the latest data
+          await this.initializeStore();
         } else {
           throw new Error(`Update failed: ${response.error || 'Unknown error'}`);
         }
