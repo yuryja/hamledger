@@ -48,6 +48,7 @@ export const usePropagationStore = defineStore('propagation', {
             kIndex: latestData.k,
             lastUpdated: latestData.time,
             station: latestData.station,
+            aurora: latestData.aurora,
           };
         } else {
           this.error = response.error || 'Nem sikerült betölteni a propagációs adatokat';

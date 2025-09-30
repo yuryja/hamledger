@@ -16,6 +16,20 @@ export default {
       clockInterval: 0,
     };
   },
+  computed: {
+    aIndexColor() {
+      const aIndex = this.propStore.propData.aIndex;
+      if (aIndex <= 5) return '#4ade80'; // green
+      if (aIndex <= 12) return '#fb923c'; // orange
+      return '#ef4444'; // red
+    },
+    sfiColor() {
+      const sfi = this.propStore.propData.sfi;
+      if (sfi <= 25) return '#ef4444'; // red
+      if (sfi <= 50) return '#fb923c'; // orange
+      return '#4ade80'; // green
+    },
+  },
   async mounted() {
     this.updateUTCClock();
     this.clockInterval = window.setInterval(this.updateUTCClock, 1000);
@@ -53,15 +67,21 @@ export default {
         <div v-else class="prop-data">
           <div class="prop-item">
             <span class="prop-label">SFI</span>
-            <span class="prop-value">{{ propStore.propData.sfi }}</span>
+            <span class="prop-value" :style="{ color: sfiColor }">{{ propStore.propData.sfi }}</span>
           </div>
           <div class="prop-item">
             <span class="prop-label">A</span>
-            <span class="prop-value">{{ propStore.propData.aIndex }}</span>
+            <span class="prop-value" :style="{ color: aIndexColor }">{{ propStore.propData.aIndex }}</span>
           </div>
           <div class="prop-item">
             <span class="prop-label">K</span>
             <span class="prop-value">{{ propStore.propData.kIndex }}</span>
+          </div>
+          <div v-if="propStore.propData.aurora !== undefined" class="prop-item">
+            <span class="prop-label">Aurora</span>
+            <span class="prop-value aurora" :class="{ active: propStore.propData.aurora }">
+              {{ propStore.propData.aurora ? 'IGEN' : 'NEM' }}
+            </span>
           </div>
         </div>
         <div v-if="propStore.propData.station" class="prop-station">
@@ -128,6 +148,16 @@ export default {
   font-size: 1.2rem;
   font-weight: bold;
   color: var(--main-color);
+}
+
+.prop-value.aurora {
+  font-size: 0.9rem;
+  color: #ccc;
+}
+
+.prop-value.aurora.active {
+  color: #ff6b6b;
+  text-shadow: 0 0 5px rgba(255, 107, 107, 0.5);
 }
 
 .prop-loading {

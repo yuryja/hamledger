@@ -16,4 +16,5 @@ export interface PropagationData {
   kIndex: number;
   lastUpdated?: string;
   station?: string;
+  aurora?: boolean;
 }
