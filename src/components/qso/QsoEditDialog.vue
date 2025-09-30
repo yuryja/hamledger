@@ -65,10 +65,22 @@ export default {
   methods: {
     async saveChanges() {
       try {
+        // Debug: Check if _id and _rev are present
+        console.log('Original QSO:', this.qso);
+        console.log('Edited QSO:', this.editedQso);
+        
+        if (!this.qso._id) {
+          throw new Error('QSO _id is missing');
+        }
+        
+        if (!this.qso._rev) {
+          throw new Error('QSO _rev is missing');
+        }
+
         // Ensure all required fields are present, including PouchDB required fields
         const qsoToUpdate = {
           ...this.editedQso,
-          // Ensure PouchDB required fields are preserved
+          // Ensure PouchDB required fields are preserved from original QSO
           _id: this.qso._id,
           _rev: this.qso._rev,
           // Ensure numeric fields are properly converted
@@ -80,7 +92,10 @@ export default {
             : this.editedQso.freqTx,
         };
 
-        console.log('Saving QSO:', qsoToUpdate);
+        console.log('Final QSO to update:', qsoToUpdate);
+        console.log('QSO _id:', qsoToUpdate._id);
+        console.log('QSO _rev:', qsoToUpdate._rev);
+        
         await this.qsoStore.updateQso(qsoToUpdate);
         console.log('QSO saved successfully');
         this.$emit('close');

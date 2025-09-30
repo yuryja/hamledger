@@ -129,19 +129,36 @@ export const useQsoStore = defineStore('qso', {
 
     async updateQso(updatedQso: QsoEntry) {
       try {
+        console.log('Store updateQso called with:', updatedQso);
+        
+        if (!updatedQso._id) {
+          throw new Error('QSO _id is required for update');
+        }
+        
+        if (!updatedQso._rev) {
+          throw new Error('QSO _rev is required for update');
+        }
+        
         const response = await window.electronAPI.updateQso(updatedQso);
+        console.log('Update response:', response);
+        
         if (response.ok) {
+          // Update the _rev with the new revision from the response
+          const updatedQsoWithNewRev = { ...updatedQso, _rev: response.rev };
+          
           // Update in current session if present
           const sessionIndex = this.currentSession.findIndex(qso => qso._id === updatedQso._id);
           if (sessionIndex !== -1) {
-            this.currentSession[sessionIndex] = updatedQso;
+            this.currentSession[sessionIndex] = updatedQsoWithNewRev;
           }
 
           // Update in all QSOs
           const allIndex = this.allQsos.findIndex(qso => qso._id === updatedQso._id);
           if (allIndex !== -1) {
-            this.allQsos[allIndex] = updatedQso;
+            this.allQsos[allIndex] = updatedQsoWithNewRev;
           }
+        } else {
+          throw new Error(`Update failed: ${response.error || 'Unknown error'}`);
         }
       } catch (error) {
         console.error('Failed to update QSO:', error);
