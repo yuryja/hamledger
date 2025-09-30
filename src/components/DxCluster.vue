@@ -18,6 +18,7 @@ const magnifierVisible = ref(false)
 const magnifierSpots = ref<DxSpot[]>([])
 const magnifierPosition = ref({ x: 0, y: 0 })
 const magnifierFrequency = ref('')
+// eslint-disable-next-line no-undef
 let magnifierTimeout: NodeJS.Timeout | null = null
 
 
