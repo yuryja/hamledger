@@ -651,7 +651,7 @@ onUnmounted(() => {
 }
 
 .spot-label.worked {
-  border-left: 3px solid #22c55e;
+  border: 1px solid rgba(34, 197, 94, 0.9);
 }
 
 .spot-label.lotw {
@@ -751,7 +751,7 @@ onUnmounted(() => {
 }
 
 .magnifier-spot.worked {
-  border-left: 3px solid #22c55e;
+  border: 1px solid rgba(34, 197, 94, 0.9);
 }
 
 .magnifier-spot.lotw {
