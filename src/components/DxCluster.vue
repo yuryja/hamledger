@@ -2,9 +2,11 @@
 import { ref, onMounted, computed, onUnmounted } from 'vue'
 import { useDxClusterStore, type DxSpot } from '../store/dxCluster'
 import { useQsoStore } from '../store/qso'
+import { useRigStore } from '../store/rig'
 
 const dxStore = useDxClusterStore()
 const qsoStore = useQsoStore()
+const rigStore = useRigStore()
 
 // Get reactive data from store
 const spots = computed(() => dxStore.spots)
@@ -236,6 +238,39 @@ const generateScaleTicks = () => {
 
 const scaleTicks = computed(() => generateScaleTicks())
 
+const handleSpotClick = (spot: DxSpot) => {
+  // Convert frequency from kHz to MHz for rig
+  const freqInMHz = (parseFloat(spot.Frequency) / 1000).toFixed(3)
+  
+  // Set rig frequency
+  rigStore.setFrequency(freqInMHz)
+  
+  // Map DX spot mode to rig mode
+  let rigMode = spot.Mode
+  if (spot.Mode === 'LSB' || spot.Mode === 'USB') {
+    rigMode = spot.Mode
+  } else if (spot.Mode === 'PHONE') {
+    // Determine LSB/USB based on frequency
+    const freqKHz = parseFloat(spot.Frequency)
+    rigMode = freqKHz < 10000 ? 'LSB' : 'USB'
+  } else if (spot.Mode === 'CW') {
+    rigMode = 'CW'
+  } else if (spot.Mode.includes('FT') || spot.Mode === 'RTTY' || spot.Mode === 'PSK31') {
+    rigMode = 'DATA'
+  } else {
+    rigMode = 'USB' // Default fallback
+  }
+  
+  // Set rig mode
+  rigStore.setMode(rigMode)
+  
+  // Set callsign in QSO form
+  qsoStore.updateQsoForm('callsign', spot.DXCall)
+  
+  // Fetch station info for the callsign
+  qsoStore.fetchStationInfo(spot.DXCall)
+}
+
 onMounted(() => {
   dxStore.startAutoRefresh()
 })
@@ -307,6 +342,7 @@ onUnmounted(() => {
               :title="`${spot.DXCall} - ${formatFrequency(spot.Frequency)} - Spotters: ${spot.Spotters.join(', ')} - ${spot.Comment}`"
               @mouseenter="showMagnifier($event, spot.Frequency)"
               @mouseleave="hideMagnifier"
+              @click="handleSpotClick(spot)"
             >
               {{ spot.DXCall }}
             </div>
@@ -340,7 +376,7 @@ onUnmounted(() => {
               eqsl: spot.EQSL
             }"
           >
-            <div class="spot-info">
+            <div class="spot-info" @click="handleSpotClick(spot)">
               <div class="spot-call">{{ spot.DXCall }}</div>
               <div class="spot-freq">{{ formatFrequency(spot.Frequency) }}</div>
               <div class="spot-details">
@@ -640,6 +676,12 @@ onUnmounted(() => {
   text-overflow: ellipsis;
 }
 
+.spot-label:active {
+  transform: translateY(-50%) scale(0.95);
+  background: var(--main-color);
+  color: white;
+}
+
 .spot-label:hover {
   background: var(--bg-lighter);
   z-index: 100 !important;
@@ -769,6 +811,12 @@ onUnmounted(() => {
 
 .spot-info {
   flex: 1;
+  cursor: pointer;
+}
+
+.spot-info:hover {
+  background: rgba(255, 165, 0, 0.1);
+  border-radius: var(--border-radius);
 }
 
 .spot-call {
