@@ -1,3 +1,5 @@
+import { ConfigHelper}  from './configHelper'
+
 export interface BandRange {
   name: string;
   shortName: string;
@@ -115,11 +117,8 @@ export function getRegionalBandRange(shortName: string, region?: IARURegion): { 
 export function getConfiguredRegion(): IARURegion {
   try {
     // Import configHelper dynamically to avoid circular dependencies
-    import('./configHelper').then(({ configHelper }) => {
+      const configHelper = new ConfigHelper()
       return configHelper.getIARURegion();
-    });
-    // For now, return IARU1 as default since dynamic import is async
-    return 'IARU1';
   } catch {
     // Fallback to IARU1 if configHelper is not available
     return 'IARU1';

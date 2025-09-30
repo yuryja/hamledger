@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { ConfigField, ConfigCategory } from '../types/config';
 import schema_json from '../settings.schema.json';
 import defaultSettings from '../settings.json';
