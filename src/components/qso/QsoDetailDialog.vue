@@ -49,13 +49,13 @@ export default {
     toggleEditMode() {
       this.showEditMode = !this.showEditMode;
     },
-    async onEditComplete() {
+    async onEditComplete(updatedQso) {
       this.showEditMode = false;
-      // Refresh the QSO data from the store after edit
-      await this.qsoStore.initializeStore();
+      // Emit the updated QSO to parent component
+      this.$emit('qso-updated', updatedQso);
       // Refresh station info after edit
-      if (this.qso.callsign) {
-        await this.qsoStore.fetchStationInfo(this.qso.callsign);
+      if (updatedQso.callsign) {
+        await this.qsoStore.fetchStationInfo(updatedQso.callsign);
         this.stationInfo = this.qsoStore.stationInfo;
       }
     },
@@ -73,7 +73,7 @@ export default {
         </button>
       </div>
 
-      <QsoEditDialog v-if="showEditMode" :qso="qso" :show="true" @close="onEditComplete" />
+      <QsoEditDialog v-if="showEditMode" :qso="qso" :show="true" @close="onEditComplete" @qso-saved="onEditComplete" />
 
       <div v-else class="qso-details">
         <div class="main-info">

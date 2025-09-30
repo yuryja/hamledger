@@ -105,6 +105,10 @@ export default {
         
         await this.qsoStore.updateQso(qsoToUpdate);
         console.log('QSO saved successfully');
+        
+        // Get the updated QSO from the store
+        const updatedQso = this.qsoStore.allQsos.find(q => (q._id || q.id) === qsoId);
+        this.$emit('qso-saved', updatedQso || qsoToUpdate);
         this.$emit('close');
       } catch (error) {
         console.error('Failed to update QSO:', error);

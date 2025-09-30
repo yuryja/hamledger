@@ -57,6 +57,14 @@ export default {
         console.error('ADIF import failed:', result.error);
       }
     },
+    closeEditDialog() {
+      this.showEditDialog = false;
+      this.selectedQso = null;
+    },
+    onQsoUpdated(updatedQso) {
+      // Update the selected QSO with the new data
+      this.selectedQso = updatedQso;
+    },
   },
 };
 </script>
@@ -157,7 +165,8 @@ export default {
       v-if="selectedQso"
       :qso="selectedQso"
       :show="showEditDialog"
-      @close="showEditDialog = false; selectedQso = null"
+      @close="closeEditDialog"
+      @qso-updated="onQsoUpdated"
     />
   </main>
 </template>
