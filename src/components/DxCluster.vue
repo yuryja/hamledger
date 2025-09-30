@@ -3,28 +3,22 @@ import { defineComponent } from 'vue';
 import { useDxClusterStore, type DxSpot } from '../store/dxCluster';
 import { useQsoStore } from '../store/qso';
 import { useRigStore } from '../store/rig';
-
-interface MagnifierPosition {
-  x: number;
-  y: number;
-}
-
-interface ScaleTick {
-  frequency: number;
-  position: number;
-  label?: string;
-}
-
-interface LayoutSpot extends DxSpot {
-  position: number;
-  leftOffset: number;
-  column: number;
-  customOpacity: number;
-  worked: boolean;
-}
+import type { MagnifierPosition, ScaleTick, LayoutSpot } from '../types/dxCluster';
 
 export default defineComponent({
   name: 'DxCluster',
+  
+  setup() {
+    const dxStore = useDxClusterStore();
+    const qsoStore = useQsoStore();
+    const rigStore = useRigStore();
+    
+    return {
+      dxStore,
+      qsoStore,
+      rigStore,
+    };
+  },
   
   data() {
     return {
@@ -43,18 +37,6 @@ export default defineComponent({
   },
 
   computed: {
-    dxStore() {
-      return useDxClusterStore();
-    },
-    
-    qsoStore() {
-      return useQsoStore();
-    },
-    
-    rigStore() {
-      return useRigStore();
-    },
-    
     spots(): DxSpot[] {
       return this.dxStore.spots;
     },
