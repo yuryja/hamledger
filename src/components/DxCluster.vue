@@ -10,7 +10,6 @@ const rigStore = useRigStore()
 
 // Get reactive data from store
 const spots = computed(() => dxStore.spots)
-const loading = computed(() => dxStore.loading)
 const error = computed(() => dxStore.error)
 const filters = computed(() => dxStore.filters)
 
@@ -19,6 +18,7 @@ const magnifierVisible = ref(false)
 const magnifierSpots = ref<DxSpot[]>([])
 const magnifierPosition = ref({ x: 0, y: 0 })
 const magnifierFrequency = ref('')
+##AI! NodeJS is not defined
 let magnifierTimeout: NodeJS.Timeout | null = null
 
 
