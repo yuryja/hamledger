@@ -420,23 +420,28 @@ export class CallsignHelper {
         let prefixCountry = '';
         let baseCountry = '';
         
+        // Check if either part is a portable suffix (P, M, MM, AM)
+        const isFirstPortableSuffix = ['P', 'M', 'MM', 'AM'].includes(first);
+        const isSecondPortableSuffix = ['P', 'M', 'MM', 'AM'].includes(second);
+        
         if (this.looksLikeBaseCallsign(first) && this.looksLikeBaseCallsign(second)) {
           // Both look like callsigns, treat first as prefix
           prefixCountry = this.getCountryCodeForCallsign(first);
           baseCountry = this.getCountryCodeForCallsign(second);
-        } else if (this.looksLikeBaseCallsign(second)) {
-          // Second is base callsign, first is prefix
+        } else if (this.looksLikeBaseCallsign(second) && !isFirstPortableSuffix) {
+          // Second is base callsign, first is prefix (not a portable suffix)
           prefixCountry = this.getCountryCodeForCallsign(first);
           baseCountry = this.getCountryCodeForCallsign(second);
-        } else if (this.looksLikeBaseCallsign(first)) {
-          // First is base callsign, second is suffix
+        } else if (this.looksLikeBaseCallsign(first) && !isSecondPortableSuffix) {
+          // First is base callsign, second is prefix (not a portable suffix)
           baseCountry = this.getCountryCodeForCallsign(first);
           prefixCountry = this.getCountryCodeForCallsign(second);
         }
         
-        // If we have two different countries, create composite flag
+        // Only create composite flag if we have two different countries AND neither is a portable suffix
         if (prefixCountry && baseCountry && prefixCountry !== baseCountry && 
-            prefixCountry !== 'xx' && baseCountry !== 'xx') {
+            prefixCountry !== 'xx' && baseCountry !== 'xx' &&
+            !isFirstPortableSuffix && !isSecondPortableSuffix) {
           flagUrl = await this.createCompositeFlagUrl(prefixCountry, baseCountry);
           isComposite = true;
         }
