@@ -45,7 +45,11 @@ ipcMain.handle('qso:add', async (_, qso) => {
 ipcMain.handle('qso:getAllDocs', async () => {
   try {
     const qsos = await databaseService.getAllQsos();
-    return { rows: qsos.map(doc => ({ doc })) };
+    return { rows: qsos.map(doc => ({ 
+      doc,
+      id: doc._id,
+      value: { rev: doc._rev }
+    })) };
   } catch (error) {
     console.error('Failed to get all docs:', error);
     return { rows: [] };

@@ -126,13 +126,11 @@ export const useQsoStore = defineStore('qso', {
           console.log('QSO from DB:', qso);
           console.log('QSO _id:', qso._id);
           console.log('QSO _rev:', qso._rev);
-          // Ensure _id exists
-          if (!qso._id) {
-            qso._id = row.id;
-          }
-          if (!qso._rev) {
-            qso._rev = row.value.rev;
-          }
+          console.log('Row id:', row.id);
+          console.log('Row value:', row.value);
+          // Ensure _id and _rev are properly set
+          qso._id = qso._id || row.id;
+          qso._rev = qso._rev || (row.value && row.value.rev);
           return qso;
         });
         this.initialized = true;

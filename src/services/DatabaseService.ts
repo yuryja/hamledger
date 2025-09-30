@@ -45,7 +45,13 @@ export class DatabaseService {
   public async getAllQsos(): Promise<QsoEntry[]> {
     try {
       const allDocs = await this.db.allDocs({ include_docs: true });
-      return allDocs.rows.map(row => row.doc as QsoEntry);
+      return allDocs.rows.map(row => {
+        const qso = row.doc as QsoEntry;
+        // Ensure _id and _rev are present from the row metadata
+        qso._id = row.id;
+        qso._rev = row.value.rev;
+        return qso;
+      });
     } catch (error) {
       console.error('Failed to get QSOs:', error);
       return [];
