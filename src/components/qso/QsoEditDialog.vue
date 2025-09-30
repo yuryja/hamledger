@@ -32,14 +32,22 @@ export default {
   },
   watch: {
     show(newVal) {
-      if (newVal) {
-        this.editedQso = { ...this.qso };
+      if (newVal && this.qso) {
+        this.editedQso = { 
+          ...this.qso,
+          _id: this.qso._id,
+          _rev: this.qso._rev
+        };
       }
     },
     qso: {
       handler(newQso) {
         if (newQso && this.show) {
-          this.editedQso = { ...newQso };
+          this.editedQso = { 
+            ...newQso,
+            _id: newQso._id,
+            _rev: newQso._rev
+          };
         }
       },
       immediate: true,
@@ -47,15 +55,22 @@ export default {
   },
   created() {
     if (this.qso) {
-      this.editedQso = { ...this.qso };
+      this.editedQso = { 
+        ...this.qso,
+        _id: this.qso._id,
+        _rev: this.qso._rev
+      };
     }
   },
   methods: {
     async saveChanges() {
       try {
-        // Ensure all required fields are present
+        // Ensure all required fields are present, including PouchDB required fields
         const qsoToUpdate = {
           ...this.editedQso,
+          // Ensure PouchDB required fields are preserved
+          _id: this.qso._id,
+          _rev: this.qso._rev,
           // Ensure numeric fields are properly converted
           freqRx: typeof this.editedQso.freqRx === 'string' 
             ? parseFloat(this.editedQso.freqRx) 
