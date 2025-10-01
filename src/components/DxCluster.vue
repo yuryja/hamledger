@@ -5,6 +5,7 @@ import type { DxSpot } from '../types/dxCluster';
 import { useQsoStore } from '../store/qso';
 import { useRigStore } from '../store/rig';
 import type { MagnifierPosition, ScaleTick, LayoutSpot, TimerHandle } from '../types/dxCluster';
+import { getBandFromFrequency } from '../utils/bands';
 
 export default defineComponent({
   name: 'DxCluster',
@@ -286,6 +287,12 @@ export default defineComponent({
 
       // Set rig frequency (rig store expects Hz)
       this.rigStore.setFrequency(freqInHz);
+
+      // Determine band from frequency and update QSO form
+      const band = getBandFromFrequency(freqInHz);
+      if (band) {
+        this.qsoStore.updateQsoForm('band', band);
+      }
 
       // Map DX spot mode to rig mode
       let rigMode = spot.Mode;
