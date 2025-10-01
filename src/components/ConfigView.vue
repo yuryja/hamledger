@@ -1,6 +1,7 @@
 <script lang="ts">
 import { ConfigField } from '../types/config';
 import { configHelper } from '../utils/configHelper';
+import { BAND_RANGES } from '../utils/bands';
 
 export default {
   name: 'ConfigView',
@@ -43,6 +44,45 @@ export default {
         target.type === 'checkbox' ? String(target.checked) : target.value
       );
       await configHelper.updateSetting(field.path, field.key, value);
+    },
+    getAvailableBands() {
+      return BAND_RANGES.filter(band => 
+        ['160', '80', '60', '40', '30', '20', '17', '15', '12', '10', '6', '2', '70'].includes(band.shortName)
+      );
+    },
+    async toggleBandInConfig(field: ConfigField, bandShortName: string, event: Event) {
+      const target = event.target as HTMLInputElement;
+      const currentBands = [...field.value];
+      
+      if (target.checked) {
+        if (!currentBands.includes(bandShortName)) {
+          currentBands.push(bandShortName);
+        }
+      } else {
+        const index = currentBands.indexOf(bandShortName);
+        if (index > -1) {
+          currentBands.splice(index, 1);
+        }
+      }
+      
+      await configHelper.updateSetting(field.path, field.key, currentBands);
+      field.value = currentBands;
+    },
+    async selectAllHFBands(field: ConfigField) {
+      const hfBands = ['160', '80', '60', '40', '30', '20', '17', '15', '12', '10'];
+      await configHelper.updateSetting(field.path, field.key, hfBands);
+      field.value = hfBands;
+    },
+    async selectAllVHFUHFBands(field: ConfigField) {
+      const vhfUhfBands = ['6', '2', '70'];
+      const currentBands = [...field.value];
+      const newBands = [...currentBands, ...vhfUhfBands.filter(band => !currentBands.includes(band))];
+      await configHelper.updateSetting(field.path, field.key, newBands);
+      field.value = newBands;
+    },
+    async clearAllBands(field: ConfigField) {
+      await configHelper.updateSetting(field.path, field.key, []);
+      field.value = [];
     },
   },
 };
@@ -109,10 +149,34 @@ export default {
                 @input="handleChange(field, $event)"
               />
 
+              <!-- Band selection (special case for selectedBands) -->
+              <div v-else-if="field.key === 'selectedBands'" class="band-selection">
+                <div class="band-selection-controls">
+                  <button type="button" @click="selectAllHFBands(field)" class="btn btn-small">All HF</button>
+                  <button type="button" @click="selectAllVHFUHFBands(field)" class="btn btn-small">VHF/UHF</button>
+                  <button type="button" @click="clearAllBands(field)" class="btn btn-small">Clear All</button>
+                </div>
+                <div class="band-grid">
+                  <label 
+                    v-for="band in getAvailableBands()" 
+                    :key="band.shortName" 
+                    class="band-checkbox"
+                  >
+                    <input 
+                      type="checkbox" 
+                      :value="band.shortName"
+                      :checked="field.value.includes(band.shortName)"
+                      @change="toggleBandInConfig(field, band.shortName, $event)"
+                    />
+                    <span class="band-label">{{ band.name }} ({{ band.shortName }}m)</span>
+                  </label>
+                </div>
+              </div>
+
               <!-- Array (as select) -->
               <select
                 v-else-if="
-                  field.type === 'array' && field.value.every((v: any) => typeof v !== 'object')
+                  field.type === 'array' && field.value.every((v: any) => typeof v !== 'object') && field.key !== 'selectedBands'
                 "
                 :id="getFieldId(field)"
                 @change="handleChange(field, $event)"
@@ -313,5 +377,66 @@ input:checked + .slider {
 
 input:checked + .slider:before {
   transform: translateX(26px);
+}
+
+.band-selection {
+  width: 100%;
+}
+
+.band-selection-controls {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.btn {
+  padding: 0.5rem 1rem;
+  background: #555;
+  color: #fff;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: background-color 0.2s;
+}
+
+.btn:hover {
+  background: #666;
+}
+
+.btn-small {
+  padding: 0.4rem 0.8rem;
+  font-size: 0.8rem;
+}
+
+.band-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 0.5rem;
+}
+
+.band-checkbox {
+  display: flex !important;
+  align-items: center;
+  padding: 0.5rem;
+  background: #444;
+  border: 1px solid #555;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.band-checkbox:hover {
+  background: #555;
+}
+
+.band-checkbox input[type='checkbox'] {
+  margin-right: 0.5rem;
+  width: auto;
+}
+
+.band-label {
+  font-size: 0.85rem;
+  color: var(--gray-color);
 }
 </style>

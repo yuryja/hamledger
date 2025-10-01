@@ -1,5 +1,6 @@
 <script lang="ts">
 import { CallsignHelper } from '../utils/callsign';
+import { BAND_RANGES } from '../utils/bands';
 import defaultSettings from '../settings.json';
 
 interface WizardData {
@@ -7,6 +8,7 @@ interface WizardData {
   qth: string;
   locator: string;
   iaruRegion: 'IARU1' | 'IARU2' | 'IARU3';
+  selectedBands: string[];
   importAdif: boolean;
   enableCat: boolean;
   rigctldPath: string;
@@ -18,18 +20,22 @@ export default {
   data() {
     return {
       currentStep: 1,
-      totalSteps: 4,
+      totalSteps: 5,
       wizardData: {
         callsign: '',
         qth: '',
         locator: '',
         iaruRegion: 'IARU1',
+        selectedBands: ['80', '40', '20', '15', '10'], // Default HF bands
         importAdif: false,
         enableCat: false,
         rigctldPath: 'rigctld',
       } as WizardData,
       isValidating: false,
       validationErrors: {} as Record<string, string>,
+      availableBands: BAND_RANGES.filter(band => 
+        ['160', '80', '60', '40', '30', '20', '17', '15', '12', '10', '6', '2', '70'].includes(band.shortName)
+      ),
     };
   },
   computed: {
@@ -44,8 +50,10 @@ export default {
         case 2:
           return !this.validationErrors.locator;
         case 3:
-          return true; // ADIF import is optional
+          return this.wizardData.selectedBands.length > 0;
         case 4:
+          return true; // ADIF import is optional
+        case 5:
           return (
             !this.wizardData.enableCat ||
             (this.wizardData.rigctldPath.trim() !== '' && !this.validationErrors.rigctldPath)
@@ -128,6 +136,25 @@ export default {
         this.isValidating = false;
       }
     },
+    toggleBand(bandShortName: string) {
+      const index = this.wizardData.selectedBands.indexOf(bandShortName);
+      if (index > -1) {
+        this.wizardData.selectedBands.splice(index, 1);
+      } else {
+        this.wizardData.selectedBands.push(bandShortName);
+      }
+    },
+    selectAllHFBands() {
+      const hfBands = ['160', '80', '60', '40', '30', '20', '17', '15', '12', '10'];
+      this.wizardData.selectedBands = [...hfBands];
+    },
+    selectAllVHFUHFBands() {
+      const vhfUhfBands = ['6', '2', '70'];
+      this.wizardData.selectedBands = [...this.wizardData.selectedBands, ...vhfUhfBands.filter(band => !this.wizardData.selectedBands.includes(band))];
+    },
+    clearAllBands() {
+      this.wizardData.selectedBands = [];
+    },
     async importAdifFile() {
       try {
         const result = await window.electronAPI.importAdif();
@@ -161,6 +188,7 @@ export default {
       settings.station.qth = this.wizardData.qth;
       settings.station.grid = this.wizardData.locator;
       settings.station.iaruRegion = this.wizardData.iaruRegion;
+      settings.station.selectedBands = this.wizardData.selectedBands;
 
       // Add CAT settings if enabled
       if (this.wizardData.enableCat) {
@@ -266,8 +294,42 @@ export default {
           </div>
         </div>
 
-        <!-- Step 3: ADIF Import -->
+        <!-- Step 3: Band Selection -->
         <div v-if="currentStep === 3" class="wizard-step">
+          <h2>Band Selection</h2>
+          <p class="step-description">
+            Select the amateur radio bands you plan to operate on. This helps optimize the interface for your needs.
+          </p>
+
+          <div class="band-selection-controls">
+            <button type="button" @click="selectAllHFBands" class="btn btn-small">All HF</button>
+            <button type="button" @click="selectAllVHFUHFBands" class="btn btn-small">VHF/UHF</button>
+            <button type="button" @click="clearAllBands" class="btn btn-small">Clear All</button>
+          </div>
+
+          <div class="band-grid">
+            <label 
+              v-for="band in availableBands" 
+              :key="band.shortName" 
+              class="band-checkbox"
+            >
+              <input 
+                type="checkbox" 
+                :value="band.shortName"
+                :checked="wizardData.selectedBands.includes(band.shortName)"
+                @change="toggleBand(band.shortName)"
+              />
+              <span class="band-label">{{ band.name }} ({{ band.shortName }}m)</span>
+            </label>
+          </div>
+
+          <div v-if="wizardData.selectedBands.length === 0" class="warning-message">
+            Please select at least one band to continue.
+          </div>
+        </div>
+
+        <!-- Step 4: ADIF Import -->
+        <div v-if="currentStep === 4" class="wizard-step">
           <h2>Import Existing Log</h2>
           <p class="step-description">
             Do you have an existing ADIF log file you'd like to import?
@@ -288,8 +350,8 @@ export default {
           </div>
         </div>
 
-        <!-- Step 4: CAT Control -->
-        <div v-if="currentStep === 4" class="wizard-step">
+        <!-- Step 5: CAT Control -->
+        <div v-if="currentStep === 5" class="wizard-step">
           <h2>CAT Control Setup</h2>
           <p class="step-description">
             Configure computer-aided transceiver control if you have a compatible radio.
@@ -524,5 +586,58 @@ export default {
   margin: 0;
   font-size: 0.9rem;
   line-height: 1.4;
+}
+
+.band-selection-controls {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.btn-small {
+  padding: 0.5rem 1rem;
+  font-size: 0.85rem;
+}
+
+.band-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.band-checkbox {
+  display: flex !important;
+  align-items: center;
+  padding: 0.5rem;
+  background: #2b2b2b;
+  border: 1px solid #444;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.band-checkbox:hover {
+  background: #3b3b3b;
+}
+
+.band-checkbox input[type='checkbox'] {
+  margin-right: 0.5rem;
+  width: auto;
+}
+
+.band-label {
+  font-size: 0.9rem;
+  color: var(--gray-color);
+}
+
+.warning-message {
+  color: #e74c3c;
+  font-size: 0.9rem;
+  margin-top: 1rem;
+  padding: 0.75rem;
+  background: rgba(231, 76, 60, 0.1);
+  border: 1px solid rgba(231, 76, 60, 0.3);
+  border-radius: 4px;
 }
 </style>
