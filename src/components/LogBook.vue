@@ -445,6 +445,7 @@ export default {
                 showEditDialog = true;
               "
             >
+            ##AI! Object is possibly 'undefined'.
               <td>{{ this.DateHelper.formatUTCDate(new Date(entry.datetime)) }}</td>
               <td>{{ this.DateHelper.formatUTCTime(new Date(entry.datetime)) }}</td>
               <td>
