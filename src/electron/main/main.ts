@@ -119,7 +119,7 @@ ipcMain.handle('fetchPropagationData', async () => {
       process.env.https_proxy ||
       process.env.HTTP_PROXY ||
       process.env.http_proxy;
-
+##AI! this shall be strongly typed
     const fetchOptions: any = {
       headers: {
         'User-Agent': 'HamLogger/1.0',
