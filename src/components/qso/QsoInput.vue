@@ -20,14 +20,6 @@ export default {
     };
   },
   computed: {
-    currentBand() {
-      const freq = parseFloat(this.rigStore.frequency);
-      const band = getBandFromFrequency(freq);
-      if (band) {
-        this.qsoStore.updateQsoForm('band', band);
-      }
-      return band;
-    },
     modes() {
       return this.rigStore.modes;
     },
@@ -41,6 +33,19 @@ export default {
     },
     isCallsignValid() {
       return this.qsoStore.isCallsignValid;
+    },
+  },
+  watch: {
+    'rigStore.rigState.frequency': {
+      handler(newFreq: number) {
+        if (newFreq) {
+          const band = getBandFromFrequency(newFreq);
+          if (band) {
+            this.qsoStore.updateQsoForm('band', band.name);
+          }
+        }
+      },
+      immediate: true,
     },
   },
   mounted() {
