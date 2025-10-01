@@ -5,7 +5,7 @@ import fs from 'fs';
 import fetch from 'node-fetch';
 import { HttpsProxyAgent } from 'https-proxy-agent';
 import { Socket } from 'net';
-import { exec } from 'child_process';
+import { exec, spawn, ChildProcess } from 'child_process';
 import { parseAdif } from '../../utils/adif';
 import { QsoEntry } from '../../types/qso';
 import { databaseService } from '../../services/DatabaseService';
@@ -20,6 +20,103 @@ interface FetchOptions {
 }
 
 const isDev = process.env.npm_lifecycle_event === 'app:dev' ? true : false;
+
+// Rigctld process management
+let rigctldProcess: ChildProcess | null = null;
+
+// Check if a port is in use
+function isPortInUse(port: number, host: string = 'localhost'): Promise<boolean> {
+  return new Promise((resolve) => {
+    const socket = new Socket();
+    
+    socket.setTimeout(1000);
+    
+    socket.on('connect', () => {
+      socket.destroy();
+      resolve(true);
+    });
+    
+    socket.on('timeout', () => {
+      socket.destroy();
+      resolve(false);
+    });
+    
+    socket.on('error', () => {
+      resolve(false);
+    });
+    
+    socket.connect(port, host);
+  });
+}
+
+// Start rigctld as background process
+async function startRigctld(): Promise<void> {
+  try {
+    // Check if rigctld is already running on default port
+    const isRunning = await isPortInUse(4532);
+    
+    if (isRunning) {
+      console.log('Rigctld already running on port 4532');
+      return;
+    }
+    
+    console.log('Starting rigctld as background process...');
+    
+    // Try to start rigctld with model 1025 (Yaesu FT-1000MP) and /dev/ttyUSB0
+    // If model is 1 (dummy), no device is needed
+    const args = ['-m', '1025', '-r', '/dev/ttyUSB0'];
+    
+    rigctldProcess = spawn('rigctld', args, {
+      detached: false,
+      stdio: ['ignore', 'pipe', 'pipe']
+    });
+    
+    if (rigctldProcess.stdout) {
+      rigctldProcess.stdout.on('data', (data) => {
+        console.log('rigctld stdout:', data.toString());
+      });
+    }
+    
+    if (rigctldProcess.stderr) {
+      rigctldProcess.stderr.on('data', (data) => {
+        console.log('rigctld stderr:', data.toString());
+      });
+    }
+    
+    rigctldProcess.on('error', (error) => {
+      console.error('Failed to start rigctld:', error);
+      rigctldProcess = null;
+    });
+    
+    rigctldProcess.on('exit', (code, signal) => {
+      console.log(`rigctld process exited with code ${code} and signal ${signal}`);
+      rigctldProcess = null;
+    });
+    
+    // Give it a moment to start
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    
+    // Verify it's running
+    const isNowRunning = await isPortInUse(4532);
+    if (isNowRunning) {
+      console.log('Rigctld started successfully');
+    } else {
+      console.log('Rigctld may not have started properly');
+    }
+    
+  } catch (error) {
+    console.error('Error starting rigctld:', error);
+  }
+}
+
+// Stop rigctld process
+function stopRigctld(): void {
+  if (rigctldProcess) {
+    console.log('Stopping rigctld process...');
+    rigctldProcess.kill('SIGTERM');
+    rigctldProcess = null;
+  }
+}
 
 function createWindow() {
   // Create the browser window.
@@ -255,7 +352,10 @@ ipcMain.handle('fetchDxSpots', async (event, params: string) => {
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
-app.whenReady().then(() => {
+app.whenReady().then(async () => {
+  // Try to start rigctld before creating the window
+  await startRigctld();
+  
   createWindow();
   app.on('activate', function () {
     // On macOS it's common to re-create a window in the app when the
@@ -268,9 +368,17 @@ app.whenReady().then(() => {
 // for applications and their menu bar to stay active until the user quits
 // explicitly with Cmd + Q.
 app.on('window-all-closed', () => {
+  // Stop rigctld when app is closing
+  stopRigctld();
+  
   if (process.platform !== 'darwin') {
     app.quit();
   }
+});
+
+// Handle app quit
+app.on('before-quit', () => {
+  stopRigctld();
 });
 
 // Rigctld connection management
