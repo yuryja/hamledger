@@ -52,9 +52,16 @@ export const useRigStore = defineStore('rig', {
   
   getters: {
     isConnected: (state) => state.connection.connected,
-    currentFrequency: (state) => (state.rigState.frequency / 1000000).toFixed(6),
+    currentFrequency: (state) => {
+      const freqMHz = state.rigState.frequency / 1000000;
+      return freqMHz.toString().replace(/\.?0+$/, '');
+    },
     currentMode: (state) => state.rigState.mode,
-    splitFrequency: (state) => state.rigState.splitFreq ? (state.rigState.splitFreq / 1000000).toFixed(6) : undefined,
+    splitFrequency: (state) => {
+      if (!state.rigState.splitFreq) return undefined;
+      const freqMHz = state.rigState.splitFreq / 1000000;
+      return freqMHz.toString().replace(/\.?0+$/, '');
+    },
     rigModel: (state) => state.capabilities?.modelName || 'Unknown',
   },
   

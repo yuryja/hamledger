@@ -11,7 +11,7 @@ export default {
       rigStore: store,
       isEditing: false,
       isTxEditing: false,
-      unit: 'kHz',
+      unit: 'MHz',
       smeterHelper: smeterHelper,
     };
   },
