@@ -55,13 +55,13 @@ export const useQsoStore = defineStore('qso', {
       const newQso: QsoEntry = {
         callsign: this.qsoForm.callsign.toUpperCase(),
         band: this.qsoForm.band,
-        freqRx: parseFloat(rigStore.frequency),
-        mode: rigStore.selectedMode,
+        freqRx: rigStore.rigState.frequency,
+        mode: rigStore.rigState.mode,
         datetime: now.toISOString(),
       };
 
       // Handle TX frequency
-      newQso.freqTx = rigStore.splitActive ? parseFloat(rigStore.txFrequency) : '--';
+      newQso.freqTx = rigStore.rigState.split ? rigStore.rigState.splitFreq : '--';
 
       // Use form values or defaults for RST
       newQso.rstr = this.qsoForm.rstr || '59';
@@ -127,8 +127,8 @@ export const useQsoStore = defineStore('qso', {
         console.log('Store updateQso called with:', updatedQso);
         console.log('QSO keys:', Object.keys(updatedQso));
 
-        const qsoId = updatedQso._id || updatedQso.id;
-        const qsoRev = updatedQso._rev || updatedQso.rev;
+        const qsoId = updatedQso._id;
+        const qsoRev = updatedQso._rev;
 
         if (!qsoId) {
           console.error('QSO object:', updatedQso);

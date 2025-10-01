@@ -45,43 +45,45 @@ export default {
     },
     groupedModels() {
       const grouped = new Map();
-      
+
       for (const model of this.rigModels) {
         if (!grouped.has(model.manufacturer)) {
           grouped.set(model.manufacturer, {
             name: model.manufacturer,
-            models: []
+            models: [],
           });
         }
         grouped.get(model.manufacturer).models.push(model);
       }
-      
+
       // Sort manufacturers and models within each group
       const result = Array.from(grouped.values()).sort((a, b) => a.name.localeCompare(b.name));
       result.forEach(group => {
         group.models.sort((a, b) => a.model.localeCompare(b.model));
       });
-      
+
       return result;
     },
   },
   methods: {
     async loadRigConfig() {
       await configHelper.initSettings();
-      
+
       // Get rig model number from config
       const rigModelNumber = configHelper.getSetting(['rig'], 'rigModel');
-      
+
       // Find rig name from the loaded models list
       if (rigModelNumber && this.rigModels.length > 0) {
         const rigModel = this.rigModels.find(model => model.id === rigModelNumber);
-        this.rigModel = rigModel ? `${rigModel.manufacturer} ${rigModel.model}` : `Model ${rigModelNumber}`;
+        this.rigModel = rigModel
+          ? `${rigModel.manufacturer} ${rigModel.model}`
+          : `Model ${rigModelNumber}`;
       } else {
         this.rigModel = this.rigStore.rigModel;
       }
-      
+
       this.rigPort = configHelper.getSetting(['rig'], 'port') || 'localhost:4532';
-      
+
       // Load connection settings
       this.connectionForm.host = configHelper.getSetting(['rig'], 'host') || 'localhost';
       this.connectionForm.port = configHelper.getSetting(['rig'], 'port') || 4532;
@@ -110,29 +112,31 @@ export default {
     parseRigModels(output: string): RigModel[] {
       const lines = output.split('\n');
       const models: RigModel[] = [];
-      
+
       for (const line of lines) {
         // Skip header and empty lines
         if (line.trim() === '' || line.includes('Rig #') || line.includes('---')) {
           continue;
         }
-        
+
         // Parse each line: "  1025  Yaesu                  MARK-V Field FT-1000MP  20210318.0      Stable      RIG_MODEL_FT1000MPMKVFLD"
-        const match = line.match(/^\s*(\d+)\s+([^\s]+)\s+(.+?)\s+\d{8}\.\d+\s+(Alpha|Beta|Stable|Untested)\s+/);
+        const match = line.match(
+          /^\s*(\d+)\s+([^\s]+)\s+(.+?)\s+\d{8}\.\d+\s+(Alpha|Beta|Stable|Untested)\s+/
+        );
         if (match) {
           const [, id, manufacturer, model, status] = match;
           models.push({
             id: parseInt(id),
             manufacturer: manufacturer.trim(),
             model: model.trim(),
-            status: status.trim()
+            status: status.trim(),
           });
         }
       }
-      
+
       return models;
     },
-    
+
     async handleConnect() {
       try {
         await this.rigStore.connect(
@@ -141,7 +145,7 @@ export default {
           this.connectionForm.model,
           this.connectionForm.device
         );
-        
+
         if (this.rigStore.isConnected) {
           this.showConnectionDialog = false;
           // Start polling for rig state updates
@@ -151,32 +155,32 @@ export default {
         console.error('Connection failed:', error);
       }
     },
-    
+
     async handleReconnect() {
       await this.rigStore.handleReconnect();
       if (this.rigStore.isConnected) {
         this.rigStore.startPolling(2000);
       }
     },
-    
+
     async handleDisconnect() {
       this.rigStore.stopPolling();
       await this.rigStore.handleDisconnect();
     },
-    
+
     showConnectionSettings() {
       this.showConnectionDialog = true;
     },
-    
+
     closeConnectionDialog() {
       this.showConnectionDialog = false;
     },
-    
+
     async saveConnectionSettings() {
       // Check if model changed
       const currentModel = configHelper.getSetting(['rig'], 'rigModel');
       const modelChanged = currentModel !== this.connectionForm.model;
-      
+
       // Save to config (only save the model number, not the name)
       await configHelper.updateSetting(['rig'], 'host', this.connectionForm.host);
       await configHelper.updateSetting(['rig'], 'port', this.connectionForm.port);
@@ -186,7 +190,7 @@ export default {
       if (this.connectionForm.device) {
         await configHelper.updateSetting(['rig'], 'device', this.connectionForm.device);
       }
-      
+
       // Update the displayed rig model name
       if (this.connectionForm.model) {
         const rigModel = this.rigModels.find(model => model.id === this.connectionForm.model);
@@ -194,7 +198,7 @@ export default {
           this.rigModel = `${rigModel.manufacturer} ${rigModel.model}`;
         }
       }
-      
+
       // If model changed, restart rigctld
       if (modelChanged) {
         console.log('Rig model changed, restarting rigctld...');
@@ -206,16 +210,16 @@ export default {
         } catch (error) {
           console.error('Error restarting rigctld:', error);
         }
-        
+
         // Wait a moment for rigctld to restart
         await new Promise(resolve => setTimeout(resolve, 2000));
       }
-      
+
       // Connect with new settings
       await this.handleConnect();
     },
   },
-  
+
   beforeUnmount() {
     // Stop polling when component is destroyed
     this.rigStore.stopPolling();
@@ -241,23 +245,40 @@ export default {
       </div>
 
       <div class="rig-buttons">
-        <button v-if="!isConnected" class="connect-btn" @click="handleConnect" :disabled="rigStore.isLoading">
+        <button
+          v-if="!isConnected"
+          class="connect-btn"
+          @click="handleConnect"
+          :disabled="rigStore.isLoading"
+        >
           {{ rigStore.isLoading ? 'Connecting...' : 'Connect' }}
         </button>
-        <button v-if="isConnected" class="reconnect" @click="handleReconnect" :disabled="rigStore.isLoading">
+        <button
+          v-if="isConnected"
+          class="reconnect"
+          @click="handleReconnect"
+          :disabled="rigStore.isLoading"
+        >
           Reconnect
         </button>
-        <button v-if="isConnected" class="stop-btn" @click="handleDisconnect" :disabled="rigStore.isLoading">
+        <button
+          v-if="isConnected"
+          class="stop-btn"
+          @click="handleDisconnect"
+          :disabled="rigStore.isLoading"
+        >
           Disconnect
         </button>
-        <button class="settings-btn" @click="showConnectionSettings">
-          Settings
-        </button>
+        <button class="settings-btn" @click="showConnectionSettings">Settings</button>
       </div>
     </div>
 
     <!-- Connection Settings Dialog -->
-    <div v-if="showConnectionDialog" class="connection-dialog-overlay" @click="closeConnectionDialog">
+    <div
+      v-if="showConnectionDialog"
+      class="connection-dialog-overlay"
+      @click="closeConnectionDialog"
+    >
       <div class="connection-dialog" @click.stop>
         <h3>Rigctld Connection Settings</h3>
         <form @submit.prevent="saveConnectionSettings">
@@ -283,16 +304,16 @@ export default {
           </div>
           <div class="form-group">
             <label for="model">Rig Model (optional):</label>
-            <select
-              id="model"
-              v-model.number="connectionForm.model"
-              :disabled="loadingModels"
-            >
+            <select id="model" v-model.number="connectionForm.model" :disabled="loadingModels">
               <option :value="undefined">Select a rig model...</option>
-              <optgroup v-for="manufacturer in groupedModels" :key="manufacturer.name" :label="manufacturer.name">
-                <option 
-                  v-for="model in manufacturer.models" 
-                  :key="model.id" 
+              <optgroup
+                v-for="manufacturer in groupedModels"
+                :key="manufacturer.name"
+                :label="manufacturer.name"
+              >
+                <option
+                  v-for="model in manufacturer.models"
+                  :key="model.id"
                   :value="model.id"
                   :title="`Status: ${model.status}`"
                 >
@@ -375,7 +396,6 @@ export default {
   background: #ffc107;
   color: black;
 }
-
 
 .error-message {
   color: #dc3545;
@@ -546,7 +566,7 @@ export default {
   font-size: 0.9rem;
 }
 
-.dialog-buttons button[type="button"] {
+.dialog-buttons button[type='button'] {
   background: #6c757d;
   color: white;
 }

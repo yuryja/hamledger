@@ -363,7 +363,6 @@ export default {
   gap: 2rem;
 }
 
-
 .notes-section {
   display: flex;
   flex-direction: column;
@@ -457,8 +456,12 @@ export default {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .offline-notice {

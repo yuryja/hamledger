@@ -26,25 +26,25 @@ let rigctldProcess: ChildProcess | null = null;
 
 // Check if a port is in use
 function isPortInUse(port: number, host: string = 'localhost'): Promise<boolean> {
-  return new Promise((resolve) => {
+  return new Promise(resolve => {
     const socket = new Socket();
-    
+
     socket.setTimeout(1000);
-    
+
     socket.on('connect', () => {
       socket.destroy();
       resolve(true);
     });
-    
+
     socket.on('timeout', () => {
       socket.destroy();
       resolve(false);
     });
-    
+
     socket.on('error', () => {
       resolve(false);
     });
-    
+
     socket.connect(port, host);
   });
 }
@@ -63,68 +63,68 @@ async function startRigctld(): Promise<void> {
     } catch (error) {
       console.warn('Could not load settings for rigctld startup:', error);
     }
-    
+
     // Get rig configuration from settings
     const rigConfig = settings?.rig || {};
     const rigModel = rigConfig.rigModel || 1025; // Default to Yaesu FT-1000MP
     const rigDevice = rigConfig.device || ''; // Default device
     const rigPort = rigConfig.port || 4532; // Default port
-    
+
     // Check if rigctld is already running on configured port
     const isRunning = await isPortInUse(rigPort);
-    
+
     if (isRunning) {
       console.log(`Rigctld already running on port ${rigPort}`);
       return;
     }
-    
+
     console.log(`Starting rigctld as background process with model ${rigModel}...`);
-    
+
     // Build arguments based on configuration
     const args = ['-m', rigModel.toString()];
-    
+
     // Add device parameter only if model is not 1 (dummy) and device is specified
     if (rigModel !== 1 && rigDevice) {
       args.push('-r', rigDevice);
     }
-    
+
     // Add port if different from default
     if (rigPort !== 4532) {
       args.push('-t', rigPort.toString());
     }
-    
+
     console.log('Rigctld command:', 'rigctld', args.join(' '));
-    
+
     rigctldProcess = spawn('rigctld', args, {
       detached: false,
-      stdio: ['ignore', 'pipe', 'pipe']
+      stdio: ['ignore', 'pipe', 'pipe'],
     });
-    
+
     if (rigctldProcess.stdout) {
-      rigctldProcess.stdout.on('data', (data) => {
+      rigctldProcess.stdout.on('data', data => {
         console.log('rigctld stdout:', data.toString());
       });
     }
-    
+
     if (rigctldProcess.stderr) {
-      rigctldProcess.stderr.on('data', (data) => {
+      rigctldProcess.stderr.on('data', data => {
         console.log('rigctld stderr:', data.toString());
       });
     }
-    
-    rigctldProcess.on('error', (error) => {
+
+    rigctldProcess.on('error', error => {
       console.error('Failed to start rigctld:', error);
       rigctldProcess = null;
     });
-    
+
     rigctldProcess.on('exit', (code, signal) => {
       console.log(`rigctld process exited with code ${code} and signal ${signal}`);
       rigctldProcess = null;
     });
-    
+
     // Give it a moment to start
     await new Promise(resolve => setTimeout(resolve, 2000));
-    
+
     // Verify it's running on the configured port
     const isNowRunning = await isPortInUse(rigPort);
     if (isNowRunning) {
@@ -132,7 +132,6 @@ async function startRigctld(): Promise<void> {
     } else {
       console.log('Rigctld may not have started properly');
     }
-    
   } catch (error) {
     console.error('Error starting rigctld:', error);
   }
@@ -384,7 +383,7 @@ ipcMain.handle('fetchDxSpots', async (event, params: string) => {
 app.whenReady().then(async () => {
   // Try to start rigctld before creating the window
   await startRigctld();
-  
+
   createWindow();
   app.on('activate', function () {
     // On macOS it's common to re-create a window in the app when the
@@ -399,7 +398,7 @@ app.whenReady().then(async () => {
 app.on('window-all-closed', () => {
   // Stop rigctld when app is closing
   stopRigctld();
-  
+
   if (process.platform !== 'darwin') {
     app.quit();
   }
@@ -422,17 +421,17 @@ ipcMain.handle('rigctld:connect', async (_, host: string, port: number) => {
       rigctldSocket = null;
     }
 
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
       rigctldSocket = new Socket();
-      
+
       rigctldSocket.setTimeout(5000);
-      
+
       rigctldSocket.on('connect', () => {
         console.log(`Connected to rigctld at ${host}:${port}`);
         resolve({ success: true, data: { connected: true } });
       });
 
-      rigctldSocket.on('error', (error) => {
+      rigctldSocket.on('error', error => {
         console.error('Rigctld connection error:', error);
         rigctldSocket = null;
         resolve({ success: false, error: error.message });
@@ -479,43 +478,41 @@ ipcMain.handle('rigctld:command', async (_, command: string) => {
       return { success: false, error: 'Not connected to rigctld' };
     }
 
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
       let responseData = '';
-      
+
       const timeout = setTimeout(() => {
         resolve({ success: false, error: 'Command timeout' });
       }, 5000);
 
       const onData = (data: Buffer) => {
         responseData += data.toString();
-        
+
         // Extended Response Protocol: look for RPRT at the end
         if (responseData.includes('RPRT ')) {
           clearTimeout(timeout);
           rigctldSocket?.off('data', onData);
-          
+
           const lines = responseData.trim().split('\n');
-          
+
           // Find the RPRT line (should be last)
           const rprtLine = lines.find(line => line.startsWith('RPRT '));
           if (!rprtLine) {
             resolve({ success: false, error: 'Invalid response format' });
             return;
           }
-          
+
           const errorCode = parseInt(rprtLine.split(' ')[1]);
           if (errorCode !== 0) {
             resolve({ success: false, error: `Rigctld error code: ${errorCode}` });
             return;
           }
-          
+
           // Parse Extended Response Protocol format
-          const dataLines = lines.filter(line => 
-            !line.startsWith('RPRT ') && 
-            line.includes(':') && 
-            !line.endsWith(':')
+          const dataLines = lines.filter(
+            line => !line.startsWith('RPRT ') && line.includes(':') && !line.endsWith(':')
           );
-          
+
           if (dataLines.length > 0) {
             // Extract values from "Key: Value" format
             const values = dataLines.map(line => {
@@ -549,24 +546,24 @@ ipcMain.handle('rigctld:capabilities', async () => {
       return { success: false, error: 'Not connected to rigctld' };
     }
 
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
       let responseData = '';
-      
+
       const timeout = setTimeout(() => {
         resolve({ success: false, error: 'Capabilities timeout' });
       }, 10000);
 
       const onData = (data: Buffer) => {
         responseData += data.toString();
-        
+
         // Extended Response Protocol: look for RPRT at the end
         if (responseData.includes('RPRT ')) {
           clearTimeout(timeout);
           rigctldSocket?.off('data', onData);
-          
+
           const lines = responseData.trim().split('\n');
           const rprtIndex = lines.findIndex(line => line.startsWith('RPRT '));
-          
+
           if (rprtIndex > 0) {
             // Skip the command echo line and get capability data
             const capabilityLines = lines.slice(1, rprtIndex);
@@ -593,18 +590,18 @@ ipcMain.handle('rigctld:capabilities', async () => {
 // Execute command handler
 ipcMain.handle('execute:command', async (_, command: string) => {
   try {
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
       exec(command, { timeout: 10000 }, (error: Error | null, stdout: string, stderr: string) => {
         if (error) {
           console.error('Command execution error:', error);
           resolve({ success: false, error: error.message });
           return;
         }
-        
+
         if (stderr) {
           console.warn('Command stderr:', stderr);
         }
-        
+
         resolve({ success: true, data: stdout });
       });
     });
@@ -651,10 +648,10 @@ ipcMain.handle('settings:save', async (_, settings: Record<string, unknown>) => 
 async function restartRigctld(): Promise<void> {
   console.log('Restarting rigctld...');
   stopRigctld();
-  
+
   // Wait a moment for the process to fully stop
   await new Promise(resolve => setTimeout(resolve, 1000));
-  
+
   await startRigctld();
 }
 

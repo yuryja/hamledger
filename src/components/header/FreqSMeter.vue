@@ -53,7 +53,7 @@ export default {
       console.log('FreqSMeter: toggleSplit called');
       console.log('Current split state:', this.rigStore.rigState.split);
       console.log('Is connected:', this.rigStore.isConnected);
-      
+
       const result = await this.rigStore.toggleSplit();
       console.log('toggleSplit result:', result);
     },
@@ -65,11 +65,7 @@ export default {
   <div class="header-center freq-s-meter">
     <div class="freq-s-meter-content">
       <div class="freq-display">
-        <button
-          class="split-btn mode-badge"
-          :class="{ active: splitActive }"
-          @click="toggleSplit"
-        >
+        <button class="split-btn mode-badge" :class="{ active: splitActive }" @click="toggleSplit">
           SPLIT
         </button>
         <div class="rig-frequency" @click="isEditing = true">

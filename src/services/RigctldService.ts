@@ -1,4 +1,4 @@
-import { RigCapabilities, RigState, RigctldConnection, RigctldResponse } from '../types/rig';
+import { RigctldConnection, RigctldResponse } from '../types/rig';
 
 export class RigctldService {
   private connection: RigctldConnection = {
@@ -31,11 +31,11 @@ export class RigctldService {
         this.connection.model,
         this.connection.device
       );
-      
+
       if (response.success) {
         this.connection.connected = true;
       }
-      
+
       return response;
     } catch (error) {
       return {
@@ -48,11 +48,11 @@ export class RigctldService {
   public async disconnect(): Promise<RigctldResponse> {
     try {
       const response = await window.electronAPI.rigctldDisconnect();
-      
+
       if (response.success) {
         this.connection.connected = false;
       }
-      
+
       return response;
     } catch (error) {
       return {

@@ -21,9 +21,13 @@ declare global {
         device?: string
       ) => Promise<{ success: boolean; data?: any; error?: string }>;
       rigctldDisconnect: () => Promise<{ success: boolean; data?: any; error?: string }>;
-      rigctldCommand: (command: string) => Promise<{ success: boolean; data?: any; error?: string }>;
+      rigctldCommand: (
+        command: string
+      ) => Promise<{ success: boolean; data?: any; error?: string }>;
       rigctldGetCapabilities: () => Promise<{ success: boolean; data?: any; error?: string }>;
-      executeCommand: (command: string) => Promise<{ success: boolean; data?: any; error?: string }>;
+      executeCommand: (
+        command: string
+      ) => Promise<{ success: boolean; data?: any; error?: string }>;
       rigctldRestart: () => Promise<{ success: boolean; data?: any; error?: string }>;
     };
   }
