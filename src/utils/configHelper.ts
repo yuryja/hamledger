@@ -125,7 +125,7 @@ export class ConfigHelper {
       case 'number':
         return Number(value);
       case 'boolean':
-        return value === 'true';
+        return value === 'true' || value === true;
       default:
         return value;
     }

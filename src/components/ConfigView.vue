@@ -7,7 +7,7 @@ export default {
   name: 'ConfigView',
   data() {
     return {
-      selectedCategory: 'station',
+      selectedCategory: 'Station',
       searchQuery: '',
       configFields: [] as ConfigField[],
     };
@@ -22,7 +22,8 @@ export default {
     },
     filteredFields() {
       if (!this.searchQuery) {
-        return this.categories.find(cat => cat.name === this.selectedCategory)?.fields || [];
+        const category = this.categories.find(cat => cat.name === this.selectedCategory);
+        return category?.fields || [];
       }
       return this.configFields.filter(field => {
         const searchStr = this.searchQuery.toLowerCase();
@@ -31,7 +32,8 @@ export default {
       });
     },
   },
-  mounted() {
+  async mounted() {
+    await configHelper.initSettings();
     this.configFields = configHelper.flattenConfig();
   },
   methods: {
@@ -43,13 +45,20 @@ export default {
     },
     async handleChange(field: ConfigField, event: Event) {
       const target = event.target as HTMLInputElement;
-      const value = configHelper.processConfigValue(
-        field,
-        target.type === 'checkbox' ? String(target.checked) : target.value
-      );
+      let value: any;
+      
+      if (target.type === 'checkbox') {
+        value = target.checked;
+      } else {
+        value = configHelper.processConfigValue(field, target.value);
+      }
+      
       await configHelper.updateSetting(field.path, field.key, value);
       // Update the field value to reflect the change in the UI
       field.value = value;
+      
+      // Force reactivity update
+      this.$forceUpdate();
     },
     getAvailableBands() {
       return BAND_RANGES.filter(band =>
