@@ -35,6 +35,7 @@ export class ConfigHelper {
       this.settings = newSettings;
     } catch (error) {
       console.error('Error saving settings:', error);
+      throw error;
     }
   }
 
@@ -53,7 +54,7 @@ export class ConfigHelper {
     current[key] = value;
 
     // Save the entire settings object
-    this.saveSettings(this.settings);
+    await this.saveSettings(this.settings);
   }
 
   public getSetting(path: string[], key: string): any {

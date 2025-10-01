@@ -49,16 +49,22 @@ export default {
       
       if (target.type === 'checkbox') {
         value = target.checked;
+      } else if (target.type === 'number') {
+        value = Number(target.value);
       } else {
-        value = configHelper.processConfigValue(field, target.value);
+        value = target.value;
       }
       
-      await configHelper.updateSetting(field.path, field.key, value);
-      // Update the field value to reflect the change in the UI
-      field.value = value;
-      
-      // Force reactivity update
-      this.$forceUpdate();
+      try {
+        await configHelper.updateSetting(field.path, field.key, value);
+        // Update the field value to reflect the change in the UI
+        field.value = value;
+        
+        // Force Vue to re-render the component
+        this.$forceUpdate();
+      } catch (error) {
+        console.error('Error updating setting:', error);
+      }
     },
     getAvailableBands() {
       return BAND_RANGES.filter(band =>
