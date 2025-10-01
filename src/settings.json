@@ -30,6 +30,10 @@
     "dxheat": {
       "baseUrl": "https://dxheat.com",
       "rateLimit": 1000
+    },
+    "wwv": {
+      "baseUrl": "https://dxheat.com/wwv",
+      "rateLimit": 1000
     }
   },
   "database": {

@@ -252,7 +252,9 @@ ipcMain.handle('adif:import', async () => {
 // Propagation Data API handler
 ipcMain.handle('fetchPropagationData', async () => {
   try {
-    const url = 'https://dxheat.com/wwv/source/';
+    const settings = loadSettings();
+    const baseUrl = settings?.apis?.wwv?.baseUrl || 'https://dxheat.com/wwv';
+    const url = `${baseUrl}/source/`;
 
     // Check for proxy environment variables
     const proxyUrl =
@@ -295,7 +297,9 @@ ipcMain.handle('fetchPropagationData', async () => {
 // Weather API handler
 ipcMain.handle('fetchWeather', async (event, lat: number, lon: number) => {
   try {
-    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`;
+    const settings = loadSettings();
+    const baseUrl = settings?.apis?.openMeteo?.baseUrl || 'https://api.open-meteo.com/v1';
+    const url = `${baseUrl}/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`;
 
     // Check for proxy environment variables
     const proxyUrl =
