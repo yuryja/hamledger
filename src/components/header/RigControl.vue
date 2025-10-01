@@ -121,7 +121,8 @@ export default {
         const match = line.match(/^\s*(\d+)\s+([^\s]+)\s+(.+?)\s+\d{8}\.\d+\s+(Alpha|Beta|Stable|Untested)\s+/);
         if (match) {
           const [, id, manufacturer, model, status] = match;
-          models.push({
+          models.push(
+            ##AI!Argument of type '{ id: number; manufacturer: string; model: string; status: string; }' is not assignable to parameter of type 'never'.ts-plugin(2345){
             id: parseInt(id),
             manufacturer: manufacturer.trim(),
             model: model.trim(),
