@@ -26,6 +26,54 @@ export default {
     totalCount() {
       return this.qsoStore.totalCount;
     },
+    filteredCurrentSession() {
+      let filtered = [...this.currentSession];
+
+      // Text search
+      if (this.filters.searchText.trim()) {
+        const searchTerm = this.filters.searchText.toLowerCase().trim();
+        filtered = filtered.filter(qso => 
+          qso.callsign?.toLowerCase().includes(searchTerm) ||
+          qso.remark?.toLowerCase().includes(searchTerm) ||
+          qso.notes?.toLowerCase().includes(searchTerm)
+        );
+      }
+
+      // Band filter
+      if (this.filters.selectedBand) {
+        filtered = filtered.filter(qso => qso.band === this.filters.selectedBand);
+      }
+
+      // Mode filter
+      if (this.filters.selectedMode) {
+        filtered = filtered.filter(qso => qso.mode === this.filters.selectedMode);
+      }
+
+      // Date range filter
+      if (this.filters.dateFrom) {
+        const fromDate = new Date(this.filters.dateFrom);
+        filtered = filtered.filter(qso => new Date(qso.datetime) >= fromDate);
+      }
+
+      if (this.filters.dateTo) {
+        const toDate = new Date(this.filters.dateTo);
+        toDate.setHours(23, 59, 59, 999); // End of day
+        filtered = filtered.filter(qso => new Date(qso.datetime) <= toDate);
+      }
+
+      return filtered;
+    },
+    uniqueBands() {
+      const bands = [...new Set(this.currentSession.map(qso => qso.band).filter(Boolean))];
+      return bands.sort();
+    },
+    uniqueModes() {
+      const modes = [...new Set(this.currentSession.map(qso => qso.mode).filter(Boolean))];
+      return modes.sort();
+    },
+    filteredCount() {
+      return this.filteredCurrentSession.length;
+    },
   },
   data() {
     return {
@@ -33,6 +81,14 @@ export default {
       sortOrder: 'desc',
       selectedQso: null,
       showEditDialog: false,
+      filters: {
+        searchText: '',
+        selectedBand: '',
+        selectedMode: '',
+        dateFrom: '',
+        dateTo: '',
+      },
+      showFilters: false,
     };
   },
   methods: {
@@ -46,7 +102,7 @@ export default {
       }
     },
     getSortedQsos() {
-      return [...this.currentSession].sort((a, b) => {
+      return [...this.filteredCurrentSession].sort((a, b) => {
         const aVal = a[this.sortKey];
         const bVal = b[this.sortKey];
         const modifier = this.sortOrder === 'asc' ? 1 : -1;
@@ -55,6 +111,18 @@ export default {
         if (aVal > bVal) return 1 * modifier;
         return 0;
       });
+    },
+    clearFilters() {
+      this.filters = {
+        searchText: '',
+        selectedBand: '',
+        selectedMode: '',
+        dateFrom: '',
+        dateTo: '',
+      };
+    },
+    toggleFilters() {
+      this.showFilters = !this.showFilters;
     },
   },
 };
@@ -66,8 +134,81 @@ export default {
       <h2 class="section-title">Log Area</h2>
       <div class="qso-count">
         <span>This session: {{ sessionCount }} QSO</span>
+        <span v-if="filteredCount !== sessionCount" class="filtered-count">
+          ({{ filteredCount }} filtered)
+        </span>
         <span>All: {{ totalCount }} QSO</span>
         <button class="tab-btn active">New session</button>
+      </div>
+      <div class="log-actions">
+        <button 
+          class="filter-btn" 
+          @click="toggleFilters"
+          :class="{ active: showFilters }"
+        >
+          🔍 Filters
+        </button>
+      </div>
+    </div>
+
+    <!-- Filters Panel -->
+    <div v-if="showFilters" class="filters-panel">
+      <div class="filters-row">
+        <div class="filter-group">
+          <label>Search:</label>
+          <input 
+            v-model="filters.searchText" 
+            type="text" 
+            placeholder="Callsign, remark, notes..."
+            class="filter-input"
+          />
+        </div>
+        
+        <div class="filter-group">
+          <label>Band:</label>
+          <select v-model="filters.selectedBand" class="filter-select">
+            <option value="">All Bands</option>
+            <option v-for="band in uniqueBands" :key="band" :value="band">
+              {{ band }}
+            </option>
+          </select>
+        </div>
+        
+        <div class="filter-group">
+          <label>Mode:</label>
+          <select v-model="filters.selectedMode" class="filter-select">
+            <option value="">All Modes</option>
+            <option v-for="mode in uniqueModes" :key="mode" :value="mode">
+              {{ mode }}
+            </option>
+          </select>
+        </div>
+      </div>
+      
+      <div class="filters-row">
+        <div class="filter-group">
+          <label>Date From:</label>
+          <input 
+            v-model="filters.dateFrom" 
+            type="date" 
+            class="filter-input"
+          />
+        </div>
+        
+        <div class="filter-group">
+          <label>Date To:</label>
+          <input 
+            v-model="filters.dateTo" 
+            type="date" 
+            class="filter-input"
+          />
+        </div>
+        
+        <div class="filter-group">
+          <button @click="clearFilters" class="clear-btn">
+            Clear All
+          </button>
+        </div>
       </div>
     </div>
 
@@ -247,7 +388,99 @@ export default {
   display: flex;
   align-items: center;
   gap: 1rem;
+}
+
+.filtered-count {
+  color: var(--main-color);
+  font-weight: bold;
+}
+
+.log-actions {
   margin-left: auto;
+}
+
+.filter-btn {
+  background: #555;
+  border: 1px solid #777;
+  padding: 0.5rem 1rem;
+  color: #fff;
+  cursor: pointer;
+  border-radius: 3px;
+  margin-right: 0.5rem;
+  transition: all 0.2s;
+}
+
+.filter-btn:hover {
+  background: #666;
+}
+
+.filter-btn.active {
+  background: var(--main-color);
+  color: #000;
+  font-weight: bold;
+}
+
+.filters-panel {
+  background: #2b2b2b;
+  border: 1px solid #444;
+  border-radius: 4px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.filters-row {
+  display: flex;
+  gap: 1rem;
+  align-items: end;
+  margin-bottom: 0.5rem;
+}
+
+.filters-row:last-child {
+  margin-bottom: 0;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 150px;
+}
+
+.filter-group label {
+  font-size: 0.85rem;
+  color: var(--gray-color);
+  font-weight: bold;
+}
+
+.filter-input,
+.filter-select {
+  padding: 0.5rem;
+  background: #333;
+  border: 1px solid #555;
+  border-radius: 3px;
+  color: #fff;
+  font-size: 0.9rem;
+}
+
+.filter-input:focus,
+.filter-select:focus {
+  outline: none;
+  border-color: var(--main-color);
+}
+
+.clear-btn {
+  background: #e74c3c;
+  border: none;
+  padding: 0.5rem 1rem;
+  color: #fff;
+  cursor: pointer;
+  border-radius: 3px;
+  font-size: 0.9rem;
+  height: fit-content;
+}
+
+.clear-btn:hover {
+  background: #c0392b;
 }
 
 .tab-btn {
