@@ -36,16 +36,20 @@ export default {
     canProceed() {
       switch (this.currentStep) {
         case 1:
-          return this.wizardData.callsign.trim() !== '' && 
-                 this.wizardData.qth.trim() !== '' &&
-                 !this.validationErrors.callsign;
+          return (
+            this.wizardData.callsign.trim() !== '' &&
+            this.wizardData.qth.trim() !== '' &&
+            !this.validationErrors.callsign
+          );
         case 2:
           return !this.validationErrors.locator;
         case 3:
           return true; // ADIF import is optional
         case 4:
-          return !this.wizardData.enableCat || 
-                 (this.wizardData.rigctldPath.trim() !== '' && !this.validationErrors.rigctldPath);
+          return (
+            !this.wizardData.enableCat ||
+            (this.wizardData.rigctldPath.trim() !== '' && !this.validationErrors.rigctldPath)
+          );
         default:
           return false;
       }
@@ -75,12 +79,12 @@ export default {
         this.validationErrors.callsign = 'Callsign is required';
         return false;
       }
-      
+
       if (!CallsignHelper.isValidCallsign(callsign)) {
         this.validationErrors.callsign = 'Invalid callsign format';
         return false;
       }
-      
+
       delete this.validationErrors.callsign;
       this.wizardData.callsign = callsign;
       return true;
@@ -94,7 +98,7 @@ export default {
           return false;
         }
       }
-      
+
       delete this.validationErrors.locator;
       this.wizardData.locator = locator;
       return true;
@@ -104,10 +108,12 @@ export default {
         delete this.validationErrors.rigctldPath;
         return true;
       }
-      
+
       this.isValidating = true;
       try {
-        const result = await window.electronAPI.executeCommand(`which ${this.wizardData.rigctldPath}`);
+        const result = await window.electronAPI.executeCommand(
+          `which ${this.wizardData.rigctldPath}`
+        );
         if (result.success && result.data.trim()) {
           delete this.validationErrors.rigctldPath;
           return true;
@@ -115,7 +121,7 @@ export default {
           this.validationErrors.rigctldPath = 'rigctld not found in the specified path';
           return false;
         }
-      } catch  {
+      } catch {
         this.validationErrors.rigctldPath = 'Error checking rigctld path';
         return false;
       } finally {
@@ -142,14 +148,14 @@ export default {
       const isCallsignValid = this.validateCallsign();
       const isLocatorValid = this.validateLocator();
       const isRigctldValid = await this.testRigctldPath();
-      
+
       if (!isCallsignValid || !isLocatorValid || !isRigctldValid) {
         return;
       }
 
       // Create settings object based on default settings
       const settings = JSON.parse(JSON.stringify(defaultSettings));
-      
+
       // Update with wizard data
       settings.station.callsign = this.wizardData.callsign;
       settings.station.qth = this.wizardData.qth;
@@ -165,12 +171,12 @@ export default {
       try {
         // Save settings first
         await window.electronAPI.saveSettings(settings);
-        
+
         // Import ADIF if requested
         if (this.wizardData.importAdif) {
           await this.importAdifFile();
         }
-        
+
         this.$emit('complete');
       } catch (error) {
         console.error('Error saving settings:', error);
@@ -186,7 +192,10 @@ export default {
       <div class="wizard-header">
         <h1>HamLogger Initial Setup</h1>
         <div class="progress-bar">
-          <div class="progress-fill" :style="{ width: `${(currentStep / totalSteps) * 100}%` }"></div>
+          <div
+            class="progress-fill"
+            :style="{ width: `${(currentStep / totalSteps) * 100}%` }"
+          ></div>
         </div>
         <p class="step-indicator">Step {{ currentStep }} of {{ totalSteps }}</p>
       </div>
@@ -196,7 +205,7 @@ export default {
         <div v-if="currentStep === 1" class="wizard-step">
           <h2>Station Information</h2>
           <p class="step-description">Please enter your basic station information.</p>
-          
+
           <div class="form-group">
             <label for="callsign">Callsign *</label>
             <input
@@ -226,8 +235,10 @@ export default {
         <!-- Step 2: Optional Info -->
         <div v-if="currentStep === 2" class="wizard-step">
           <h2>Additional Information</h2>
-          <p class="step-description">These fields are optional but help improve the program's functionality.</p>
-          
+          <p class="step-description">
+            These fields are optional but help improve the program's functionality.
+          </p>
+
           <div class="form-group">
             <label for="locator">Maidenhead Locator</label>
             <input
@@ -246,7 +257,9 @@ export default {
           <div class="form-group">
             <label for="iaruRegion">IARU Region</label>
             <select id="iaruRegion" v-model="wizardData.iaruRegion">
-              <option value="IARU1">IARU Region 1 (Europe, Africa, Middle East, Northern Asia)</option>
+              <option value="IARU1">
+                IARU Region 1 (Europe, Africa, Middle East, Northern Asia)
+              </option>
               <option value="IARU2">IARU Region 2 (Americas)</option>
               <option value="IARU3">IARU Region 3 (Asia-Pacific)</option>
             </select>
@@ -256,21 +269,21 @@ export default {
         <!-- Step 3: ADIF Import -->
         <div v-if="currentStep === 3" class="wizard-step">
           <h2>Import Existing Log</h2>
-          <p class="step-description">Do you have an existing ADIF log file you'd like to import?</p>
-          
+          <p class="step-description">
+            Do you have an existing ADIF log file you'd like to import?
+          </p>
+
           <div class="form-group">
             <label class="checkbox-label">
-              <input
-                type="checkbox"
-                v-model="wizardData.importAdif"
-              />
+              <input type="checkbox" v-model="wizardData.importAdif" />
               Import ADIF file
             </label>
           </div>
 
           <div v-if="wizardData.importAdif" class="info-box">
             <p class="info-text">
-              <strong>Note:</strong> After completing the setup, you'll be prompted to select your ADIF file (.adi or .adif) to import your existing QSO records.
+              <strong>Note:</strong> After completing the setup, you'll be prompted to select your
+              ADIF file (.adi or .adif) to import your existing QSO records.
             </p>
           </div>
         </div>
@@ -278,14 +291,13 @@ export default {
         <!-- Step 4: CAT Control -->
         <div v-if="currentStep === 4" class="wizard-step">
           <h2>CAT Control Setup</h2>
-          <p class="step-description">Configure computer-aided transceiver control if you have a compatible radio.</p>
-          
+          <p class="step-description">
+            Configure computer-aided transceiver control if you have a compatible radio.
+          </p>
+
           <div class="form-group">
             <label class="checkbox-label">
-              <input
-                type="checkbox"
-                v-model="wizardData.enableCat"
-              />
+              <input type="checkbox" v-model="wizardData.enableCat" />
               Enable CAT Control
             </label>
           </div>
@@ -303,29 +315,18 @@ export default {
             <span v-if="validationErrors.rigctldPath" class="error-message">
               {{ validationErrors.rigctldPath }}
             </span>
-            <span v-if="isValidating" class="info-message">
-              Checking rigctld availability...
-            </span>
+            <span v-if="isValidating" class="info-message"> Checking rigctld availability... </span>
             <p class="help-text">
-              Enter the path to rigctld executable. If rigctld is in your PATH, just enter "rigctld".
+              Enter the path to rigctld executable. If rigctld is in your PATH, just enter
+              "rigctld".
             </p>
           </div>
         </div>
       </div>
 
       <div class="wizard-footer">
-        <button 
-          v-if="currentStep > 1" 
-          @click="prevStep" 
-          class="btn btn-secondary"
-        >
-          Previous
-        </button>
-        <button 
-          @click="nextStep" 
-          :disabled="!canProceed || isValidating"
-          class="btn btn-primary"
-        >
+        <button v-if="currentStep > 1" @click="prevStep" class="btn btn-secondary">Previous</button>
+        <button @click="nextStep" :disabled="!canProceed || isValidating" class="btn btn-primary">
           {{ isLastStep ? 'Complete Setup' : 'Next' }}
         </button>
       </div>
@@ -424,7 +425,7 @@ export default {
   cursor: pointer;
 }
 
-.checkbox-label input[type="checkbox"] {
+.checkbox-label input[type='checkbox'] {
   margin-right: 0.5rem;
   width: auto;
 }

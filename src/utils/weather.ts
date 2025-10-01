@@ -31,8 +31,9 @@ const WMO_CODES: { [key: number]: string } = {
 
 export async function getWeather(lat: number, lon: number): Promise<WeatherResult | null> {
   try {
-    const baseUrl = configHelper.getSetting(['apis', 'openMeteo'], 'baseUrl') || 'https://api.open-meteo.com/v1';
-    
+    const baseUrl =
+      configHelper.getSetting(['apis', 'openMeteo'], 'baseUrl') || 'https://api.open-meteo.com/v1';
+
     const response = await fetch(
       `${baseUrl}/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`
     );

@@ -28,11 +28,7 @@
         },
         "iaruRegion": {
           "type": "string",
-          "enum": [
-            "IARU1",
-            "IARU2",
-            "IARU3"
-          ],
+          "enum": ["IARU1", "IARU2", "IARU3"],
           "description": "IARU region (IARU1: Europe/Africa/Middle East/Northern Asia, IARU2: Americas, IARU3: Asia-Pacific)"
         }
       }

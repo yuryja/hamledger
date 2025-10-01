@@ -8,9 +8,12 @@ interface GeocodingResult {
 
 export async function geocodeLocation(qth: string): Promise<GeocodingResult | null> {
   try {
-    const baseUrl = configHelper.getSetting(['apis', 'nominatim'], 'baseUrl') || 'https://nominatim.openstreetmap.org';
-    const userAgent = configHelper.getSetting(['apis', 'nominatim'], 'userAgent') || 'HamLogger/1.0';
-    
+    const baseUrl =
+      configHelper.getSetting(['apis', 'nominatim'], 'baseUrl') ||
+      'https://nominatim.openstreetmap.org';
+    const userAgent =
+      configHelper.getSetting(['apis', 'nominatim'], 'userAgent') || 'HamLogger/1.0';
+
     const response = await fetch(
       `${baseUrl}/search?q=${encodeURIComponent(qth)}&format=json&limit=1`,
       {

@@ -20,12 +20,12 @@ export default {
   },
   async mounted() {
     await this.checkInitialSetup();
-    
+
     if (!this.showSetupWizard) {
       const qsoStore = useQsoStore();
       await qsoStore.init();
     }
-    
+
     this.isInitialized = true;
   },
   methods: {
@@ -42,10 +42,10 @@ export default {
     },
     async onSetupComplete() {
       this.showSetupWizard = false;
-      
+
       // Initialize config helper with new settings
       await configHelper.initSettings();
-      
+
       // Initialize QSO store
       const qsoStore = useQsoStore();
       await qsoStore.init();
@@ -57,18 +57,12 @@ export default {
 <template>
   <div class="app-container">
     <template v-if="isInitialized">
-      <SideBar 
+      <SideBar
         v-if="!showSetupWizard"
-        @view-change="view => $refs.mainContent?.handleViewChange(view)" 
+        @view-change="view => $refs.mainContent?.handleViewChange(view)"
       />
-      <MainContent 
-        v-if="!showSetupWizard"
-        ref="mainContent" 
-      />
-      <SetupWizard 
-        v-if="showSetupWizard"
-        @complete="onSetupComplete"
-      />
+      <MainContent v-if="!showSetupWizard" ref="mainContent" />
+      <SetupWizard v-if="showSetupWizard" @complete="onSetupComplete" />
     </template>
     <div v-else class="loading-container">
       <p>Loading...</p>
