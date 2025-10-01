@@ -199,6 +199,7 @@ export default {
       if (modelChanged) {
         console.log('Rig model changed, restarting rigctld...');
         try {
+          ##AI! Property 'rigctldRestart' does not exist on type '{ addQso: (qso: any) => Promise<any>; getAllDocs: () => Promise<any>; importAdif: () => Promise<{ imported: boolean; count?: number | undefined; error?: any; }>; loadSettings: () => Promise<...>; ... 9 more ...; executeCommand: (command: string) => Promise<...>; }'.ts-plugin(2339)
           const response = await window.electronAPI.rigctldRestart();
           if (!response.success) {
             console.error('Failed to restart rigctld:', response.error);
