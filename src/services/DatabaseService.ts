@@ -4,6 +4,16 @@ import { app } from 'electron';
 import { join } from 'path';
 import fs from 'fs';
 
+interface DatabaseResponse {
+  ok: boolean;
+  id?: string;
+  error?: Error;
+}
+
+interface UpdateResponse extends DatabaseResponse {
+  rev?: string;
+}
+
 export class DatabaseService {
   private db!: PouchDB.Database;
   private dbPath: string;
@@ -19,8 +29,7 @@ export class DatabaseService {
     }
     this.db = new PouchDB(this.dbPath);
   }
-##AI! error?: any shall be strongly typed
-  public async saveQso(qso: QsoEntry): Promise<{ ok: boolean; id?: string; error?: any }> {
+  public async saveQso(qso: QsoEntry): Promise<DatabaseResponse> {
     try {
       const response = await this.db.post(qso);
       await this.backupToJson();
@@ -31,7 +40,7 @@ export class DatabaseService {
     }
   }
 
-  public async updateQso(qso: QsoEntry): Promise<{ ok: boolean; id?: string; rev?: string; error?: any }> {
+  public async updateQso(qso: QsoEntry): Promise<UpdateResponse> {
     try {
       // Get the latest version of the document to ensure we have the current _rev
       const currentDoc = await this.db.get(qso._id!);
