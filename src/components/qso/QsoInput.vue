@@ -115,13 +115,7 @@ export default {
 
       <div class="qso-input-group">
         <label for="band">Band</label>
-        <input
-          type="text"
-          id="band"
-          :value="currentBand"
-          readonly
-          class="readonly-input"
-        />
+        <input type="text" id="band" :value="currentBand" readonly class="readonly-input" />
       </div>
 
       <div class="qso-input-group small">

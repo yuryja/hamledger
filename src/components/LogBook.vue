@@ -612,7 +612,7 @@ export default {
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
-  min-width: 100px;
+  min-width: 150px;
 }
 
 .search-group {
@@ -624,7 +624,7 @@ export default {
 }
 
 .date-input {
-  width: 140px;
+  width: 160px;
 }
 
 .filter-group label {

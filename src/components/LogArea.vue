@@ -452,7 +452,7 @@ export default {
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
-  min-width: 140px;
+  min-width: 160px;
 }
 
 .search-group {
@@ -464,7 +464,7 @@ export default {
 }
 
 .date-input {
-  width: 140px;
+  width: 160px;
 }
 
 .filter-group label {

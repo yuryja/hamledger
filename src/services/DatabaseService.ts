@@ -32,7 +32,7 @@ export class DatabaseService {
   public async saveQso(qso: QsoEntry): Promise<DatabaseResponse> {
     try {
       const response = await this.db.post(qso);
-      await this.backupToJson();
+      //await this.backupToJson();
       return { ok: true, id: response.id };
     } catch (error) {
       console.error('Failed to save QSO:', error);

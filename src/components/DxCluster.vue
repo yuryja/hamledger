@@ -5,7 +5,6 @@ import type { DxSpot } from '../types/dxCluster';
 import { useQsoStore } from '../store/qso';
 import { useRigStore } from '../store/rig';
 import type { MagnifierPosition, ScaleTick, LayoutSpot, TimerHandle } from '../types/dxCluster';
-import { getBandFromFrequency } from '../utils/bands';
 
 export default defineComponent({
   name: 'DxCluster',

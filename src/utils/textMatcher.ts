@@ -13,8 +13,8 @@ export class TextMatcher {
       return true; // Empty pattern matches everything
     }
 
-    let searchText = options.caseSensitive ? text : text.toLowerCase();
-    let searchPattern = options.caseSensitive ? pattern : pattern.toLowerCase();
+    const searchText = options.caseSensitive ? text : text.toLowerCase();
+    const searchPattern = options.caseSensitive ? pattern : pattern.toLowerCase();
 
     try {
       if (options.useRegex) {
