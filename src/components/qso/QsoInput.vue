@@ -1,7 +1,7 @@
 <script lang="ts">
 import { useQsoStore } from '../../store/qso';
 import { useRigStore } from '../../store/rig';
-import { BAND_RANGES, getBandFromFrequency } from '../../utils/bands';
+import { BAND_RANGES } from '../../utils/bands';
 
 export default {
   name: 'QsoInput',
@@ -31,18 +31,26 @@ export default {
         this.qsoStore.updateQsoForm('mode', newMode);
       },
     },
+    currentBand() {
+      return this.rigStore.currentBandName || 'Unknown';
+    },
     isCallsignValid() {
       return this.qsoStore.isCallsignValid;
     },
   },
   watch: {
-    'rigStore.rigState.frequency': {
-      handler(newFreq: number) {
-        if (newFreq) {
-          const band = getBandFromFrequency(newFreq);
-          if (band) {
-            this.qsoStore.updateQsoForm('band', band.name);
-          }
+    'rigStore.currentBandName': {
+      handler(newBand: string) {
+        if (newBand) {
+          this.qsoStore.updateQsoForm('band', newBand);
+        }
+      },
+      immediate: true,
+    },
+    'rigStore.rigState.mode': {
+      handler(newMode: string) {
+        if (newMode) {
+          this.qsoStore.updateQsoForm('mode', newMode);
         }
       },
       immediate: true,
@@ -107,15 +115,13 @@ export default {
 
       <div class="qso-input-group">
         <label for="band">Band</label>
-        <select
+        <input
+          type="text"
           id="band"
-          :value="qsoStore.qsoForm.band"
-          @change="e => qsoStore.updateQsoForm('band', (e.target as HTMLSelectElement).value)"
-        >
-          <option v-for="band in bands" :key="band.value" :value="band.value">
-            {{ band.label }}
-          </option>
-        </select>
+          :value="currentBand"
+          readonly
+          class="readonly-input"
+        />
       </div>
 
       <div class="qso-input-group small">
@@ -228,6 +234,12 @@ export default {
   padding: 0.3rem;
   color: #fff;
   border-radius: 3px;
+}
+
+.readonly-input {
+  background: #555 !important;
+  color: #ccc !important;
+  cursor: not-allowed;
 }
 
 .qso-input-group input {

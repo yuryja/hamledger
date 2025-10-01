@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
 import { rigctldService } from '../services/RigctldService';
 import { RigCapabilities, RigState, RigctldConnection } from '../types/rig';
+import { getBandFromFrequency } from '../utils/bands';
 
 export const useRigStore = defineStore('rig', {
   state: () => ({
@@ -57,12 +58,21 @@ export const useRigStore = defineStore('rig', {
       return freqMHz.toString().replace(/\.?0+$/, '');
     },
     currentMode: state => state.rigState.mode,
+    currentBand: state => {
+      const band = getBandFromFrequency(state.rigState.frequency);
+      return band ? band.shortName : null;
+    },
+    currentBandName: state => {
+      const band = getBandFromFrequency(state.rigState.frequency);
+      return band ? band.name : 'Unknown';
+    },
     splitFrequency: state => {
       if (!state.rigState.splitFreq) return undefined;
       const freqMHz = state.rigState.splitFreq / 1000000;
       return freqMHz.toString().replace(/\.?0+$/, '');
     },
     rigModel: state => state.capabilities?.modelName || 'Unknown',
+    selectedMode: state => state.rigState.mode,
   },
 
   actions: {

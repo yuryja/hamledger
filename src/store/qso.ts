@@ -8,6 +8,7 @@ import { QsoEntry } from '../types/qso';
 import { MaidenheadLocator } from '../utils/maidenhead';
 import { configHelper } from '../utils/configHelper';
 import { calculateDistance } from '../utils/distance';
+import { getBandFromFrequency } from '../utils/bands';
 import * as countries from 'i18n-iso-countries';
 import en from 'i18n-iso-countries/langs/en.json';
 import '../types/electron';
@@ -32,7 +33,7 @@ export const useQsoStore = defineStore('qso', {
     } satisfies StationData,
     qsoForm: {
       callsign: '',
-      band: '40m',
+      band: '',
       mode: 'SSB',
       rstr: '59',
       rstt: '59',
@@ -52,9 +53,13 @@ export const useQsoStore = defineStore('qso', {
       const now = new Date();
       const rigStore = useRigStore();
 
+      // Calculate band from current rig frequency
+      const band = getBandFromFrequency(rigStore.rigState.frequency);
+      const bandName = band ? band.name : 'Unknown';
+
       const newQso: QsoEntry = {
         callsign: this.qsoForm.callsign.toUpperCase(),
-        band: this.qsoForm.band,
+        band: bandName,
         freqRx: rigStore.rigState.frequency,
         mode: rigStore.rigState.mode,
         datetime: now.toISOString(),
@@ -84,11 +89,14 @@ export const useQsoStore = defineStore('qso', {
         console.error('Failed to save QSO:', error);
       }
 
-      // Reset form
+      // Reset form but keep current band from rig
+      const rigStore = useRigStore();
+      const currentBand = rigStore.currentBandName || '';
+      
       this.qsoForm = {
         callsign: '',
-        band: '40m',
-        mode: 'SSB',
+        band: currentBand,
+        mode: rigStore.rigState.mode,
         rstr: '59',
         rstt: '59',
         date: '',

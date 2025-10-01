@@ -286,13 +286,8 @@ export default defineComponent({
       const freqInHz = parseFloat(spot.Frequency) * 1000;
 
       // Set rig frequency (rig store expects Hz)
+      // The band will be automatically calculated from frequency in the rig store
       this.rigStore.setFrequency(freqInHz);
-
-      // Determine band from frequency and update QSO form
-      const bandInfo = getBandFromFrequency(freqInHz);
-      if (bandInfo) {
-        this.qsoStore.updateQsoForm('band', bandInfo.name);
-      }
 
       // Map DX spot mode to rig mode
       let rigMode = spot.Mode;
