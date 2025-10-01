@@ -147,21 +147,21 @@ export default {
           </div>
         </div>
 
-        <div class="station-details" v-if="stationInfo">
+        <div class="station-details" v-if="stationInfo && stationInfo.baseData">
           <div class="location-info">
             <h4>Location Information</h4>
             <div class="info-grid">
               <div class="info-item">
                 <label>Country</label>
-                <span>{{ stationInfo.baseData.country }}</span>
+                <span>{{ stationInfo.baseData?.country || 'N/A' }}</span>
               </div>
               <div class="info-item">
                 <label>Grid Square</label>
-                <span>{{ stationInfo.baseData.grid }}</span>
+                <span>{{ stationInfo.baseData?.grid || 'N/A' }}</span>
               </div>
               <div class="info-item">
                 <label>QTH</label>
-                <span>{{ stationInfo.baseData.qth }}</span>
+                <span>{{ stationInfo.baseData?.qth || 'N/A' }}</span>
               </div>
               <div class="info-item">
                 <label>Local Time</label>
@@ -178,7 +178,7 @@ export default {
             </div>
           </div>
 
-          <div class="map-container" v-if="stationInfo.geodata.lat">
+          <div class="map-container" v-if="stationInfo.geodata?.lat">
             <div v-if="!mapLoaded" class="map-loading">
               <div class="loading-spinner"></div>
               <p>Loading map...</p>
@@ -192,17 +192,17 @@ export default {
               marginwidth="0"
               :src="
                 'https://www.openstreetmap.org/export/embed.html?bbox=' +
-                (stationInfo.geodata.lon - 1) +
+                (stationInfo.geodata?.lon - 1) +
                 '%2C' +
-                (stationInfo.geodata.lat - 1) +
+                (stationInfo.geodata?.lat - 1) +
                 '%2C' +
-                (stationInfo.geodata.lon + 1) +
+                (stationInfo.geodata?.lon + 1) +
                 '%2C' +
-                (stationInfo.geodata.lat + 1) +
+                (stationInfo.geodata?.lat + 1) +
                 '&layer=mapnik&marker=' +
-                stationInfo.geodata.lat +
+                stationInfo.geodata?.lat +
                 '%2C' +
-                stationInfo.geodata.lon
+                stationInfo.geodata?.lon
               "
               @load="onMapLoad"
             ></iframe>
