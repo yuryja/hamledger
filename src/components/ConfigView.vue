@@ -1,136 +1,182 @@
-<script lang="ts">
+<script setup lang="ts">
+import { ref, computed, onMounted } from 'vue';
 import { ConfigField } from '../types/config';
 import { configHelper } from '../utils/configHelper';
 import { BAND_RANGES } from '../utils/bands';
 
-export default {
-  name: 'ConfigView',
-  data() {
-    return {
-      selectedCategory: 'Station',
-      searchQuery: '',
-      configFields: [] as ConfigField[],
-    };
-  },
-  computed: {
-    categories() {
-      const categories = configHelper.getCategorizedFields(this.configFields);
-      return categories.map(category => ({
-        ...category,
-        name: this.getCategoryDisplayName(category.name),
-      }));
-    },
-    filteredFields() {
-      if (!this.searchQuery) {
-        const category = this.categories.find(cat => cat.name === this.selectedCategory);
-        return category?.fields || [];
-      }
-      return this.configFields.filter(field => {
-        const searchStr = this.searchQuery.toLowerCase();
-        const fieldPath = [...field.path, field.key].join(' ').toLowerCase();
-        return fieldPath.includes(searchStr);
-      });
-    },
-  },
-  async mounted() {
-    await configHelper.initSettings();
-    this.configFields = configHelper.flattenConfig();
-  },
-  methods: {
-    getFieldId(field: ConfigField): string {
-      return configHelper.getFieldId(field);
-    },
-    getFieldLabel(field: ConfigField): string {
-      return configHelper.getFieldLabel(field);
-    },
-    async handleChange(field: ConfigField, event: Event) {
-      const target = event.target as HTMLInputElement;
-      let value: any;
-      
-      if (target.type === 'checkbox') {
-        value = target.checked;
-      } else if (target.type === 'number') {
-        value = Number(target.value);
-      } else {
-        value = target.value;
-      }
-      
-      try {
-        await configHelper.updateSetting(field.path, field.key, value);
-        
-        // Find and update the field in configFields array to trigger reactivity
-        const fieldIndex = this.configFields.findIndex(f => 
-          f.key === field.key && 
-          f.path.join('.') === field.path.join('.')
-        );
-        
-        if (fieldIndex !== -1) {
-          this.$set(this.configFields, fieldIndex, {
-            ...this.configFields[fieldIndex],
-            value: value
-          });
-        }
-      } catch (error) {
-        console.error('Error updating setting:', error);
-      }
-    },
-    getAvailableBands() {
-      return BAND_RANGES.filter(band =>
-        ['160', '80', '60', '40', '30', '20', '17', '15', '12', '10', '6', '2', '70'].includes(
-          band.shortName
-        )
-      );
-    },
-    async toggleBandInConfig(field: ConfigField, bandShortName: string, event: Event) {
-      const target = event.target as HTMLInputElement;
-      const currentBands = [...field.value];
+const selectedCategory = ref('Station');
+const searchQuery = ref('');
+const configFields = ref<ConfigField[]>([]);
 
-      if (target.checked) {
-        if (!currentBands.includes(bandShortName)) {
-          currentBands.push(bandShortName);
-        }
-      } else {
-        const index = currentBands.indexOf(bandShortName);
-        if (index > -1) {
-          currentBands.splice(index, 1);
-        }
-      }
+const getCategoryDisplayName = (categoryName: string): string => {
+  const displayNames: { [key: string]: string } = {
+    rig: 'CAT Control',
+    qrz: 'Online Services',
+    apis: 'APIs',
+    station: 'Station',
+    database: 'Database',
+    ui: 'UI',
+    logging: 'Logging',
+  };
+  return displayNames[categoryName] || categoryName.charAt(0).toUpperCase() + categoryName.slice(1);
+};
 
-      await configHelper.updateSetting(field.path, field.key, currentBands);
-      field.value = currentBands;
-    },
-    async selectAllHFBands(field: ConfigField) {
-      const hfBands = ['160', '80', '60', '40', '30', '20', '17', '15', '12', '10'];
-      await configHelper.updateSetting(field.path, field.key, hfBands);
-      field.value = hfBands;
-    },
-    async selectAllVHFUHFBands(field: ConfigField) {
-      const vhfUhfBands = ['6', '2', '70'];
-      const currentBands = [...field.value];
-      const newBands = [
-        ...currentBands,
-        ...vhfUhfBands.filter(band => !currentBands.includes(band)),
-      ];
-      await configHelper.updateSetting(field.path, field.key, newBands);
-      field.value = newBands;
-    },
-    async clearAllBands(field: ConfigField) {
-      await configHelper.updateSetting(field.path, field.key, []);
-      field.value = [];
-    },
-    getCategoryDisplayName(categoryName: string): string {
-      const displayNames: { [key: string]: string } = {
-        rig: 'CAT Control',
-        qrz: 'Online Services',
-        apis: 'APIs',
-        station: 'Station',
-        database: 'Database',
-        ui: 'UI',
-        logging: 'Logging',
+const categories = computed(() => {
+  const cats = configHelper.getCategorizedFields(configFields.value);
+  return cats.map(category => ({
+    ...category,
+    name: getCategoryDisplayName(category.name),
+  }));
+});
+
+const filteredFields = computed(() => {
+  if (!searchQuery.value) {
+    const category = categories.value.find(cat => cat.name === selectedCategory.value);
+    return category?.fields || [];
+  }
+  return configFields.value.filter(field => {
+    const searchStr = searchQuery.value.toLowerCase();
+    const fieldPath = [...field.path, field.key].join(' ').toLowerCase();
+    return fieldPath.includes(searchStr);
+  });
+});
+
+onMounted(async () => {
+  await configHelper.initSettings();
+  configFields.value = configHelper.flattenConfig();
+});
+const getFieldId = (field: ConfigField): string => {
+  return configHelper.getFieldId(field);
+};
+
+const getFieldLabel = (field: ConfigField): string => {
+  return configHelper.getFieldLabel(field);
+};
+
+const handleChange = async (field: ConfigField, event: Event) => {
+  const target = event.target as HTMLInputElement;
+  let value: any;
+  
+  if (target.type === 'checkbox') {
+    value = target.checked;
+  } else if (target.type === 'number') {
+    value = Number(target.value);
+  } else {
+    value = target.value;
+  }
+  
+  try {
+    await configHelper.updateSetting(field.path, field.key, value);
+    
+    // Find and update the field in configFields array to trigger reactivity
+    const fieldIndex = configFields.value.findIndex(f => 
+      f.key === field.key && 
+      f.path.join('.') === field.path.join('.')
+    );
+    
+    if (fieldIndex !== -1) {
+      configFields.value[fieldIndex] = {
+        ...configFields.value[fieldIndex],
+        value: value
       };
-      return displayNames[categoryName] || categoryName.charAt(0).toUpperCase() + categoryName.slice(1);
-    },
-  },
+    }
+  } catch (error) {
+    console.error('Error updating setting:', error);
+  }
+};
+
+const getAvailableBands = () => {
+  return BAND_RANGES.filter(band =>
+    ['160', '80', '60', '40', '30', '20', '17', '15', '12', '10', '6', '2', '70'].includes(
+      band.shortName
+    )
+  );
+};
+
+const toggleBandInConfig = async (field: ConfigField, bandShortName: string, event: Event) => {
+  const target = event.target as HTMLInputElement;
+  const currentBands = [...field.value];
+
+  if (target.checked) {
+    if (!currentBands.includes(bandShortName)) {
+      currentBands.push(bandShortName);
+    }
+  } else {
+    const index = currentBands.indexOf(bandShortName);
+    if (index > -1) {
+      currentBands.splice(index, 1);
+    }
+  }
+
+  await configHelper.updateSetting(field.path, field.key, currentBands);
+  
+  // Update the field in the reactive array
+  const fieldIndex = configFields.value.findIndex(f => 
+    f.key === field.key && 
+    f.path.join('.') === field.path.join('.')
+  );
+  
+  if (fieldIndex !== -1) {
+    configFields.value[fieldIndex] = {
+      ...configFields.value[fieldIndex],
+      value: currentBands
+    };
+  }
+};
+
+const selectAllHFBands = async (field: ConfigField) => {
+  const hfBands = ['160', '80', '60', '40', '30', '20', '17', '15', '12', '10'];
+  await configHelper.updateSetting(field.path, field.key, hfBands);
+  
+  const fieldIndex = configFields.value.findIndex(f => 
+    f.key === field.key && 
+    f.path.join('.') === field.path.join('.')
+  );
+  
+  if (fieldIndex !== -1) {
+    configFields.value[fieldIndex] = {
+      ...configFields.value[fieldIndex],
+      value: hfBands
+    };
+  }
+};
+
+const selectAllVHFUHFBands = async (field: ConfigField) => {
+  const vhfUhfBands = ['6', '2', '70'];
+  const currentBands = [...field.value];
+  const newBands = [
+    ...currentBands,
+    ...vhfUhfBands.filter(band => !currentBands.includes(band)),
+  ];
+  await configHelper.updateSetting(field.path, field.key, newBands);
+  
+  const fieldIndex = configFields.value.findIndex(f => 
+    f.key === field.key && 
+    f.path.join('.') === field.path.join('.')
+  );
+  
+  if (fieldIndex !== -1) {
+    configFields.value[fieldIndex] = {
+      ...configFields.value[fieldIndex],
+      value: newBands
+    };
+  }
+};
+
+const clearAllBands = async (field: ConfigField) => {
+  await configHelper.updateSetting(field.path, field.key, []);
+  
+  const fieldIndex = configFields.value.findIndex(f => 
+    f.key === field.key && 
+    f.path.join('.') === field.path.join('.')
+  );
+  
+  if (fieldIndex !== -1) {
+    configFields.value[fieldIndex] = {
+      ...configFields.value[fieldIndex],
+      value: []
+    };
+  }
 };
 </script>
 
