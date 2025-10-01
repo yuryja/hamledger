@@ -5,6 +5,10 @@ declare global {
       addQso: (qso: any) => Promise<any>;
       getAllDocs: () => Promise<any>;
       importAdif: () => Promise<{ imported: boolean; count?: number; error?: any }>;
+      selectAdifFile: () => Promise<{ success: boolean; filePath?: string; error?: string }>;
+      parseAdifFile: (filePath: string) => Promise<{ success: boolean; totalCount?: number; error?: string }>;
+      importAdifWithProgress: (filePath: string) => Promise<{ success: boolean; count?: number; error?: string }>;
+      onAdifImportProgress: (callback: (progress: { imported: number }) => void) => void;
       loadSettings: () => Promise<any>;
       saveSettings: (settings: any) => Promise<void>;
       updateQso: (qso: any) => Promise<any>;
