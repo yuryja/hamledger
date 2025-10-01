@@ -36,8 +36,13 @@ export default {
       if (newVal && this.qso.callsign) {
         this.isLoading = true;
         this.mapLoaded = false;
-        await this.qsoStore.fetchStationInfo(this.qso.callsign);
-        this.stationInfo = this.qsoStore.stationInfo;
+        try {
+          await this.qsoStore.fetchStationInfo(this.qso.callsign);
+          this.stationInfo = this.qsoStore.stationInfo;
+        } catch (error) {
+          console.warn('Failed to fetch station info, using offline data:', error);
+          this.stationInfo = this.getOfflineStationInfo();
+        }
         this.isLoading = false;
       }
     },
@@ -46,8 +51,13 @@ export default {
     if (this.show && this.qso.callsign) {
       this.isLoading = true;
       this.mapLoaded = false;
-      await this.qsoStore.fetchStationInfo(this.qso.callsign);
-      this.stationInfo = this.qsoStore.stationInfo;
+      try {
+        await this.qsoStore.fetchStationInfo(this.qso.callsign);
+        this.stationInfo = this.qsoStore.stationInfo;
+      } catch (error) {
+        console.warn('Failed to fetch station info, using offline data:', error);
+        this.stationInfo = this.getOfflineStationInfo();
+      }
       this.isLoading = false;
     }
   },
@@ -66,13 +76,37 @@ export default {
       if (updatedQso.callsign) {
         this.isLoading = true;
         this.mapLoaded = false;
-        await this.qsoStore.fetchStationInfo(updatedQso.callsign);
-        this.stationInfo = this.qsoStore.stationInfo;
+        try {
+          await this.qsoStore.fetchStationInfo(updatedQso.callsign);
+          this.stationInfo = this.qsoStore.stationInfo;
+        } catch (error) {
+          console.warn('Failed to fetch station info, using offline data:', error);
+          this.stationInfo = this.getOfflineStationInfo();
+        }
         this.isLoading = false;
       }
     },
     onMapLoad() {
       this.mapLoaded = true;
+    },
+    getOfflineStationInfo() {
+      // Create basic station info from QSO data when offline
+      return {
+        baseData: {
+          country: 'N/A',
+          grid: this.qso.grid || 'N/A',
+          qth: this.qso.qth || 'N/A',
+          name: this.qso.name || 'N/A',
+        },
+        flag: '',
+        weather: 'N/A (Offline)',
+        localTime: 'N/A (Offline)',
+        geodata: {
+          lat: null,
+          lon: null,
+        },
+        distance: null,
+      };
     },
   },
 };
@@ -100,6 +134,9 @@ export default {
         <div v-if="isLoading" class="loading-overlay">
           <div class="loading-spinner"></div>
           <p>Loading station data...</p>
+        </div>
+        <div v-else-if="!stationInfo || !stationInfo.baseData" class="offline-notice">
+          <p>⚠️ Station data unavailable (offline mode)</p>
         </div>
         <div class="main-info">
           <div class="callsign-section">
@@ -422,5 +459,19 @@ export default {
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
+}
+
+.offline-notice {
+  background: #444;
+  border: 1px solid #666;
+  border-radius: 3px;
+  padding: 1rem;
+  text-align: center;
+  color: var(--gray-color);
+  margin: 1rem 0;
+}
+
+.offline-notice p {
+  margin: 0;
 }
 </style>
