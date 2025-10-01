@@ -252,7 +252,7 @@ export default {
         <p class="step-indicator">Step {{ currentStep }} of {{ totalSteps }}</p>
         <div class="hint-box">
           <p class="hint-text">
-            💡 <strong>Tipp:</strong> Minden beállítás később módosítható a Konfiguráció menüben.
+            💡 <strong>Tip:</strong> All settings can be changed later in the Configuration menu.
           </p>
         </div>
       </div>
