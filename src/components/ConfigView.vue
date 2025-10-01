@@ -14,7 +14,11 @@ export default {
   },
   computed: {
     categories() {
-      return configHelper.getCategorizedFields(this.configFields);
+      const categories = configHelper.getCategorizedFields(this.configFields);
+      return categories.map(category => ({
+        ...category,
+        name: this.getCategoryDisplayName(category.name),
+      }));
     },
     filteredFields() {
       if (!this.searchQuery) {
@@ -89,6 +93,18 @@ export default {
       await configHelper.updateSetting(field.path, field.key, []);
       field.value = [];
     },
+    getCategoryDisplayName(categoryName: string): string {
+      const displayNames: { [key: string]: string } = {
+        rig: 'CAT Control',
+        qrz: 'Online Services',
+        apis: 'APIs',
+        station: 'Station',
+        database: 'Database',
+        ui: 'UI',
+        logging: 'Logging',
+      };
+      return displayNames[categoryName] || categoryName.charAt(0).toUpperCase() + categoryName.slice(1);
+    },
   },
 };
 </script>
@@ -135,14 +151,17 @@ export default {
               </div>
 
               <!-- Boolean -->
-              <div v-if="field.type === 'boolean'" class="toggle-switch">
-                <input
-                  type="checkbox"
-                  :id="getFieldId(field)"
-                  :checked="field.value"
-                  @change="handleChange(field, $event)"
-                />
-                <span class="slider"></span>
+              <div v-if="field.type === 'boolean'" class="boolean-field">
+                <div class="toggle-switch">
+                  <input
+                    type="checkbox"
+                    :id="getFieldId(field)"
+                    :checked="field.value"
+                    @change="handleChange(field, $event)"
+                  />
+                  <span class="slider"></span>
+                </div>
+                <span class="toggle-label">{{ field.value ? 'Enabled' : 'Disabled' }}</span>
               </div>
 
               <!-- Number -->
@@ -347,11 +366,18 @@ export default {
   width: 100%;
 }
 
+.boolean-field {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
 /* Toggle switch styling */
 .toggle-switch {
   position: relative;
   width: 60px;
   height: 34px;
+  flex-shrink: 0;
 }
 
 .toggle-switch input {
@@ -390,6 +416,12 @@ input:checked + .slider {
 
 input:checked + .slider:before {
   transform: translateX(26px);
+}
+
+.toggle-label {
+  color: var(--gray-color);
+  font-size: 0.9rem;
+  font-weight: normal;
 }
 
 .band-selection {
