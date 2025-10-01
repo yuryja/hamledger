@@ -33,6 +33,13 @@ export default {
       } as WizardData,
       isValidating: false,
       validationErrors: {} as Record<string, string>,
+      importStatus: {
+        isImporting: false,
+        importedCount: 0,
+        totalCount: 0,
+        error: null as string | null,
+        success: false,
+      },
       availableBands: BAND_RANGES.filter(band =>
         ['160', '80', '60', '40', '30', '20', '17', '15', '12', '10', '6', '2', '70'].includes(
           band.shortName
@@ -175,6 +182,53 @@ export default {
         target.setSelectionRange(cursorPosition, cursorPosition);
       });
     },
+    async selectAndImportAdifFile() {
+      this.importStatus.isImporting = true;
+      this.importStatus.error = null;
+      this.importStatus.success = false;
+      this.importStatus.importedCount = 0;
+      this.importStatus.totalCount = 0;
+
+      try {
+        // First, let user select the file
+        const fileResult = await window.electronAPI.selectAdifFile();
+        if (!fileResult.success || !fileResult.filePath) {
+          this.importStatus.isImporting = false;
+          return;
+        }
+
+        // Parse the file to get total count
+        const parseResult = await window.electronAPI.parseAdifFile(fileResult.filePath);
+        if (!parseResult.success) {
+          this.importStatus.error = parseResult.error || 'Failed to parse ADIF file';
+          this.importStatus.isImporting = false;
+          return;
+        }
+
+        this.importStatus.totalCount = parseResult.totalCount || 0;
+
+        // Import with progress updates
+        const importResult = await window.electronAPI.importAdifWithProgress(fileResult.filePath);
+        
+        // Listen for progress updates
+        window.electronAPI.onAdifImportProgress((progress) => {
+          this.importStatus.importedCount = progress.imported;
+        });
+
+        if (importResult.success) {
+          this.importStatus.success = true;
+          this.importStatus.importedCount = importResult.count || 0;
+          console.log(`Successfully imported ${importResult.count} QSOs from ADIF file`);
+        } else {
+          this.importStatus.error = importResult.error || 'Import failed';
+        }
+      } catch (error) {
+        console.error('Error importing ADIF:', error);
+        this.importStatus.error = 'An unexpected error occurred during import';
+      } finally {
+        this.importStatus.isImporting = false;
+      }
+    },
     async importAdifFile() {
       try {
         const result = await window.electronAPI.importAdif();
@@ -224,8 +278,8 @@ export default {
         // Save settings first
         await window.electronAPI.saveSettings(settings);
 
-        // Import ADIF if requested
-        if (this.wizardData.importAdif) {
+        // Import ADIF if requested and not already imported
+        if (this.wizardData.importAdif && !this.importStatus.success) {
           await this.importAdifFile();
         }
 
@@ -371,11 +425,58 @@ export default {
             </label>
           </div>
 
-          <div v-if="wizardData.importAdif" class="info-box">
-            <p class="info-text">
-              <strong>Note:</strong> After completing the setup, you'll be prompted to select your
-              ADIF file (.adi or .adif) to import your existing QSO records.
-            </p>
+          <div v-if="wizardData.importAdif" class="import-section">
+            <div class="info-box">
+              <p class="info-text">
+                Select your ADIF file (.adi or .adif) to import your existing QSO records.
+              </p>
+            </div>
+
+            <div class="import-controls">
+              <button 
+                type="button" 
+                @click="selectAndImportAdifFile" 
+                :disabled="importStatus.isImporting"
+                class="btn btn-primary import-btn"
+              >
+                <span v-if="!importStatus.isImporting">Select & Import ADIF File</span>
+                <span v-else class="loading-text">
+                  <span class="spinner"></span>
+                  Importing...
+                </span>
+              </button>
+            </div>
+
+            <!-- Import Progress -->
+            <div v-if="importStatus.isImporting" class="import-progress">
+              <div class="progress-info">
+                <span class="progress-text">
+                  Imported {{ importStatus.importedCount }} 
+                  <span v-if="importStatus.totalCount > 0">of {{ importStatus.totalCount }}</span>
+                  QSOs
+                </span>
+              </div>
+              <div class="progress-bar-container">
+                <div 
+                  class="progress-bar-fill" 
+                  :style="{ 
+                    width: importStatus.totalCount > 0 
+                      ? `${(importStatus.importedCount / importStatus.totalCount) * 100}%` 
+                      : '0%' 
+                  }"
+                ></div>
+              </div>
+            </div>
+
+            <!-- Import Success -->
+            <div v-if="importStatus.success && !importStatus.isImporting" class="success-message">
+              ✅ Successfully imported {{ importStatus.importedCount }} QSOs!
+            </div>
+
+            <!-- Import Error -->
+            <div v-if="importStatus.error && !importStatus.isImporting" class="error-message">
+              ❌ Import failed: {{ importStatus.error }}
+            </div>
           </div>
         </div>
 
@@ -684,5 +785,103 @@ export default {
   background: rgba(231, 76, 60, 0.1);
   border: 1px solid rgba(231, 76, 60, 0.3);
   border-radius: 4px;
+}
+
+.import-section {
+  margin-top: 1rem;
+}
+
+.import-controls {
+  margin: 1rem 0;
+}
+
+.import-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 200px;
+}
+
+.loading-text {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid transparent;
+  border-top: 2px solid currentColor;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.import-progress {
+  margin: 1rem 0;
+  padding: 1rem;
+  background: #2b2b2b;
+  border: 1px solid #444;
+  border-radius: 4px;
+}
+
+.progress-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.progress-text {
+  color: var(--main-color);
+  font-weight: bold;
+  font-size: 0.9rem;
+}
+
+.progress-bar-container {
+  width: 100%;
+  height: 8px;
+  background: #444;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: var(--main-color);
+  transition: width 0.3s ease;
+  border-radius: 4px;
+}
+
+.success-message {
+  color: #27ae60;
+  font-size: 0.9rem;
+  margin-top: 1rem;
+  padding: 0.75rem;
+  background: rgba(39, 174, 96, 0.1);
+  border: 1px solid rgba(39, 174, 96, 0.3);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.error-message {
+  color: #e74c3c;
+  font-size: 0.9rem;
+  margin-top: 1rem;
+  padding: 0.75rem;
+  background: rgba(231, 76, 60, 0.1);
+  border: 1px solid rgba(231, 76, 60, 0.3);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 </style>
