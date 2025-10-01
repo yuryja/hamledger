@@ -296,32 +296,34 @@ export const useRigStore = defineStore('rig', {
     
     // Split control
     async toggleSplit() {
-      if (!this.connection.connected) {
-        console.log('Not connected to rig');
-        return { success: false, error: 'Not connected' };
-      }
-      
       try {
         const newSplitState = !this.rigState.split;
         console.log('Toggling split from', this.rigState.split, 'to', newSplitState);
         
-        const response = await rigctldService.setSplit(newSplitState);
-        console.log('setSplit response:', response);
+        // Always update local state
+        this.rigState.split = newSplitState;
+        console.log('Split state updated to:', this.rigState.split);
         
-        if (response.success) {
-          this.rigState.split = newSplitState;
-          console.log('Split state updated to:', this.rigState.split);
-          
-          if (!newSplitState) {
-            this.rigState.splitFreq = undefined;
-            this.rigState.splitMode = undefined;
-          }
-        } else {
-          this.error = response.error || 'Failed to toggle split';
-          console.error('Failed to toggle split:', this.error);
+        if (!newSplitState) {
+          this.rigState.splitFreq = undefined;
+          this.rigState.splitMode = undefined;
         }
         
-        return response;
+        // Try to update rig if connected
+        if (this.connection.connected) {
+          const response = await rigctldService.setSplit(newSplitState);
+          console.log('setSplit response:', response);
+          
+          if (!response.success) {
+            this.error = response.error || 'Failed to toggle split';
+            console.error('Failed to toggle split:', this.error);
+          }
+          
+          return response;
+        } else {
+          console.log('Not connected to rig, only updating local state');
+          return { success: true };
+        }
       } catch (error) {
         this.error = error instanceof Error ? error.message : 'Unknown error';
         console.error('Error toggling split:', error);
