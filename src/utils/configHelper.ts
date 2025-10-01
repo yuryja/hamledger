@@ -126,8 +126,7 @@ export class ConfigHelper {
       case 'number':
         return Number(value);
       case 'boolean':
-        ##AI! This comparison appears to be unintentional because the types 'string' and 'boolean' have no overlap.
-        return value === 'true' || value === true;
+        return value === 'true';
       default:
         return value;
     }
