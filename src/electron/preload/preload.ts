@@ -1,22 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // src/electron/preload/preload.ts
 import { contextBridge, ipcRenderer } from 'electron';
-
-declare global {
-  interface Window {
-    electronAPI: {
-      addQso: (qso: any) => Promise<any>;
-      getAllDocs: () => Promise<any>;
-      importAdif: () => Promise<{ imported: boolean; count?: number; error?: any }>;
-      loadSettings: () => Promise<any>;
-      saveSettings: (settings: any) => Promise<void>;
-      updateQso: (qso: any) => Promise<any>;
-      fetchDxSpots: (params: string) => Promise<{ success: boolean; data?: any; error?: string }>;
-      fetchPropagationData: () => Promise<{ success: boolean; data?: any; error?: string }>;
-      fetchWeather: (lat: number, lon: number) => Promise<{ success: boolean; data?: any; error?: string }>;
-    };
-  }
-}
+import '../../types/electron';
 
 contextBridge.exposeInMainWorld('electronAPI', {
   addQso: (qso: any) => ipcRenderer.invoke('qso:add', qso),
