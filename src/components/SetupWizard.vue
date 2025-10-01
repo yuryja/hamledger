@@ -8,6 +8,7 @@ interface WizardData {
   qth: string;
   locator: string;
   iaruRegion: 'IARU1' | 'IARU2' | 'IARU3';
+  importAdif: boolean;
   enableCat: boolean;
   rigctldPath: string;
 }
@@ -18,12 +19,13 @@ export default {
   data() {
     return {
       currentStep: 1,
-      totalSteps: 3,
+      totalSteps: 4,
       wizardData: {
         callsign: '',
         qth: '',
         locator: '',
         iaruRegion: 'IARU1',
+        importAdif: false,
         enableCat: false,
         rigctldPath: 'rigctld',
       } as WizardData,
@@ -41,6 +43,8 @@ export default {
         case 2:
           return !this.validationErrors.locator;
         case 3:
+          return true; // ADIF import is optional
+        case 4:
           return !this.wizardData.enableCat || 
                  (this.wizardData.rigctldPath.trim() !== '' && !this.validationErrors.rigctldPath);
         default:
@@ -119,6 +123,21 @@ export default {
         this.isValidating = false;
       }
     },
+    async importAdifFile() {
+      try {
+        const result = await window.electronAPI.importAdif();
+        if (result.imported) {
+          console.log(`Successfully imported ${result.count} QSOs from ADIF file`);
+          return true;
+        } else {
+          console.error('ADIF import failed:', result.error);
+          return false;
+        }
+      } catch (error) {
+        console.error('Error importing ADIF:', error);
+        return false;
+      }
+    },
     async completeSetup() {
       // Validate all fields
       const isCallsignValid = this.validateCallsign();
@@ -145,7 +164,14 @@ export default {
       }
 
       try {
+        // Save settings first
         await window.electronAPI.saveSettings(settings);
+        
+        // Import ADIF if requested
+        if (this.wizardData.importAdif) {
+          await this.importAdifFile();
+        }
+        
         this.$emit('complete');
       } catch (error) {
         console.error('Error saving settings:', error);
@@ -228,8 +254,30 @@ export default {
           </div>
         </div>
 
-        <!-- Step 3: CAT Control -->
+        <!-- Step 3: ADIF Import -->
         <div v-if="currentStep === 3" class="wizard-step">
+          <h2>Import Existing Log</h2>
+          <p class="step-description">Do you have an existing ADIF log file you'd like to import?</p>
+          
+          <div class="form-group">
+            <label class="checkbox-label">
+              <input
+                type="checkbox"
+                v-model="wizardData.importAdif"
+              />
+              Import ADIF file
+            </label>
+          </div>
+
+          <div v-if="wizardData.importAdif" class="info-box">
+            <p class="info-text">
+              <strong>Note:</strong> After completing the setup, you'll be prompted to select your ADIF file (.adi or .adif) to import your existing QSO records.
+            </p>
+          </div>
+        </div>
+
+        <!-- Step 4: CAT Control -->
+        <div v-if="currentStep === 4" class="wizard-step">
           <h2>CAT Control Setup</h2>
           <p class="step-description">Configure computer-aided transceiver control if you have a compatible radio.</p>
           
@@ -461,5 +509,20 @@ export default {
 
 .btn-secondary:hover {
   background: #666;
+}
+
+.info-box {
+  background: #2b2b2b;
+  border: 1px solid #444;
+  border-radius: 4px;
+  padding: 1rem;
+  margin-top: 1rem;
+}
+
+.info-text {
+  color: var(--gray-color);
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.4;
 }
 </style>
