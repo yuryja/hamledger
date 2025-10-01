@@ -11,7 +11,9 @@
   "rig": {
     "port": 4532,
     "host": "localhost",
-    "rigModel": 1
+    "rigModel": 1,
+    "rigctldPath": "rigctld",
+    "enabled": false
   },
   "qrz": {
     "username": "",
