@@ -67,13 +67,24 @@ export default {
   methods: {
     async loadRigConfig() {
       await configHelper.initSettings();
-      this.rigModel = configHelper.getSetting(['rig'], 'model') || this.rigStore.rigModel;
+      
+      // Get rig model number from config
+      const rigModelNumber = configHelper.getSetting(['rig'], 'rigModel');
+      
+      // Find rig name from the loaded models list
+      if (rigModelNumber && this.rigModels.length > 0) {
+        const rigModel = this.rigModels.find(model => model.id === rigModelNumber);
+        this.rigModel = rigModel ? `${rigModel.manufacturer} ${rigModel.model}` : `Model ${rigModelNumber}`;
+      } else {
+        this.rigModel = this.rigStore.rigModel;
+      }
+      
       this.rigPort = configHelper.getSetting(['rig'], 'port') || 'localhost:4532';
       
       // Load connection settings
       this.connectionForm.host = configHelper.getSetting(['rig'], 'host') || 'localhost';
       this.connectionForm.port = configHelper.getSetting(['rig'], 'port') || 4532;
-      this.connectionForm.model = configHelper.getSetting(['rig'], 'rigModel');
+      this.connectionForm.model = rigModelNumber;
       this.connectionForm.device = configHelper.getSetting(['rig'], 'device');
     },
 
@@ -83,6 +94,8 @@ export default {
         const response = await window.electronAPI.executeCommand('rigctld -l');
         if (response.success && response.data) {
           this.rigModels = this.parseRigModels(response.data);
+          // Reload rig config after models are loaded to get the correct name
+          await this.loadRigConfig();
         } else {
           console.error('Failed to load rig models:', response.error);
         }
