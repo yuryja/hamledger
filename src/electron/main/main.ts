@@ -8,6 +8,15 @@ import { parseAdif } from '../../utils/adif';
 import { QsoEntry } from '../../types/qso';
 import { databaseService } from '../../services/DatabaseService';
 
+interface FetchOptions {
+  headers: {
+    'User-Agent': string;
+    Accept: string;
+  };
+  timeout: number;
+  agent?: HttpsProxyAgent;
+}
+
 const isDev = process.env.npm_lifecycle_event === 'app:dev' ? true : false;
 
 function createWindow() {
@@ -119,8 +128,8 @@ ipcMain.handle('fetchPropagationData', async () => {
       process.env.https_proxy ||
       process.env.HTTP_PROXY ||
       process.env.http_proxy;
-##AI! this shall be strongly typed
-    const fetchOptions: any = {
+
+    const fetchOptions: FetchOptions = {
       headers: {
         'User-Agent': 'HamLogger/1.0',
         Accept: 'application/json',
@@ -163,7 +172,7 @@ ipcMain.handle('fetchWeather', async (event, lat: number, lon: number) => {
       process.env.HTTP_PROXY ||
       process.env.http_proxy;
   
-    const fetchOptions: any = {
+    const fetchOptions: FetchOptions = {
       headers: {
         'User-Agent': 'HamLogger/1.0',
         Accept: 'application/json',
@@ -206,7 +215,7 @@ ipcMain.handle('fetchDxSpots', async (event, params: string) => {
       process.env.HTTP_PROXY ||
       process.env.http_proxy;
 
-    const fetchOptions: any = {
+    const fetchOptions: FetchOptions = {
       headers: {
         'User-Agent': 'HamLogger/1.0',
         Accept: 'application/json',
