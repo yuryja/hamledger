@@ -276,9 +276,7 @@ export default {
                     type="checkbox"
                     :id="`category-${selectedCategory}-enabled`"
                     :checked="currentCategoryEnabled"
-                    ##AI!'$event.target' is possibly 'null'
-                    
-                    @change="toggleCategoryEnabled($event.target.checked)"
+                    @change="toggleCategoryEnabled(($event.target as HTMLInputElement).checked)"
                   />
                   <span class="slider"></span>
                 </div>
