@@ -5,6 +5,7 @@ import fs from 'fs';
 import fetch from 'node-fetch';
 import { HttpsProxyAgent } from 'https-proxy-agent';
 import { Socket } from 'net';
+import { exec } from 'child_process';
 import { parseAdif } from '../../utils/adif';
 import { QsoEntry } from '../../types/qso';
 import { databaseService } from '../../services/DatabaseService';
@@ -441,9 +442,6 @@ ipcMain.handle('rigctld:capabilities', async () => {
 // Execute command handler
 ipcMain.handle('execute:command', async (_, command: string) => {
   try {
-    ##AI! `require()` style import is forbidden
-    const { exec } = require('child_process');
-    
     return new Promise((resolve) => {
       exec(command, { timeout: 10000 }, (error: any, stdout: string, stderr: string) => {
         if (error) {
