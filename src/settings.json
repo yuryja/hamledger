@@ -11,6 +11,7 @@
   "rig": {
     "port": 4532,
     "host": "localhost",
+    "comPort": "COM1",
     "rigModel": 1,
     "rigctldPath": "rigctld",
     "enabled": false

@@ -54,6 +54,12 @@ export default {
       const categoryKey = this.selectedCategory.toLowerCase().replace(' ', '');
       const categoriesWithEnabler = ['catcontrol', 'onlineservices', 'database'];
       return categoriesWithEnabler.includes(categoryKey);
+    },
+    isRigModelDummy() {
+      const rigModelField = this.configFields.find(f => 
+        f.path[0] === 'rig' && f.key === 'rigModel'
+      );
+      return rigModelField ? rigModelField.value === 1 : false;
     }
   },
   async mounted() {
@@ -285,6 +291,9 @@ export default {
                 <span v-if="field.description" class="field-description">{{
                   field.description
                 }}</span>
+                <span v-if="field.key === 'comPort' && isRigModelDummy" class="field-note">
+                  (Disabled for Dummy/None rig model)
+                </span>
               </div>
 
               <!-- Boolean (skip enabled field if it's the category enabler) -->
@@ -355,12 +364,13 @@ export default {
                 </option>
               </select>
 
-              <!-- String -->
+              <!-- String with conditional disable for comPort -->
               <input
                 v-else
                 type="text"
                 :id="getFieldId(field)"
                 :value="field.value"
+                :disabled="field.key === 'comPort' && isRigModelDummy"
                 @input="handleChange(field, $event)"
               />
             </div>
@@ -492,6 +502,12 @@ export default {
   color: #666;
 }
 
+.field-note {
+  font-size: 0.75rem;
+  color: #888;
+  font-style: italic;
+}
+
 .config-field input[type='text'],
 .config-field input[type='number'],
 .config-field select {
@@ -501,6 +517,12 @@ export default {
   color: #fff;
   border-radius: 3px;
   width: 100%;
+}
+
+.config-field input:disabled {
+  background: #2a2a2a;
+  color: #666;
+  cursor: not-allowed;
 }
 
 .boolean-field {

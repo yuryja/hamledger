@@ -37,17 +37,29 @@
       "type": "object",
       "description": "Radio equipment settings",
       "properties": {
-        "model": {
-          "type": "string",
-          "description": "Radio model name"
-        },
         "port": {
+          "type": "integer",
+          "description": "UDP port for rigctld connection (default: 4532)"
+        },
+        "host": {
           "type": "string",
-          "description": "Serial port for CAT control"
+          "description": "Host address for rigctld connection"
+        },
+        "comPort": {
+          "type": "string",
+          "description": "Serial COM port for direct radio connection"
         },
         "rigModel": {
+          "type": "integer",
+          "description": "Rig model number from Hamlib (1 = Dummy/None)"
+        },
+        "rigctldPath": {
           "type": "string",
-          "description": "Rig model number from Hamlib"
+          "description": "Path to rigctld executable"
+        },
+        "enabled": {
+          "type": "boolean",
+          "description": "Enable CAT control"
         }
       }
     },
