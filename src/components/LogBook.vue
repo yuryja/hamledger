@@ -20,6 +20,11 @@ export default {
       sortOrder: 'desc',
       selectedQso: null,
       showEditDialog: false,
+      visibleStartIndex: 0,
+      visibleCount: 50,
+      scrollTop: 0,
+      itemHeight: 40,
+      containerHeight: 0,
     };
   },
   computed: {
@@ -29,6 +34,35 @@ export default {
     totalCount() {
       return this.qsoStore.totalCount;
     },
+    sortedQsos() {
+      return [...this.allQsos].sort((a, b) => {
+        const aVal = a[this.sortKey];
+        const bVal = b[this.sortKey];
+        const modifier = this.sortOrder === 'asc' ? 1 : -1;
+
+        if (aVal < bVal) return -1 * modifier;
+        if (aVal > bVal) return 1 * modifier;
+        return 0;
+      });
+    },
+    visibleQsos() {
+      const start = this.visibleStartIndex;
+      const end = Math.min(start + this.visibleCount, this.sortedQsos.length);
+      return this.sortedQsos.slice(start, end);
+    },
+    totalHeight() {
+      return this.sortedQsos.length * this.itemHeight;
+    },
+    offsetY() {
+      return this.visibleStartIndex * this.itemHeight;
+    },
+  },
+  mounted() {
+    this.updateContainerHeight();
+    window.addEventListener('resize', this.updateContainerHeight);
+  },
+  beforeUnmount() {
+    window.removeEventListener('resize', this.updateContainerHeight);
   },
   methods: {
     getCountryCodeForCallsign,
@@ -39,17 +73,25 @@ export default {
         this.sortKey = key;
         this.sortOrder = 'asc';
       }
+      this.updateVisibleRange();
     },
-    getSortedQsos() {
-      return [...this.allQsos].sort((a, b) => {
-        const aVal = a[this.sortKey];
-        const bVal = b[this.sortKey];
-        const modifier = this.sortOrder === 'asc' ? 1 : -1;
-
-        if (aVal < bVal) return -1 * modifier;
-        if (aVal > bVal) return 1 * modifier;
-        return 0;
-      });
+    updateContainerHeight() {
+      const container = this.$refs.tableWrapper as HTMLElement;
+      if (container) {
+        this.containerHeight = container.clientHeight;
+        this.visibleCount = Math.ceil(this.containerHeight / this.itemHeight) + 5; // Buffer
+        this.updateVisibleRange();
+      }
+    },
+    updateVisibleRange() {
+      const scrollTop = this.scrollTop;
+      const startIndex = Math.floor(scrollTop / this.itemHeight);
+      this.visibleStartIndex = Math.max(0, startIndex - 2); // Small buffer
+    },
+    onScroll(event: Event) {
+      const target = event.target as HTMLElement;
+      this.scrollTop = target.scrollTop;
+      this.updateVisibleRange();
     },
     async handleImportAdif() {
       const result = await this.qsoStore.importAdif();
@@ -81,84 +123,87 @@ export default {
       </div>
     </div>
 
-    <div class="table-wrapper">
-      <table class="qso-table">
-        <thead>
-          <tr>
-            <th @click="sortBy('datetime')" class="sortable">
-              Date
-              <span v-if="sortKey === 'datetime'" class="sort-indicator">
-                {{ sortOrder === 'asc' ? '▲' : '▼' }}
-              </span>
-            </th>
-            <th>Time</th>
-            <th @click="sortBy('callsign')" class="sortable">
-              Callsign
-              <span v-if="sortKey === 'callsign'" class="sort-indicator">
-                {{ sortOrder === 'asc' ? '▲' : '▼' }}
-              </span>
-            </th>
-            <th @click="sortBy('band')" class="sortable">
-              Band
-              <span v-if="sortKey === 'band'" class="sort-indicator">
-                {{ sortOrder === 'asc' ? '▲' : '▼' }}
-              </span>
-            </th>
-            <th @click="sortBy('freqRx')" class="sortable">
-              Freq. RX
-              <span v-if="sortKey === 'freqRx'" class="sort-indicator">
-                {{ sortOrder === 'asc' ? '▲' : '▼' }}
-              </span>
-            </th>
-            <th @click="sortBy('freqTx')" class="sortable">
-              Freq. TX
-              <span v-if="sortKey === 'freqTx'" class="sort-indicator">
-                {{ sortOrder === 'asc' ? '▲' : '▼' }}
-              </span>
-            </th>
-            <th @click="sortBy('mode')" class="sortable">
-              Mode
-              <span v-if="sortKey === 'mode'" class="sort-indicator">
-                {{ sortOrder === 'asc' ? '▲' : '▼' }}
-              </span>
-            </th>
-            <th>RSTr</th>
-            <th>RSTt</th>
-            <th>Remark</th>
-            <th>Notes</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr
-            v-for="(entry, index) in getSortedQsos()"
-            :key="entry._id || entry.datetime + entry.callsign || index"
-            @click="
-              selectedQso = entry;
-              showEditDialog = true;
-            "
-          >
-            <td>{{ this.DateHelper.formatUTCDate(new Date(entry.datetime)) }}</td>
-            <td>{{ this.DateHelper.formatUTCTime(new Date(entry.datetime)) }}</td>
-            <td>
-              <img
-                v-if="getCountryCodeForCallsign(entry.callsign) !== 'xx'"
-                :src="`https://flagcdn.com/h40/${getCountryCodeForCallsign(entry.callsign)}.png`"
-                :alt="getCountryCodeForCallsign(entry.callsign)"
-                class="callsign-flag"
-              />
-              {{ entry.callsign }}
-            </td>
-            <td>{{ entry.band }}</td>
-            <td>{{ entry.freqRx }}</td>
-            <td>{{ entry.freqTx }}</td>
-            <td>{{ entry.mode }}</td>
-            <td>{{ entry.rstr }}</td>
-            <td>{{ entry.rstt }}</td>
-            <td>{{ entry.remark }}</td>
-            <td>{{ entry.notes }}</td>
-          </tr>
-        </tbody>
-      </table>
+    <div class="table-wrapper" ref="tableWrapper" @scroll="onScroll">
+      <div class="virtual-scroll-container" :style="{ height: totalHeight + 'px' }">
+        <table class="qso-table" :style="{ transform: `translateY(${offsetY}px)` }">
+          <thead>
+            <tr>
+              <th @click="sortBy('datetime')" class="sortable">
+                Date
+                <span v-if="sortKey === 'datetime'" class="sort-indicator">
+                  {{ sortOrder === 'asc' ? '▲' : '▼' }}
+                </span>
+              </th>
+              <th>Time</th>
+              <th @click="sortBy('callsign')" class="sortable">
+                Callsign
+                <span v-if="sortKey === 'callsign'" class="sort-indicator">
+                  {{ sortOrder === 'asc' ? '▲' : '▼' }}
+                </span>
+              </th>
+              <th @click="sortBy('band')" class="sortable">
+                Band
+                <span v-if="sortKey === 'band'" class="sort-indicator">
+                  {{ sortOrder === 'asc' ? '▲' : '▼' }}
+                </span>
+              </th>
+              <th @click="sortBy('freqRx')" class="sortable">
+                Freq. RX
+                <span v-if="sortKey === 'freqRx'" class="sort-indicator">
+                  {{ sortOrder === 'asc' ? '▲' : '▼' }}
+                </span>
+              </th>
+              <th @click="sortBy('freqTx')" class="sortable">
+                Freq. TX
+                <span v-if="sortKey === 'freqTx'" class="sort-indicator">
+                  {{ sortOrder === 'asc' ? '▲' : '▼' }}
+                </span>
+              </th>
+              <th @click="sortBy('mode')" class="sortable">
+                Mode
+                <span v-if="sortKey === 'mode'" class="sort-indicator">
+                  {{ sortOrder === 'asc' ? '▲' : '▼' }}
+                </span>
+              </th>
+              <th>RSTr</th>
+              <th>RSTt</th>
+              <th>Remark</th>
+              <th>Notes</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              v-for="(entry, index) in visibleQsos"
+              :key="entry._id || entry.datetime + entry.callsign || index"
+              :style="{ height: itemHeight + 'px' }"
+              @click="
+                selectedQso = entry;
+                showEditDialog = true;
+              "
+            >
+              <td>{{ this.DateHelper.formatUTCDate(new Date(entry.datetime)) }}</td>
+              <td>{{ this.DateHelper.formatUTCTime(new Date(entry.datetime)) }}</td>
+              <td>
+                <img
+                  v-if="getCountryCodeForCallsign(entry.callsign) !== 'xx'"
+                  :src="`https://flagcdn.com/h40/${getCountryCodeForCallsign(entry.callsign)}.png`"
+                  :alt="getCountryCodeForCallsign(entry.callsign)"
+                  class="callsign-flag"
+                />
+                {{ entry.callsign }}
+              </td>
+              <td>{{ entry.band }}</td>
+              <td>{{ entry.freqRx }}</td>
+              <td>{{ entry.freqTx }}</td>
+              <td>{{ entry.mode }}</td>
+              <td>{{ entry.rstr }}</td>
+              <td>{{ entry.rstt }}</td>
+              <td>{{ entry.remark }}</td>
+              <td>{{ entry.notes }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
 
     <QsoDetailDialog
@@ -192,12 +237,22 @@ export default {
   flex: 1;
   overflow-y: auto;
   min-height: 0;
+  position: relative;
+}
+
+.virtual-scroll-container {
+  position: relative;
 }
 
 .qso-table {
   width: 100%;
   table-layout: fixed;
   border-collapse: collapse;
+  position: relative;
+}
+
+.qso-table tbody tr {
+  height: 40px;
 }
 
 .qso-table thead th {

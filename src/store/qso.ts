@@ -109,20 +109,18 @@ export const useQsoStore = defineStore('qso', {
     },
     async initializeStore() {
       try {
-        const result = await window.electronAPI.getAllDocs();
-        console.debug('Raw database result:', result);
-        this.allQsos = result.rows.map(row => {
-          const qso = row.doc as QsoEntry;
-          console.debug('QSO from DB:', qso);
-          console.debug('QSO _id:', qso._id);
-          console.debug('QSO _rev:', qso._rev);
-          console.debug('Row id:', row.id);
-          console.debug('Row value:', row.value);
-          // Ensure _id and _rev are properly set
-          qso._id = qso._id || row.id;
-          qso._rev = qso._rev || (row.value && row.value.rev);
-          return qso;
-        });
+        // Load QSOs in background without blocking UI
+        setTimeout(async () => {
+          const result = await window.electronAPI.getAllDocs();
+          console.debug('Raw database result:', result);
+          this.allQsos = result.rows.map(row => {
+            const qso = row.doc as QsoEntry;
+            // Ensure _id and _rev are properly set
+            qso._id = qso._id || row.id;
+            qso._rev = qso._rev || (row.value && row.value.rev);
+            return qso;
+          });
+        }, 0);
         this.initialized = true;
       } catch (error) {
         console.error('Failed to initialize QSO store:', error);
