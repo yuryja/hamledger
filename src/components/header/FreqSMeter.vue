@@ -47,6 +47,11 @@ export default {
       },
     },
   },
+  methods: {
+    async toggleSplit() {
+      await this.rigStore.toggleSplit();
+    },
+  },
 };
 </script>
 
@@ -57,7 +62,7 @@ export default {
         <button
           class="split-btn mode-badge"
           :class="{ active: splitActive }"
-          @click="rigStore.toggleSplit()"
+          @click="toggleSplit"
         >
           SPLIT
         </button>
