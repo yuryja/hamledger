@@ -494,33 +494,50 @@ ipcMain.handle('rigctld:command', async (_, command: string) => {
       const onData = (data: Buffer) => {
         responseData += data.toString();
         
-        // Check if we have a complete response
-        if (responseData.includes('\n')) {
+        // Extended Response Protocol: look for RPRT at the end
+        if (responseData.includes('RPRT ')) {
           clearTimeout(timeout);
           rigctldSocket?.off('data', onData);
           
           const lines = responseData.trim().split('\n');
           
-          // Check for error response
-          if (lines[0].startsWith('RPRT ')) {
-            const errorCode = parseInt(lines[0].split(' ')[1]);
-            if (errorCode !== 0) {
-              resolve({ success: false, error: `Rigctld error code: ${errorCode}` });
-              return;
-            }
+          // Find the RPRT line (should be last)
+          const rprtLine = lines.find(line => line.startsWith('RPRT '));
+          if (!rprtLine) {
+            resolve({ success: false, error: 'Invalid response format' });
+            return;
           }
           
-          // For get commands, return the data
-          if (lines.length > 1 && !lines[0].startsWith('RPRT ')) {
-            resolve({ success: true, data: lines.slice(0, -1) });
+          const errorCode = parseInt(rprtLine.split(' ')[1]);
+          if (errorCode !== 0) {
+            resolve({ success: false, error: `Rigctld error code: ${errorCode}` });
+            return;
+          }
+          
+          // Parse Extended Response Protocol format
+          const dataLines = lines.filter(line => 
+            !line.startsWith('RPRT ') && 
+            line.includes(':') && 
+            !line.endsWith(':')
+          );
+          
+          if (dataLines.length > 0) {
+            // Extract values from "Key: Value" format
+            const values = dataLines.map(line => {
+              const colonIndex = line.indexOf(': ');
+              return colonIndex !== -1 ? line.substring(colonIndex + 2) : line;
+            });
+            resolve({ success: true, data: values });
           } else {
+            // For set commands, no data is returned
             resolve({ success: true, data: null });
           }
         }
       };
 
       rigctldSocket?.on('data', onData);
-      rigctldSocket?.write(command + '\n');
+      // Use Extended Response Protocol with '+' prefix for newline separation
+      rigctldSocket?.write('+' + command + '\n');
     });
   } catch (error) {
     console.error('Rigctld command error:', error);
@@ -547,7 +564,7 @@ ipcMain.handle('rigctld:capabilities', async () => {
       const onData = (data: Buffer) => {
         responseData += data.toString();
         
-        // Check if we have a complete response (dump_caps ends with RPRT)
+        // Extended Response Protocol: look for RPRT at the end
         if (responseData.includes('RPRT ')) {
           clearTimeout(timeout);
           rigctldSocket?.off('data', onData);
@@ -556,7 +573,8 @@ ipcMain.handle('rigctld:capabilities', async () => {
           const rprtIndex = lines.findIndex(line => line.startsWith('RPRT '));
           
           if (rprtIndex > 0) {
-            const capabilityLines = lines.slice(0, rprtIndex);
+            // Skip the command echo line and get capability data
+            const capabilityLines = lines.slice(1, rprtIndex);
             resolve({ success: true, data: capabilityLines });
           } else {
             resolve({ success: false, error: 'Invalid capabilities response' });
@@ -565,7 +583,8 @@ ipcMain.handle('rigctld:capabilities', async () => {
       };
 
       rigctldSocket?.on('data', onData);
-      rigctldSocket?.write('dump_caps\n');
+      // Use Extended Response Protocol with '+' prefix
+      rigctldSocket?.write('+dump_caps\n');
     });
   } catch (error) {
     console.error('Rigctld capabilities error:', error);
