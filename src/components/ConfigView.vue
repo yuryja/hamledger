@@ -46,14 +46,16 @@ export default {
       await configHelper.updateSetting(field.path, field.key, value);
     },
     getAvailableBands() {
-      return BAND_RANGES.filter(band => 
-        ['160', '80', '60', '40', '30', '20', '17', '15', '12', '10', '6', '2', '70'].includes(band.shortName)
+      return BAND_RANGES.filter(band =>
+        ['160', '80', '60', '40', '30', '20', '17', '15', '12', '10', '6', '2', '70'].includes(
+          band.shortName
+        )
       );
     },
     async toggleBandInConfig(field: ConfigField, bandShortName: string, event: Event) {
       const target = event.target as HTMLInputElement;
       const currentBands = [...field.value];
-      
+
       if (target.checked) {
         if (!currentBands.includes(bandShortName)) {
           currentBands.push(bandShortName);
@@ -64,7 +66,7 @@ export default {
           currentBands.splice(index, 1);
         }
       }
-      
+
       await configHelper.updateSetting(field.path, field.key, currentBands);
       field.value = currentBands;
     },
@@ -76,7 +78,10 @@ export default {
     async selectAllVHFUHFBands(field: ConfigField) {
       const vhfUhfBands = ['6', '2', '70'];
       const currentBands = [...field.value];
-      const newBands = [...currentBands, ...vhfUhfBands.filter(band => !currentBands.includes(band))];
+      const newBands = [
+        ...currentBands,
+        ...vhfUhfBands.filter(band => !currentBands.includes(band)),
+      ];
       await configHelper.updateSetting(field.path, field.key, newBands);
       field.value = newBands;
     },
@@ -152,18 +157,24 @@ export default {
               <!-- Band selection (special case for selectedBands) -->
               <div v-else-if="field.key === 'selectedBands'" class="band-selection">
                 <div class="band-selection-controls">
-                  <button type="button" @click="selectAllHFBands(field)" class="btn btn-small">All HF</button>
-                  <button type="button" @click="selectAllVHFUHFBands(field)" class="btn btn-small">VHF/UHF</button>
-                  <button type="button" @click="clearAllBands(field)" class="btn btn-small">Clear All</button>
+                  <button type="button" @click="selectAllHFBands(field)" class="btn btn-small">
+                    All HF
+                  </button>
+                  <button type="button" @click="selectAllVHFUHFBands(field)" class="btn btn-small">
+                    VHF/UHF
+                  </button>
+                  <button type="button" @click="clearAllBands(field)" class="btn btn-small">
+                    Clear All
+                  </button>
                 </div>
                 <div class="band-grid">
-                  <label 
-                    v-for="band in getAvailableBands()" 
-                    :key="band.shortName" 
+                  <label
+                    v-for="band in getAvailableBands()"
+                    :key="band.shortName"
                     class="band-checkbox"
                   >
-                    <input 
-                      type="checkbox" 
+                    <input
+                      type="checkbox"
                       :value="band.shortName"
                       :checked="field.value.includes(band.shortName)"
                       @change="toggleBandInConfig(field, band.shortName, $event)"
@@ -176,7 +187,9 @@ export default {
               <!-- Array (as select) -->
               <select
                 v-else-if="
-                  field.type === 'array' && field.value.every((v: any) => typeof v !== 'object') && field.key !== 'selectedBands'
+                  field.type === 'array' &&
+                  field.value.every((v: any) => typeof v !== 'object') &&
+                  field.key !== 'selectedBands'
                 "
                 :id="getFieldId(field)"
                 @change="handleChange(field, $event)"
