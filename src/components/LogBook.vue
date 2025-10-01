@@ -32,6 +32,14 @@ export default {
         error: null as string | null,
         success: false,
       },
+      filters: {
+        searchText: '',
+        selectedBand: '',
+        selectedMode: '',
+        dateFrom: '',
+        dateTo: '',
+      },
+      showFilters: false,
     };
   },
   computed: {
@@ -41,8 +49,45 @@ export default {
     totalCount() {
       return this.qsoStore.totalCount;
     },
+    filteredQsos() {
+      let filtered = [...this.allQsos];
+
+      // Text search
+      if (this.filters.searchText.trim()) {
+        const searchTerm = this.filters.searchText.toLowerCase().trim();
+        filtered = filtered.filter(qso => 
+          qso.callsign?.toLowerCase().includes(searchTerm) ||
+          qso.remark?.toLowerCase().includes(searchTerm) ||
+          qso.notes?.toLowerCase().includes(searchTerm)
+        );
+      }
+
+      // Band filter
+      if (this.filters.selectedBand) {
+        filtered = filtered.filter(qso => qso.band === this.filters.selectedBand);
+      }
+
+      // Mode filter
+      if (this.filters.selectedMode) {
+        filtered = filtered.filter(qso => qso.mode === this.filters.selectedMode);
+      }
+
+      // Date range filter
+      if (this.filters.dateFrom) {
+        const fromDate = new Date(this.filters.dateFrom);
+        filtered = filtered.filter(qso => new Date(qso.datetime) >= fromDate);
+      }
+
+      if (this.filters.dateTo) {
+        const toDate = new Date(this.filters.dateTo);
+        toDate.setHours(23, 59, 59, 999); // End of day
+        filtered = filtered.filter(qso => new Date(qso.datetime) <= toDate);
+      }
+
+      return filtered;
+    },
     sortedQsos() {
-      return [...this.allQsos].sort((a, b) => {
+      return [...this.filteredQsos].sort((a, b) => {
         const aVal = a[this.sortKey];
         const bVal = b[this.sortKey];
         const modifier = this.sortOrder === 'asc' ? 1 : -1;
@@ -51,6 +96,17 @@ export default {
         if (aVal > bVal) return 1 * modifier;
         return 0;
       });
+    },
+    uniqueBands() {
+      const bands = [...new Set(this.allQsos.map(qso => qso.band).filter(Boolean))];
+      return bands.sort();
+    },
+    uniqueModes() {
+      const modes = [...new Set(this.allQsos.map(qso => qso.mode).filter(Boolean))];
+      return modes.sort();
+    },
+    filteredCount() {
+      return this.filteredQsos.length;
     },
     visibleQsos() {
       const start = this.visibleStartIndex;
@@ -158,6 +214,19 @@ export default {
       // Update the selected QSO with the new data
       this.selectedQso = updatedQso;
     },
+    clearFilters() {
+      this.filters = {
+        searchText: '',
+        selectedBand: '',
+        selectedMode: '',
+        dateFrom: '',
+        dateTo: '',
+      };
+      this.updateVisibleRange();
+    },
+    toggleFilters() {
+      this.showFilters = !this.showFilters;
+    },
   },
 };
 </script>
@@ -168,8 +237,18 @@ export default {
       <h2 class="section-title">LogBook</h2>
       <div class="qso-count">
         <span>Total QSOs: {{ totalCount }}</span>
+        <span v-if="filteredCount !== totalCount" class="filtered-count">
+          ({{ filteredCount }} filtered)
+        </span>
       </div>
       <div class="log-actions">
+        <button 
+          class="filter-btn" 
+          @click="toggleFilters"
+          :class="{ active: showFilters }"
+        >
+          🔍 Filters
+        </button>
         <button 
           class="action-btn" 
           @click="handleImportAdif"
@@ -181,6 +260,67 @@ export default {
             Importing...
           </span>
         </button>
+      </div>
+    </div>
+
+    <!-- Filters Panel -->
+    <div v-if="showFilters" class="filters-panel">
+      <div class="filters-row">
+        <div class="filter-group">
+          <label>Search:</label>
+          <input 
+            v-model="filters.searchText" 
+            type="text" 
+            placeholder="Callsign, remark, notes..."
+            class="filter-input"
+          />
+        </div>
+        
+        <div class="filter-group">
+          <label>Band:</label>
+          <select v-model="filters.selectedBand" class="filter-select">
+            <option value="">All Bands</option>
+            <option v-for="band in uniqueBands" :key="band" :value="band">
+              {{ band }}
+            </option>
+          </select>
+        </div>
+        
+        <div class="filter-group">
+          <label>Mode:</label>
+          <select v-model="filters.selectedMode" class="filter-select">
+            <option value="">All Modes</option>
+            <option v-for="mode in uniqueModes" :key="mode" :value="mode">
+              {{ mode }}
+            </option>
+          </select>
+        </div>
+      </div>
+      
+      <div class="filters-row">
+        <div class="filter-group">
+          <label>Date From:</label>
+          <input 
+            v-model="filters.dateFrom" 
+            type="date" 
+            class="filter-input"
+          />
+        </div>
+        
+        <div class="filter-group">
+          <label>Date To:</label>
+          <input 
+            v-model="filters.dateTo" 
+            type="date" 
+            class="filter-input"
+          />
+        </div>
+        
+        <div class="filter-group">
+          <button @click="clearFilters" class="clear-btn">
+            Clear All
+          </button>
+        </div>
       </div>
     </div>
 
@@ -410,6 +550,98 @@ export default {
   padding: 0.5rem 1rem;
   border-radius: 3px;
   color: var(--gray-color);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.filtered-count {
+  color: var(--main-color);
+  font-weight: bold;
+}
+
+.filter-btn {
+  background: #555;
+  border: 1px solid #777;
+  padding: 0.5rem 1rem;
+  color: #fff;
+  cursor: pointer;
+  border-radius: 3px;
+  margin-right: 0.5rem;
+  transition: all 0.2s;
+}
+
+.filter-btn:hover {
+  background: #666;
+}
+
+.filter-btn.active {
+  background: var(--main-color);
+  color: #000;
+  font-weight: bold;
+}
+
+.filters-panel {
+  background: #2b2b2b;
+  border: 1px solid #444;
+  border-radius: 4px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.filters-row {
+  display: flex;
+  gap: 1rem;
+  align-items: end;
+  margin-bottom: 0.5rem;
+}
+
+.filters-row:last-child {
+  margin-bottom: 0;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 150px;
+}
+
+.filter-group label {
+  font-size: 0.85rem;
+  color: var(--gray-color);
+  font-weight: bold;
+}
+
+.filter-input,
+.filter-select {
+  padding: 0.5rem;
+  background: #333;
+  border: 1px solid #555;
+  border-radius: 3px;
+  color: #fff;
+  font-size: 0.9rem;
+}
+
+.filter-input:focus,
+.filter-select:focus {
+  outline: none;
+  border-color: var(--main-color);
+}
+
+.clear-btn {
+  background: #e74c3c;
+  border: none;
+  padding: 0.5rem 1rem;
+  color: #fff;
+  cursor: pointer;
+  border-radius: 3px;
+  font-size: 0.9rem;
+  height: fit-content;
+}
+
+.clear-btn:hover {
+  background: #c0392b;
 }
 
 .loading-text {
