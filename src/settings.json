@@ -18,7 +18,8 @@
   "qrz": {
     "username": "",
     "password": "",
-    "sessionTimeout": 3600
+    "sessionTimeout": 3600,
+    "enabled": false
   },
   "apis": {
     "nominatim": {
