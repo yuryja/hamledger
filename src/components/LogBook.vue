@@ -231,6 +231,7 @@ export default {
 
 .qso-table tr:hover {
   background: #3c3c3c;
+  cursor: pointer;
 }
 
 .callsign-flag {
