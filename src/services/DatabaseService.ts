@@ -19,7 +19,7 @@ export class DatabaseService {
     }
     this.db = new PouchDB(this.dbPath);
   }
-
+##AI! error?: any shall be strongly typed
   public async saveQso(qso: QsoEntry): Promise<{ ok: boolean; id?: string; error?: any }> {
     try {
       const response = await this.db.post(qso);
