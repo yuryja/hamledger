@@ -864,13 +864,6 @@ export default defineComponent({
 .spot-info {
   flex: 1;
   padding: 0.5rem;
-  border: 1px solid transparent;
-  border-radius: var(--border-radius);
-}
-
-.magnifier-spot:hover .spot-info {
-  border: 1px solid var(--main-color);
-  padding: calc(0.5rem - 1px);
 }
 
 .spot-call {
