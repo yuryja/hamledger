@@ -91,7 +91,6 @@ export default {
     async loadRigModels() {
       this.loadingModels = true;
       try {
-        ##AI! Property 'executeCommand' does not exist on type '{ addQso: (qso: any) => Promise<any>; getAllDocs: () => Promise<any>; importAdif: () => Promise<{ imported: boolean; count?: number | undefined; error?: any; }>; loadSettings: () => Promise<...>; ... 8 more ...; rigctldGetCapabilities: () => Promise<...>; }'.ts-plugin(2339)
         const response = await window.electronAPI.executeCommand('rigctld -l');
         if (response.success && response.data) {
           this.rigModels = this.parseRigModels(response.data);
