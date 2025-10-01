@@ -33,8 +33,10 @@ export default {
       } as WizardData,
       isValidating: false,
       validationErrors: {} as Record<string, string>,
-      availableBands: BAND_RANGES.filter(band => 
-        ['160', '80', '60', '40', '30', '20', '17', '15', '12', '10', '6', '2', '70'].includes(band.shortName)
+      availableBands: BAND_RANGES.filter(band =>
+        ['160', '80', '60', '40', '30', '20', '17', '15', '12', '10', '6', '2', '70'].includes(
+          band.shortName
+        )
       ),
     };
   },
@@ -150,7 +152,10 @@ export default {
     },
     selectAllVHFUHFBands() {
       const vhfUhfBands = ['6', '2', '70'];
-      this.wizardData.selectedBands = [...this.wizardData.selectedBands, ...vhfUhfBands.filter(band => !this.wizardData.selectedBands.includes(band))];
+      this.wizardData.selectedBands = [
+        ...this.wizardData.selectedBands,
+        ...vhfUhfBands.filter(band => !this.wizardData.selectedBands.includes(band)),
+      ];
     },
     clearAllBands() {
       this.wizardData.selectedBands = [];
@@ -298,23 +303,22 @@ export default {
         <div v-if="currentStep === 3" class="wizard-step">
           <h2>Band Selection</h2>
           <p class="step-description">
-            Select the amateur radio bands you plan to operate on. This helps optimize the interface for your needs.
+            Select the amateur radio bands you plan to operate on. This helps optimize the interface
+            for your needs.
           </p>
 
           <div class="band-selection-controls">
             <button type="button" @click="selectAllHFBands" class="btn btn-small">All HF</button>
-            <button type="button" @click="selectAllVHFUHFBands" class="btn btn-small">VHF/UHF</button>
+            <button type="button" @click="selectAllVHFUHFBands" class="btn btn-small">
+              VHF/UHF
+            </button>
             <button type="button" @click="clearAllBands" class="btn btn-small">Clear All</button>
           </div>
 
           <div class="band-grid">
-            <label 
-              v-for="band in availableBands" 
-              :key="band.shortName" 
-              class="band-checkbox"
-            >
-              <input 
-                type="checkbox" 
+            <label v-for="band in availableBands" :key="band.shortName" class="band-checkbox">
+              <input
+                type="checkbox"
                 :value="band.shortName"
                 :checked="wizardData.selectedBands.includes(band.shortName)"
                 @change="toggleBand(band.shortName)"
