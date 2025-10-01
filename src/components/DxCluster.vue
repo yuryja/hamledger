@@ -281,11 +281,11 @@ export default defineComponent({
     },
 
     handleSpotClick(spot: DxSpot): void {
-      // Convert frequency from kHz to MHz for rig
-      const freqInMHz = (parseFloat(spot.Frequency) / 1000).toFixed(3);
+      // Convert frequency from kHz to Hz for rig (spot.Frequency is in kHz)
+      const freqInHz = parseFloat(spot.Frequency) * 1000;
 
-      // Set rig frequency
-      this.rigStore.setFrequency(freqInMHz);
+      // Set rig frequency (rig store expects Hz)
+      this.rigStore.setFrequency(freqInHz);
 
       // Map DX spot mode to rig mode
       let rigMode = spot.Mode;
