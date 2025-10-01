@@ -43,7 +43,6 @@ export default {
         useWildcard: false,
         caseSensitive: false,
       },
-      showFilters: false,
       regexError: false,
     };
   },
@@ -249,9 +248,6 @@ export default {
       this.regexError = false;
       this.updateVisibleRange();
     },
-    toggleFilters() {
-      this.showFilters = !this.showFilters;
-    },
   },
 };
 </script>
@@ -268,13 +264,6 @@ export default {
       </div>
       <div class="log-actions">
         <button 
-          class="filter-btn" 
-          @click="toggleFilters"
-          :class="{ active: showFilters }"
-        >
-          🔍 Filters
-        </button>
-        <button 
           class="action-btn" 
           @click="handleImportAdif"
           :disabled="importStatus.isImporting"
@@ -289,7 +278,7 @@ export default {
     </div>
 
     <!-- Filters Panel -->
-    <div v-if="showFilters" class="filters-panel">
+    <div class="filters-panel">
       <div class="filters-row">
         <div class="filter-group">
           <label>Search:</label>
@@ -603,26 +592,6 @@ export default {
   font-weight: bold;
 }
 
-.filter-btn {
-  background: #555;
-  border: 1px solid #777;
-  padding: 0.5rem 1rem;
-  color: #fff;
-  cursor: pointer;
-  border-radius: 3px;
-  margin-right: 0.5rem;
-  transition: all 0.2s;
-}
-
-.filter-btn:hover {
-  background: #666;
-}
-
-.filter-btn.active {
-  background: var(--main-color);
-  color: #000;
-  font-weight: bold;
-}
 
 .filters-panel {
   background: #2b2b2b;
