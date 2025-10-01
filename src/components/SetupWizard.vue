@@ -214,6 +214,7 @@ export default {
         rig: {
           ...defaultSettings.rig,
           enabled: this.wizardData.enableCat,
+          ##AI! Property 'rigctldPath' does not exist on type '{ port: number; host: string; rigModel: number; }
           rigctldPath: this.wizardData.enableCat ? this.wizardData.rigctldPath : defaultSettings.rig.rigctldPath || 'rigctld',
         },
       };
