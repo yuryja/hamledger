@@ -48,6 +48,8 @@ export default {
         target.type === 'checkbox' ? String(target.checked) : target.value
       );
       await configHelper.updateSetting(field.path, field.key, value);
+      // Update the field value to reflect the change in the UI
+      field.value = value;
     },
     getAvailableBands() {
       return BAND_RANGES.filter(band =>
