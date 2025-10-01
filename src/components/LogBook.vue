@@ -293,9 +293,7 @@ export default {
           <label>Band:</label>
           <select v-model="filters.selectedBand" class="filter-select">
             <option value="">All</option>
-            ##AI! Type 'unknown' is not assignable to type 'PropertyKey | undefined'.ts-plugin(2322)
-            runtime-dom.d.ts(1368, 5): The expected type comes from property 'key' which is declared here on type 'OptionHTMLAttributes & ReservedProps & Record<string, unknown>
-            <option v-for="band in uniqueBands" :key="band" :value="band">
+            <option v-for="band in uniqueBands" :key="band as string" :value="band">
               {{ band }}
             </option>
           </select>
@@ -305,7 +303,7 @@ export default {
           <label>Mode:</label>
           <select v-model="filters.selectedMode" class="filter-select">
             <option value="">All</option>
-            <option v-for="mode in uniqueModes" :key="mode" :value="mode">
+            <option v-for="mode in uniqueModes" :key="mode as string" :value="mode">
               {{ mode }}
             </option>
           </select>

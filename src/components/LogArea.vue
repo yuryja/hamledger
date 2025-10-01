@@ -40,13 +40,10 @@ export default {
 
         // Validate regex if regex mode is enabled
         if (this.filters.useRegex) {
-          this.regexError = !TextMatcher.isValidRegex(this.filters.searchText);
           if (this.regexError) {
             // If regex is invalid, don't filter
             return filtered;
           }
-        } else {
-          this.regexError = false;
         }
 
         filtered = filtered.filter(qso => 
@@ -91,6 +88,9 @@ export default {
     filteredCount() {
       return this.filteredCurrentSession.length;
     },
+    regexError() {
+      return this.filters.useRegex && !TextMatcher.isValidRegex(this.filters.searchText);
+    },
   },
   data() {
     return {
@@ -108,7 +108,6 @@ export default {
         useWildcard: false,
         caseSensitive: false,
       },
-      regexError: false,
     };
   },
   methods: {
@@ -143,7 +142,6 @@ export default {
         useWildcard: false,
         caseSensitive: false,
       };
-      this.regexError = false;
     },
   },
 };
@@ -182,7 +180,7 @@ export default {
             <label>Band:</label>
             <select v-model="filters.selectedBand" class="filter-select">
               <option value="">All</option>
-              <option v-for="band in uniqueBands" :key="band" :value="band">
+              <option v-for="band in uniqueBands" :key="band as string" :value="band">
                 {{ band }}
               </option>
             </select>
@@ -192,7 +190,7 @@ export default {
             <label>Mode:</label>
             <select v-model="filters.selectedMode" class="filter-select">
               <option value="">All</option>
-              <option v-for="mode in uniqueModes" :key="mode" :value="mode">
+              <option v-for="mode in uniqueModes" :key="mode as string" :value="mode">
                 {{ mode }}
               </option>
             </select>
