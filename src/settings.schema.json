@@ -108,6 +108,34 @@
               "description": "API rate limit in milliseconds"
             }
           }
+        },
+        "dxheat": {
+          "type": "object",
+          "description": "DXHeat DX spots API settings",
+          "properties": {
+            "baseUrl": {
+              "type": "string",
+              "description": "Base URL for DXHeat API"
+            },
+            "rateLimit": {
+              "type": "integer",
+              "description": "API rate limit in milliseconds"
+            }
+          }
+        },
+        "wwv": {
+          "type": "object",
+          "description": "WWV propagation data API settings",
+          "properties": {
+            "baseUrl": {
+              "type": "string",
+              "description": "Base URL for WWV propagation data API"
+            },
+            "rateLimit": {
+              "type": "integer",
+              "description": "API rate limit in milliseconds"
+            }
+          }
         }
       }
     },
