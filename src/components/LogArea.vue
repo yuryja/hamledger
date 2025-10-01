@@ -454,7 +454,7 @@ export default {
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
-  min-width: 100px;
+  min-width: 140px;
 }
 
 .search-group {
