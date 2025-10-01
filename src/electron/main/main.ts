@@ -625,6 +625,7 @@ const userSettingsPath = join(app.getPath('userData'), 'settings.json');
 const defaultSettingsPath = join(app.getAppPath(), 'src/settings.json');
 
 // Load settings helper function
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function loadSettings(): any {
   try {
     if (fs.existsSync(userSettingsPath)) {
@@ -632,7 +633,7 @@ function loadSettings(): any {
     }
     return JSON.parse(fs.readFileSync(defaultSettingsPath, 'utf8'));
   } catch (error) {
-    console.error('Error loading settings:', error);
+    console.debug('Error loading settings:', error);
     return null;
   }
 }
@@ -647,7 +648,7 @@ ipcMain.handle('settings:load', async () => {
     // Return null if no user settings exist - this will trigger setup wizard
     return null;
   } catch (error) {
-    console.error('Error loading settings:', error);
+    console.debug('Error loading settings:', error);
     return null;
   }
 });

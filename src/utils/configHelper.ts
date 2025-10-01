@@ -23,7 +23,7 @@ export class ConfigHelper {
         throw new Error('No settings found');
       }
     } catch (error) {
-      console.error('Error loading settings:', error);
+      console.debug('Error loading settings:', error);
       // Re-throw the error so App.vue can catch it and show setup wizard
       throw error;
     }

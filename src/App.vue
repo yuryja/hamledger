@@ -34,7 +34,7 @@ export default {
         await configHelper.initSettings();
         // If we get here without error, settings exist
         this.showSetupWizard = false;
-      } catch (error) {
+      } catch {
         // Settings don't exist or failed to load, show wizard
         console.log('No settings found, showing setup wizard');
         this.showSetupWizard = true;

@@ -1,5 +1,4 @@
 <script lang="ts">
-import { configHelper } from '../utils/configHelper';
 import { CallsignHelper } from '../utils/callsign';
 import defaultSettings from '../settings.json';
 
@@ -116,7 +115,7 @@ export default {
           this.validationErrors.rigctldPath = 'rigctld not found in the specified path';
           return false;
         }
-      } catch (error) {
+      } catch  {
         this.validationErrors.rigctldPath = 'Error checking rigctld path';
         return false;
       } finally {
