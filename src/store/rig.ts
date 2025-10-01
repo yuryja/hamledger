@@ -296,14 +296,21 @@ export const useRigStore = defineStore('rig', {
     
     // Split control
     async toggleSplit() {
-      if (!this.connection.connected) return { success: false, error: 'Not connected' };
+      if (!this.connection.connected) {
+        console.log('Not connected to rig');
+        return { success: false, error: 'Not connected' };
+      }
       
       try {
         const newSplitState = !this.rigState.split;
+        console.log('Toggling split from', this.rigState.split, 'to', newSplitState);
+        
         const response = await rigctldService.setSplit(newSplitState);
+        console.log('setSplit response:', response);
         
         if (response.success) {
           this.rigState.split = newSplitState;
+          console.log('Split state updated to:', this.rigState.split);
           
           if (!newSplitState) {
             this.rigState.splitFreq = undefined;
@@ -311,11 +318,13 @@ export const useRigStore = defineStore('rig', {
           }
         } else {
           this.error = response.error || 'Failed to toggle split';
+          console.error('Failed to toggle split:', this.error);
         }
         
         return response;
       } catch (error) {
         this.error = error instanceof Error ? error.message : 'Unknown error';
+        console.error('Error toggling split:', error);
         return { success: false, error: this.error };
       }
     },

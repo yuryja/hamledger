@@ -49,7 +49,12 @@ export default {
   },
   methods: {
     async toggleSplit() {
-      await this.rigStore.toggleSplit();
+      console.log('FreqSMeter: toggleSplit called');
+      console.log('Current split state:', this.rigStore.rigState.split);
+      console.log('Is connected:', this.rigStore.isConnected);
+      
+      const result = await this.rigStore.toggleSplit();
+      console.log('toggleSplit result:', result);
     },
   },
 };
