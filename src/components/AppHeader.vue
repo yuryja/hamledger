@@ -2,6 +2,7 @@
 import RigControl from './header/RigControl.vue';
 import FreqSMeter from './header/FreqSMeter.vue';
 import PropClockWeather from './header/PropClockWeather.vue';
+import { configHelper } from '../utils/configHelper';
 
 export default {
   name: 'AppHeader',
@@ -10,12 +11,31 @@ export default {
     FreqSMeter,
     PropClockWeather,
   },
+  data() {
+    return {
+      catEnabled: false,
+    };
+  },
+  async mounted() {
+    await this.loadCatSettings();
+  },
+  methods: {
+    async loadCatSettings() {
+      try {
+        await configHelper.initSettings();
+        this.catEnabled = configHelper.getSetting(['rig'], 'enabled') || false;
+      } catch (error) {
+        console.error('Error loading CAT settings:', error);
+        this.catEnabled = false;
+      }
+    },
+  },
 };
 </script>
 
 <template>
-  <header class="app-header">
-    <RigControl />
+  <header class="app-header" :class="{ 'no-rig-control': !catEnabled }">
+    <RigControl v-if="catEnabled" />
     <FreqSMeter />
     <PropClockWeather />
   </header>
@@ -29,6 +49,11 @@ export default {
   padding: 1rem;
   border-radius: 5px;
   gap: 1rem;
+}
+
+/* When CAT control is disabled, adjust grid layout */
+.app-header.no-rig-control {
+  grid-template-columns: minmax(400px, 1fr) 1fr;
 }
 
 /* Left side: rig control */
