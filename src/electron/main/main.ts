@@ -412,20 +412,15 @@ app.on('before-quit', () => {
 
 // Rigctld connection management
 let rigctldSocket: Socket | null = null;
-let rigctldHost = 'localhost';
-let rigctldPort = 4532;
 
 // Rigctld handlers
-ipcMain.handle('rigctld:connect', async (_, host: string, port: number, model?: number, device?: string) => {
+ipcMain.handle('rigctld:connect', async (_, host: string, port: number, _model?: number, _device?: string) => {
   try {
     // Close existing connection if any
     if (rigctldSocket) {
       rigctldSocket.destroy();
       rigctldSocket = null;
     }
-
-    rigctldHost = host;
-    rigctldPort = port;
 
     return new Promise((resolve) => {
       rigctldSocket = new Socket();
@@ -599,7 +594,7 @@ ipcMain.handle('rigctld:capabilities', async () => {
 ipcMain.handle('execute:command', async (_, command: string) => {
   try {
     return new Promise((resolve) => {
-      exec(command, { timeout: 10000 }, (error: any, stdout: string, stderr: string) => {
+      exec(command, { timeout: 10000 }, (error: Error | null, stdout: string, stderr: string) => {
         if (error) {
           console.error('Command execution error:', error);
           resolve({ success: false, error: error.message });
@@ -643,7 +638,7 @@ ipcMain.handle('settings:load', async () => {
   }
 });
 
-ipcMain.handle('settings:save', async (_, settings) => {
+ipcMain.handle('settings:save', async (_, settings: Record<string, unknown>) => {
   try {
     fs.writeFileSync(userSettingsPath, JSON.stringify(settings, null, 2));
   } catch (error) {
