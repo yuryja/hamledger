@@ -92,7 +92,7 @@ export const useQsoStore = defineStore('qso', {
       // Reset form but keep current band from rig
       const rigStore = useRigStore();
       const currentBand = rigStore.currentBandName || '';
-      
+
       this.qsoForm = {
         callsign: '',
         band: currentBand,
