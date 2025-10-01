@@ -28,7 +28,11 @@
         },
         "iaruRegion": {
           "type": "string",
-          "enum": ["IARU1", "IARU2", "IARU3"],
+          "enum": [
+            "IARU1",
+            "IARU2",
+            "IARU3"
+          ],
           "description": "IARU region (IARU1: Europe/Africa/Middle East/Northern Asia, IARU2: Americas, IARU3: Asia-Pacific)"
         }
       }
@@ -45,29 +49,9 @@
           "type": "string",
           "description": "Serial port for CAT control"
         },
-        "baudRate": {
-          "type": "integer",
-          "description": "Serial port baud rate"
-        },
-        "dataBits": {
-          "type": "integer",
-          "description": "Serial port data bits"
-        },
-        "stopBits": {
-          "type": "integer",
-          "description": "Serial port stop bits"
-        },
-        "parity": {
+        "rigModel": {
           "type": "string",
-          "description": "Serial port parity setting"
-        },
-        "flowControl": {
-          "type": "string",
-          "description": "Serial port flow control"
-        },
-        "pollInterval": {
-          "type": "integer",
-          "description": "Rig polling interval in milliseconds"
+          "description": "Rig model number from Hamlib"
         }
       }
     },
