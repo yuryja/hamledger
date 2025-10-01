@@ -602,7 +602,7 @@ export default {
 .filters-row {
   display: flex;
   gap: 1rem;
-  align-items: end;
+  align-items: flex-end;
   flex-wrap: nowrap;
 }
 
@@ -639,6 +639,8 @@ export default {
   border-radius: 3px;
   color: #fff;
   font-size: 0.9rem;
+  height: 38px;
+  box-sizing: border-box;
 }
 
 .filter-input:focus,
@@ -655,7 +657,8 @@ export default {
   cursor: pointer;
   border-radius: 3px;
   font-size: 0.9rem;
-  height: fit-content;
+  height: 38px;
+  box-sizing: border-box;
 }
 
 .clear-btn:hover {
