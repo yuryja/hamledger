@@ -165,81 +165,83 @@ export default {
 
     <!-- Filters Panel -->
     <div class="filters-panel">
-      <div class="filters-row">
-        <div class="filter-group search-group">
-          <label>Search:</label>
-          <input 
-            v-model="filters.searchText" 
-            type="text" 
-            placeholder="Callsign, remark, notes..."
-            class="filter-input search-input"
-            :class="{ 'regex-error': regexError }"
-          />
+      <div class="filters-content">
+        <div class="filters-row">
+          <div class="filter-group search-group">
+            <label>Search:</label>
+            <input 
+              v-model="filters.searchText" 
+              type="text" 
+              placeholder="Callsign, remark, notes..."
+              class="filter-input search-input"
+              :class="{ 'regex-error': regexError }"
+            />
+          </div>
+          
+          <div class="filter-group">
+            <label>Band:</label>
+            <select v-model="filters.selectedBand" class="filter-select">
+              <option value="">All</option>
+              <option v-for="band in uniqueBands" :key="band" :value="band">
+                {{ band }}
+              </option>
+            </select>
+          </div>
+          
+          <div class="filter-group">
+            <label>Mode:</label>
+            <select v-model="filters.selectedMode" class="filter-select">
+              <option value="">All</option>
+              <option v-for="mode in uniqueModes" :key="mode" :value="mode">
+                {{ mode }}
+              </option>
+            </select>
+          </div>
+          
+          <div class="filter-group">
+            <label>From:</label>
+            <input 
+              v-model="filters.dateFrom" 
+              type="date" 
+              class="filter-input date-input"
+            />
+          </div>
+          
+          <div class="filter-group">
+            <label>To:</label>
+            <input 
+              v-model="filters.dateTo" 
+              type="date" 
+              class="filter-input date-input"
+            />
+          </div>
+          
+          <div class="filter-group">
+            <button @click="clearFilters" class="clear-btn">
+              Clear
+            </button>
+          </div>
         </div>
         
-        <div class="filter-group">
-          <label>Band:</label>
-          <select v-model="filters.selectedBand" class="filter-select">
-            <option value="">All</option>
-            <option v-for="band in uniqueBands" :key="band" :value="band">
-              {{ band }}
-            </option>
-          </select>
-        </div>
-        
-        <div class="filter-group">
-          <label>Mode:</label>
-          <select v-model="filters.selectedMode" class="filter-select">
-            <option value="">All</option>
-            <option v-for="mode in uniqueModes" :key="mode" :value="mode">
-              {{ mode }}
-            </option>
-          </select>
-        </div>
-        
-        <div class="filter-group">
-          <label>From:</label>
-          <input 
-            v-model="filters.dateFrom" 
-            type="date" 
-            class="filter-input date-input"
-          />
-        </div>
-        
-        <div class="filter-group">
-          <label>To:</label>
-          <input 
-            v-model="filters.dateTo" 
-            type="date" 
-            class="filter-input date-input"
-          />
-        </div>
-        
-        <div class="filter-group">
-          <button @click="clearFilters" class="clear-btn">
-            Clear
-          </button>
-        </div>
-      </div>
-      
-      <div class="filters-row checkbox-row">
-        <div class="search-options">
-          <label class="checkbox-label">
-            <input type="checkbox" v-model="filters.useWildcard" :disabled="filters.useRegex" />
-            Wildcard (*?)
-          </label>
-          <label class="checkbox-label">
-            <input type="checkbox" v-model="filters.useRegex" :disabled="filters.useWildcard" />
-            Regex
-          </label>
-          <label class="checkbox-label">
-            <input type="checkbox" v-model="filters.caseSensitive" />
-            Case sensitive
-          </label>
-        </div>
-        
-        <div v-if="regexError" class="regex-error-message">
-          Invalid regex pattern
+        <div class="filters-row checkbox-row">
+          <div class="search-options">
+            <label class="checkbox-label">
+              <input type="checkbox" v-model="filters.useWildcard" :disabled="filters.useRegex" />
+              Wildcard (*?)
+            </label>
+            <label class="checkbox-label">
+              <input type="checkbox" v-model="filters.useRegex" :disabled="filters.useWildcard" />
+              Regex
+            </label>
+            <label class="checkbox-label">
+              <input type="checkbox" v-model="filters.caseSensitive" />
+              Case sensitive
+            </label>
+          </div>
+          
+          <div v-if="regexError" class="regex-error-message">
+            Invalid regex pattern
+          </div>
         </div>
       </div>
     </div>
@@ -420,15 +422,12 @@ export default {
   display: flex;
   align-items: center;
   gap: 1rem;
+  margin-left: auto;
 }
 
 .filtered-count {
   color: var(--main-color);
   font-weight: bold;
-}
-
-.log-actions {
-  margin-left: auto;
 }
 
 
@@ -438,6 +437,10 @@ export default {
   border-radius: 4px;
   padding: 1rem;
   margin-bottom: 1rem;
+}
+
+.filters-content {
+  max-width: 800px;
 }
 
 .filters-row {
