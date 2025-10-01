@@ -30,6 +30,7 @@ const WMO_CODES: { [key: number]: string } = {
 export async function getWeather(lat: number, lon: number): Promise<WeatherResult | null> {
   try {
     const response = await fetch(
+      ##AI! url shall come from config
       `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`
     );
 
