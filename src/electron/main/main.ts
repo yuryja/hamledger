@@ -52,19 +52,48 @@ function isPortInUse(port: number, host: string = 'localhost'): Promise<boolean>
 // Start rigctld as background process
 async function startRigctld(): Promise<void> {
   try {
-    // Check if rigctld is already running on default port
-    const isRunning = await isPortInUse(4532);
+    // Load settings to get default rig configuration
+    let settings;
+    try {
+      if (fs.existsSync(userSettingsPath)) {
+        settings = JSON.parse(fs.readFileSync(userSettingsPath, 'utf8'));
+      } else if (fs.existsSync(defaultSettingsPath)) {
+        settings = JSON.parse(fs.readFileSync(defaultSettingsPath, 'utf8'));
+      }
+    } catch (error) {
+      console.warn('Could not load settings for rigctld startup:', error);
+    }
+    
+    // Get rig configuration from settings
+    const rigConfig = settings?.rig || {};
+    const rigModel = rigConfig.rigModel || 1025; // Default to Yaesu FT-1000MP
+    const rigDevice = rigConfig.device || '/dev/ttyUSB0'; // Default device
+    const rigPort = rigConfig.port || 4532; // Default port
+    
+    // Check if rigctld is already running on configured port
+    const isRunning = await isPortInUse(rigPort);
     
     if (isRunning) {
-      console.log('Rigctld already running on port 4532');
+      console.log(`Rigctld already running on port ${rigPort}`);
       return;
     }
     
-    console.log('Starting rigctld as background process...');
+    console.log(`Starting rigctld as background process with model ${rigModel}...`);
     
-    // Try to start rigctld with model 1025 (Yaesu FT-1000MP) and /dev/ttyUSB0
-    // If model is 1 (dummy), no device is needed
-    const args = ['-m', '1025', '-r', '/dev/ttyUSB0'];
+    // Build arguments based on configuration
+    const args = ['-m', rigModel.toString()];
+    
+    // Add device parameter only if model is not 1 (dummy) and device is specified
+    if (rigModel !== 1 && rigDevice) {
+      args.push('-r', rigDevice);
+    }
+    
+    // Add port if different from default
+    if (rigPort !== 4532) {
+      args.push('-t', rigPort.toString());
+    }
+    
+    console.log('Rigctld command:', 'rigctld', args.join(' '));
     
     rigctldProcess = spawn('rigctld', args, {
       detached: false,
@@ -96,10 +125,10 @@ async function startRigctld(): Promise<void> {
     // Give it a moment to start
     await new Promise(resolve => setTimeout(resolve, 2000));
     
-    // Verify it's running
-    const isNowRunning = await isPortInUse(4532);
+    // Verify it's running on the configured port
+    const isNowRunning = await isPortInUse(rigPort);
     if (isNowRunning) {
-      console.log('Rigctld started successfully');
+      console.log(`Rigctld started successfully on port ${rigPort}`);
     } else {
       console.log('Rigctld may not have started properly');
     }
