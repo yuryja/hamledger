@@ -289,9 +289,9 @@ export default defineComponent({
       this.rigStore.setFrequency(freqInHz);
 
       // Determine band from frequency and update QSO form
-      const band = getBandFromFrequency(freqInHz);
-      if (band) {
-        this.qsoStore.updateQsoForm('band', band);
+      const bandInfo = getBandFromFrequency(freqInHz);
+      if (bandInfo) {
+        this.qsoStore.updateQsoForm('band', bandInfo.name);
       }
 
       // Map DX spot mode to rig mode
