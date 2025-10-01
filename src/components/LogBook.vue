@@ -25,6 +25,13 @@ export default {
       scrollTop: 0,
       itemHeight: 40,
       containerHeight: 0,
+      importStatus: {
+        isImporting: false,
+        importedCount: 0,
+        totalCount: 0,
+        error: null as string | null,
+        success: false,
+      },
     };
   },
   computed: {
@@ -94,9 +101,53 @@ export default {
       this.updateVisibleRange();
     },
     async handleImportAdif() {
-      const result = await this.qsoStore.importAdif();
-      if (!result.success) {
-        console.error('ADIF import failed:', result.error);
+      this.importStatus.isImporting = true;
+      this.importStatus.error = null;
+      this.importStatus.success = false;
+      this.importStatus.importedCount = 0;
+      this.importStatus.totalCount = 0;
+
+      try {
+        // First, let user select the file
+        const fileResult = await window.electronAPI.selectAdifFile();
+        if (!fileResult.success || !fileResult.filePath) {
+          this.importStatus.isImporting = false;
+          return;
+        }
+
+        // Parse the file to get total count
+        const parseResult = await window.electronAPI.parseAdifFile(fileResult.filePath);
+        if (!parseResult.success) {
+          this.importStatus.error = parseResult.error || 'Failed to parse ADIF file';
+          this.importStatus.isImporting = false;
+          return;
+        }
+
+        this.importStatus.totalCount = parseResult.totalCount || 0;
+
+        // Listen for progress updates BEFORE starting import
+        window.electronAPI.onAdifImportProgress((progress) => {
+          this.importStatus.importedCount = progress.imported;
+        });
+
+        // Import with progress updates
+        const importResult = await window.electronAPI.importAdifWithProgress(fileResult.filePath);
+
+        if (importResult.success) {
+          this.importStatus.success = true;
+          this.importStatus.importedCount = importResult.count || 0;
+          console.log(`Successfully imported ${importResult.count} QSOs from ADIF file`);
+          
+          // Refresh the QSO store to show new data
+          await this.qsoStore.initializeStore();
+        } else {
+          this.importStatus.error = importResult.error || 'Import failed';
+        }
+      } catch (error) {
+        console.error('Error importing ADIF:', error);
+        this.importStatus.error = 'An unexpected error occurred during import';
+      } finally {
+        this.importStatus.isImporting = false;
       }
     },
     closeEditDialog() {
@@ -119,8 +170,49 @@ export default {
         <span>Total QSOs: {{ totalCount }}</span>
       </div>
       <div class="log-actions">
-        <button class="action-btn" @click="handleImportAdif">Import ADIF</button>
+        <button 
+          class="action-btn" 
+          @click="handleImportAdif"
+          :disabled="importStatus.isImporting"
+        >
+          <span v-if="!importStatus.isImporting">Import ADIF</span>
+          <span v-else class="loading-text">
+            <span class="spinner"></span>
+            Importing...
+          </span>
+        </button>
       </div>
+    </div>
+
+    <!-- Import Progress -->
+    <div v-if="importStatus.isImporting" class="import-progress">
+      <div class="progress-info">
+        <span class="progress-text">
+          Imported {{ importStatus.importedCount }} 
+          <span v-if="importStatus.totalCount > 0">of {{ importStatus.totalCount }}</span>
+          QSOs
+        </span>
+      </div>
+      <div class="progress-bar-container">
+        <div 
+          class="progress-bar-fill" 
+          :style="{ 
+            width: importStatus.totalCount > 0 
+              ? `${(importStatus.importedCount / importStatus.totalCount) * 100}%` 
+              : '0%' 
+          }"
+        ></div>
+      </div>
+    </div>
+
+    <!-- Import Success -->
+    <div v-if="importStatus.success && !importStatus.isImporting" class="success-message">
+      ✅ Successfully imported {{ importStatus.importedCount }} QSOs!
+    </div>
+
+    <!-- Import Error -->
+    <div v-if="importStatus.error && !importStatus.isImporting" class="error-message">
+      ❌ Import failed: {{ importStatus.error }}
     </div>
 
     <div class="table-wrapper" ref="tableWrapper" @scroll="onScroll">
@@ -318,5 +410,88 @@ export default {
   padding: 0.5rem 1rem;
   border-radius: 3px;
   color: var(--gray-color);
+}
+
+.loading-text {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid transparent;
+  border-top: 2px solid currentColor;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.import-progress {
+  margin: 1rem 0;
+  padding: 1rem;
+  background: #2b2b2b;
+  border: 1px solid #444;
+  border-radius: 4px;
+}
+
+.progress-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.progress-text {
+  color: var(--main-color);
+  font-weight: bold;
+  font-size: 0.9rem;
+}
+
+.progress-bar-container {
+  width: 100%;
+  height: 8px;
+  background: #444;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: var(--main-color);
+  transition: width 0.3s ease;
+  border-radius: 4px;
+}
+
+.success-message {
+  color: #27ae60;
+  font-size: 0.9rem;
+  margin: 1rem 0;
+  padding: 0.75rem;
+  background: rgba(39, 174, 96, 0.1);
+  border: 1px solid rgba(39, 174, 96, 0.3);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.error-message {
+  color: #e74c3c;
+  font-size: 0.9rem;
+  margin: 1rem 0;
+  padding: 0.75rem;
+  background: rgba(231, 76, 60, 0.1);
+  border: 1px solid rgba(231, 76, 60, 0.3);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 </style>
