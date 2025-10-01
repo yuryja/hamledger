@@ -168,28 +168,26 @@ export default {
       <div class="filters-row">
         <div class="filter-group search-group">
           <label>Search:</label>
-          <div class="search-container">
-            <input 
-              v-model="filters.searchText" 
-              type="text" 
-              placeholder="Callsign, remark, notes..."
-              class="filter-input search-input"
-              :class="{ 'regex-error': regexError }"
-            />
-            <div class="search-options">
-              <label class="checkbox-label">
-                <input type="checkbox" v-model="filters.useWildcard" :disabled="filters.useRegex" />
-                *?
-              </label>
-              <label class="checkbox-label">
-                <input type="checkbox" v-model="filters.useRegex" :disabled="filters.useWildcard" />
-                Regex
-              </label>
-              <label class="checkbox-label">
-                <input type="checkbox" v-model="filters.caseSensitive" />
-                Aa
-              </label>
-            </div>
+          <input 
+            v-model="filters.searchText" 
+            type="text" 
+            placeholder="Callsign, remark, notes..."
+            class="filter-input search-input"
+            :class="{ 'regex-error': regexError }"
+          />
+          <div class="search-options">
+            <label class="checkbox-label">
+              <input type="checkbox" v-model="filters.useWildcard" :disabled="filters.useRegex" />
+              *?
+            </label>
+            <label class="checkbox-label">
+              <input type="checkbox" v-model="filters.useRegex" :disabled="filters.useWildcard" />
+              Regex
+            </label>
+            <label class="checkbox-label">
+              <input type="checkbox" v-model="filters.caseSensitive" />
+              Aa
+            </label>
           </div>
           <div v-if="regexError" class="regex-error-message">
             Invalid regex pattern
@@ -453,18 +451,11 @@ export default {
 }
 
 .search-group {
-  flex: 1;
-  min-width: 300px;
-}
-
-.search-container {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
+  min-width: 200px;
 }
 
 .search-input {
-  flex: 1;
+  width: 100%;
 }
 
 .date-input {
@@ -511,8 +502,7 @@ export default {
 .search-options {
   display: flex;
   gap: 0.5rem;
-  align-items: center;
-  flex-shrink: 0;
+  margin-top: 0.25rem;
 }
 
 .checkbox-label {
