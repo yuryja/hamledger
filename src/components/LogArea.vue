@@ -166,28 +166,30 @@ export default {
     <!-- Filters Panel -->
     <div class="filters-panel">
       <div class="filters-row">
-        <div class="filter-group">
+        <div class="filter-group search-group">
           <label>Search:</label>
-          <input 
-            v-model="filters.searchText" 
-            type="text" 
-            placeholder="Callsign, remark, notes..."
-            class="filter-input"
-            :class="{ 'regex-error': regexError }"
-          />
-          <div class="search-options">
-            <label class="checkbox-label">
-              <input type="checkbox" v-model="filters.useWildcard" :disabled="filters.useRegex" />
-              Wildcard (* ?)
-            </label>
-            <label class="checkbox-label">
-              <input type="checkbox" v-model="filters.useRegex" :disabled="filters.useWildcard" />
-              Regex
-            </label>
-            <label class="checkbox-label">
-              <input type="checkbox" v-model="filters.caseSensitive" />
-              Case sensitive
-            </label>
+          <div class="search-container">
+            <input 
+              v-model="filters.searchText" 
+              type="text" 
+              placeholder="Callsign, remark, notes..."
+              class="filter-input search-input"
+              :class="{ 'regex-error': regexError }"
+            />
+            <div class="search-options">
+              <label class="checkbox-label">
+                <input type="checkbox" v-model="filters.useWildcard" :disabled="filters.useRegex" />
+                *?
+              </label>
+              <label class="checkbox-label">
+                <input type="checkbox" v-model="filters.useRegex" :disabled="filters.useWildcard" />
+                Regex
+              </label>
+              <label class="checkbox-label">
+                <input type="checkbox" v-model="filters.caseSensitive" />
+                Aa
+              </label>
+            </div>
           </div>
           <div v-if="regexError" class="regex-error-message">
             Invalid regex pattern
@@ -197,7 +199,7 @@ export default {
         <div class="filter-group">
           <label>Band:</label>
           <select v-model="filters.selectedBand" class="filter-select">
-            <option value="">All Bands</option>
+            <option value="">All</option>
             <option v-for="band in uniqueBands" :key="band" :value="band">
               {{ band }}
             </option>
@@ -207,36 +209,34 @@ export default {
         <div class="filter-group">
           <label>Mode:</label>
           <select v-model="filters.selectedMode" class="filter-select">
-            <option value="">All Modes</option>
+            <option value="">All</option>
             <option v-for="mode in uniqueModes" :key="mode" :value="mode">
               {{ mode }}
             </option>
           </select>
         </div>
-      </div>
-      
-      <div class="filters-row">
+        
         <div class="filter-group">
-          <label>Date From:</label>
+          <label>From:</label>
           <input 
             v-model="filters.dateFrom" 
             type="date" 
-            class="filter-input"
+            class="filter-input date-input"
           />
         </div>
         
         <div class="filter-group">
-          <label>Date To:</label>
+          <label>To:</label>
           <input 
             v-model="filters.dateTo" 
             type="date" 
-            class="filter-input"
+            class="filter-input date-input"
           />
         </div>
         
         <div class="filter-group">
           <button @click="clearFilters" class="clear-btn">
-            Clear All
+            Clear
           </button>
         </div>
       </div>
@@ -442,18 +442,33 @@ export default {
   display: flex;
   gap: 1rem;
   align-items: end;
-  margin-bottom: 0.5rem;
-}
-
-.filters-row:last-child {
-  margin-bottom: 0;
+  flex-wrap: nowrap;
 }
 
 .filter-group {
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
-  min-width: 150px;
+  min-width: 100px;
+}
+
+.search-group {
+  flex: 1;
+  min-width: 300px;
+}
+
+.search-container {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.search-input {
+  flex: 1;
+}
+
+.date-input {
+  width: 140px;
 }
 
 .filter-group label {
@@ -495,18 +510,19 @@ export default {
 
 .search-options {
   display: flex;
-  gap: 0.75rem;
-  margin-top: 0.25rem;
-  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+  flex-shrink: 0;
 }
 
 .checkbox-label {
   display: flex;
   align-items: center;
-  gap: 0.25rem;
-  font-size: 0.8rem;
+  gap: 0.2rem;
+  font-size: 0.75rem;
   color: var(--gray-color);
   cursor: pointer;
+  white-space: nowrap;
 }
 
 .checkbox-label input[type="checkbox"] {
