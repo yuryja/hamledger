@@ -7,7 +7,7 @@ import fs from 'fs';
 interface DatabaseResponse {
   ok: boolean;
   id?: string;
-  error?: Error;
+  error?: Error | unknown;
 }
 
 interface UpdateResponse extends DatabaseResponse {

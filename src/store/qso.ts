@@ -103,14 +103,14 @@ export const useQsoStore = defineStore('qso', {
     async initializeStore() {
       try {
         const result = await window.electronAPI.getAllDocs();
-        console.log('Raw database result:', result);
+        console.debug('Raw database result:', result);
         this.allQsos = result.rows.map(row => {
           const qso = row.doc as QsoEntry;
-          console.log('QSO from DB:', qso);
-          console.log('QSO _id:', qso._id);
-          console.log('QSO _rev:', qso._rev);
-          console.log('Row id:', row.id);
-          console.log('Row value:', row.value);
+          console.debug('QSO from DB:', qso);
+          console.debug('QSO _id:', qso._id);
+          console.debug('QSO _rev:', qso._rev);
+          console.debug('Row id:', row.id);
+          console.debug('Row value:', row.value);
           // Ensure _id and _rev are properly set
           qso._id = qso._id || row.id;
           qso._rev = qso._rev || (row.value && row.value.rev);
