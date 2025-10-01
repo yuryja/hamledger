@@ -101,10 +101,10 @@ export default {
         );
         
         if (fieldIndex !== -1) {
-          this.$set(this.configFields, fieldIndex, {
+          this.configFields[fieldIndex] = {
             ...this.configFields[fieldIndex],
             value: value
-          });
+          };
         }
       } catch (error) {
         console.error('Error updating setting:', error);
@@ -141,10 +141,10 @@ export default {
       );
       
       if (fieldIndex !== -1) {
-        this.$set(this.configFields, fieldIndex, {
+        this.configFields[fieldIndex] = {
           ...this.configFields[fieldIndex],
           value: currentBands
-        });
+        };
       }
     },
     async selectAllHFBands(field: ConfigField) {
@@ -157,10 +157,10 @@ export default {
       );
       
       if (fieldIndex !== -1) {
-        this.$set(this.configFields, fieldIndex, {
+        this.configFields[fieldIndex] = {
           ...this.configFields[fieldIndex],
           value: hfBands
-        });
+        };
       }
     },
     async selectAllVHFUHFBands(field: ConfigField) {
@@ -178,10 +178,10 @@ export default {
       );
       
       if (fieldIndex !== -1) {
-        this.$set(this.configFields, fieldIndex, {
+        this.configFields[fieldIndex] = {
           ...this.configFields[fieldIndex],
           value: newBands
-        });
+        };
       }
     },
     async clearAllBands(field: ConfigField) {
@@ -193,10 +193,10 @@ export default {
       );
       
       if (fieldIndex !== -1) {
-        this.$set(this.configFields, fieldIndex, {
+        this.configFields[fieldIndex] = {
           ...this.configFields[fieldIndex],
           value: []
-        });
+        };
       }
     },
     async toggleCategoryEnabled(enabled: boolean) {
@@ -216,10 +216,10 @@ export default {
         );
         
         if (fieldIndex !== -1) {
-          this.$set(this.configFields, fieldIndex, {
+          this.configFields[fieldIndex] = {
             ...this.configFields[fieldIndex],
             value: enabled
-          });
+          };
         }
       }
     },
