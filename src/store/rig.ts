@@ -18,8 +18,8 @@ export const useRigStore = defineStore('rig', {
     
     // Current rig state
     rigState: {
-      frequency: 14074000,
-      mode: 'USB',
+      frequency: 7093000,
+      mode: 'LSB',
       passband: 2400,
       vfo: 'VFOA',
       ptt: false,
