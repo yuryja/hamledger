@@ -31,6 +31,30 @@ export default {
         return fieldPath.includes(searchStr);
       });
     },
+    currentCategoryEnabled() {
+      const categoryKey = this.selectedCategory.toLowerCase().replace(' ', '');
+      const categoryMap = {
+        'station': 'station',
+        'catcontrol': 'rig',
+        'onlineservices': 'qrz',
+        'apis': 'apis',
+        'database': 'database',
+        'ui': 'ui',
+        'logging': 'logging'
+      };
+      
+      const actualKey = categoryMap[categoryKey] || categoryKey;
+      const enabledField = this.configFields.find(f => 
+        f.path[0] === actualKey && f.key === 'enabled'
+      );
+      
+      return enabledField ? enabledField.value : true;
+    },
+    hasCategoryEnabler() {
+      const categoryKey = this.selectedCategory.toLowerCase().replace(' ', '');
+      const categoriesWithEnabler = ['catcontrol', 'onlineservices', 'database'];
+      return categoriesWithEnabler.includes(categoryKey);
+    }
   },
   async mounted() {
     await configHelper.initSettings();
@@ -175,6 +199,30 @@ export default {
         });
       }
     },
+    async toggleCategoryEnabled(enabled: boolean) {
+      const categoryKey = this.selectedCategory.toLowerCase().replace(' ', '');
+      const categoryMap = {
+        'catcontrol': 'rig',
+        'onlineservices': 'qrz',
+        'database': 'database'
+      };
+      
+      const actualKey = categoryMap[categoryKey];
+      if (actualKey) {
+        await configHelper.updateSetting([actualKey], 'enabled', enabled);
+        
+        const fieldIndex = this.configFields.findIndex(f => 
+          f.path[0] === actualKey && f.key === 'enabled'
+        );
+        
+        if (fieldIndex !== -1) {
+          this.$set(this.configFields, fieldIndex, {
+            ...this.configFields[fieldIndex],
+            value: enabled
+          });
+        }
+      }
+    },
   },
 };
 </script>
@@ -211,7 +259,26 @@ export default {
 
         <!-- Main config area -->
         <div class="config-main">
-          <div class="config-fields">
+          <!-- Category enabler -->
+          <div v-if="hasCategoryEnabler" class="category-enabler">
+            <div class="enabler-header">
+              <h3>{{ selectedCategory }}</h3>
+              <div class="boolean-field">
+                <div class="toggle-switch">
+                  <input
+                    type="checkbox"
+                    :id="`category-${selectedCategory}-enabled`"
+                    :checked="currentCategoryEnabled"
+                    @change="toggleCategoryEnabled($event.target.checked)"
+                  />
+                  <span class="slider"></span>
+                </div>
+                <span class="toggle-label">{{ currentCategoryEnabled ? 'Enabled' : 'Disabled' }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="config-fields" :class="{ 'disabled': hasCategoryEnabler && !currentCategoryEnabled }">
             <div v-for="field in filteredFields" :key="getFieldId(field)" class="config-field">
               <div class="field-header">
                 <label :for="getFieldId(field)">{{ getFieldLabel(field) }}</label>
@@ -220,8 +287,8 @@ export default {
                 }}</span>
               </div>
 
-              <!-- Boolean -->
-              <div v-if="field.type === 'boolean'" class="boolean-field">
+              <!-- Boolean (skip enabled field if it's the category enabler) -->
+              <div v-if="field.type === 'boolean' && !(hasCategoryEnabler && field.key === 'enabled')" class="boolean-field">
                 <div class="toggle-switch">
                   <input
                     type="checkbox"
@@ -558,5 +625,34 @@ input:checked + .slider:before {
 .band-label {
   font-size: 0.85rem;
   color: var(--gray-color);
+}
+
+.category-enabler {
+  background: #333;
+  border: 2px solid var(--main-color);
+  border-radius: 4px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.enabler-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.enabler-header h3 {
+  margin: 0;
+  color: var(--gray-color);
+  font-size: 1.2rem;
+}
+
+.config-fields.disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.config-fields.disabled .config-field {
+  background: #2a2a2a;
 }
 </style>
