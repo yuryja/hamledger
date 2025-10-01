@@ -417,8 +417,9 @@ export default defineComponent({
               lotw: spot.LOTW,
               eqsl: spot.EQSL,
             }"
+            @click="handleSpotClick(spot)"
           >
-            <div class="spot-info" @click="handleSpotClick(spot)">
+            <div class="spot-info">
               <div class="spot-call">{{ spot.DXCall }}</div>
               <div class="spot-freq">{{ formatFrequency(spot.Frequency) }}</div>
               <div class="spot-details">
@@ -837,6 +838,7 @@ export default defineComponent({
   border-radius: var(--border-radius);
   border: 1px solid rgba(255, 165, 0, 0.15);
   transition: all 0.2s ease;
+  cursor: pointer;
 }
 
 .magnifier-spot:hover {
@@ -861,7 +863,6 @@ export default defineComponent({
 
 .spot-info {
   flex: 1;
-  cursor: pointer;
   padding: 0.5rem;
   border: 1px solid transparent;
   border-radius: var(--border-radius);
