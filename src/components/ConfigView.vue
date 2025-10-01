@@ -451,9 +451,13 @@ export default {
 }
 
 .toggle-switch input {
+  position: absolute;
   opacity: 0;
-  width: 0;
-  height: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  cursor: pointer;
+  z-index: 1;
 }
 
 .slider {
@@ -466,6 +470,7 @@ export default {
   background-color: #444;
   transition: 0.4s;
   border-radius: 34px;
+  pointer-events: none;
 }
 
 .slider:before {
