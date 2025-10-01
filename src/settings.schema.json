@@ -78,6 +78,10 @@
         "sessionTimeout": {
           "type": "integer",
           "description": "Session timeout in seconds"
+        },
+        "enabled": {
+          "type": "boolean",
+          "description": "Enable QRZ.com API services"
         }
       }
     },
