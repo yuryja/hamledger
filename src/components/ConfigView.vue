@@ -87,6 +87,7 @@ export default {
     },
     async handleChange(field: ConfigField, event: Event) {
       const target = event.target as HTMLInputElement;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       let value: any;
       
       if (target.type === 'checkbox') {
@@ -275,6 +276,8 @@ export default {
                     type="checkbox"
                     :id="`category-${selectedCategory}-enabled`"
                     :checked="currentCategoryEnabled"
+                    ##AI!'$event.target' is possibly 'null'
+                    
                     @change="toggleCategoryEnabled($event.target.checked)"
                   />
                   <span class="slider"></span>
