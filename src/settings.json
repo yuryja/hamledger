@@ -5,7 +5,8 @@
     "qth": "",
     "grid": "",
     "timezone": "",
-    "iaruRegion": ""
+    "iaruRegion": "",
+    "selectedBands": ["80", "40", "20", "15", "10"]
   },
   "rig": {
     "port": 4532,

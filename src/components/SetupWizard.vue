@@ -194,21 +194,23 @@ export default {
         return;
       }
 
-      // Create settings object based on default settings
-      const settings = JSON.parse(JSON.stringify(defaultSettings));
-
-      // Update with wizard data
-      settings.station.callsign = this.wizardData.callsign;
-      settings.station.qth = this.wizardData.qth;
-      settings.station.grid = this.wizardData.locator;
-      settings.station.iaruRegion = this.wizardData.iaruRegion;
-      settings.station.selectedBands = this.wizardData.selectedBands;
-
-      // Add CAT settings if enabled
-      if (this.wizardData.enableCat) {
-        settings.rig.rigctldPath = this.wizardData.rigctldPath;
-        settings.rig.enabled = true;
-      }
+      // Create settings object by copying the structure from defaultSettings
+      const settings = {
+        ...defaultSettings,
+        station: {
+          ...defaultSettings.station,
+          callsign: this.wizardData.callsign,
+          qth: this.wizardData.qth,
+          grid: this.wizardData.locator,
+          iaruRegion: this.wizardData.iaruRegion,
+          selectedBands: [...this.wizardData.selectedBands],
+        },
+        rig: {
+          ...defaultSettings.rig,
+          enabled: this.wizardData.enableCat,
+          rigctldPath: this.wizardData.enableCat ? this.wizardData.rigctldPath : defaultSettings.rig.rigctldPath || 'rigctld',
+        },
+      };
 
       try {
         // Save settings first
