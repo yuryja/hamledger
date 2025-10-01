@@ -67,3 +67,10 @@ export interface RigctldResponse {
   data?: any;
   error?: string;
 }
+
+export interface RigModel {
+  id: number;
+  manufacturer: string;
+  model: string;
+  status: string;
+}

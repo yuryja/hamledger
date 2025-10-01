@@ -1,6 +1,7 @@
 <script lang="ts">
 import { useRigStore } from '../../store/rig';
 import { configHelper } from '../../utils/configHelper';
+import type { RigModel } from '../../types/rig';
 
 export default {
   name: 'RigControl',
@@ -10,7 +11,7 @@ export default {
       rigModel: '',
       rigPort: '',
       showConnectionDialog: false,
-      rigModels: [] as Array<{id: number, manufacturer: string, model: string, status: string}>,
+      rigModels: [] as RigModel[],
       loadingModels: false,
       connectionForm: {
         host: 'localhost',
@@ -106,7 +107,7 @@ export default {
       }
     },
 
-    parseRigModels(output: string): Array<{id: number, manufacturer: string, model: string, status: string}> {
+    parseRigModels(output: string): RigModel[] {
       const lines = output.split('\n');
       const models = [];
       
