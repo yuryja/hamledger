@@ -160,6 +160,15 @@ export default {
     clearAllBands() {
       this.wizardData.selectedBands = [];
     },
+    forceUppercaseCallsign(event: Event) {
+      const target = event.target as HTMLInputElement;
+      const cursorPosition = target.selectionStart;
+      this.wizardData.callsign = target.value.toUpperCase();
+      // Restore cursor position after Vue updates the input
+      this.$nextTick(() => {
+        target.setSelectionRange(cursorPosition, cursorPosition);
+      });
+    },
     async importAdifFile() {
       try {
         const result = await window.electronAPI.importAdif();
@@ -246,6 +255,7 @@ export default {
               v-model="wizardData.callsign"
               type="text"
               placeholder="e.g. HA5XB"
+              @input="forceUppercaseCallsign"
               @blur="validateCallsign"
               :class="{ error: validationErrors.callsign }"
             />
