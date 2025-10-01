@@ -59,6 +59,7 @@ export default {
     <template v-if="isInitialized">
       <SideBar
         v-if="!showSetupWizard"
+        ##AI! Property 'handleViewChange' does not exist on type '{}'.
         @view-change="view => $refs.mainContent?.handleViewChange(view)"
       />
       <MainContent v-if="!showSetupWizard" ref="mainContent" />
