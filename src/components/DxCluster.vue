@@ -831,16 +831,16 @@ export default defineComponent({
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  padding: 0.5rem;
+  padding: 0;
   margin-bottom: 0.5rem;
   background: var(--bg-lighter);
   border-radius: var(--border-radius);
   border: 1px solid rgba(255, 165, 0, 0.15);
-  transition: background-color 0.2s ease;
+  transition: all 0.2s ease;
 }
 
 .magnifier-spot:hover {
-  background: var(--bg-dark);
+  border: 1px solid var(--main-color);
 }
 
 .magnifier-spot:last-child {
@@ -862,11 +862,13 @@ export default defineComponent({
 .spot-info {
   flex: 1;
   cursor: pointer;
+  padding: 0.5rem;
+  border: 1px solid transparent;
+  border-radius: var(--border-radius);
 }
 
-.spot-info:hover {
+.magnifier-spot:hover .spot-info {
   border: 1px solid var(--main-color);
-  border-radius: var(--border-radius);
   padding: calc(0.5rem - 1px);
 }
 
