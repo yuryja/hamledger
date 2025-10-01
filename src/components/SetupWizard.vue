@@ -61,7 +61,7 @@ export default {
         case 3:
           return this.wizardData.selectedBands.length > 0;
         case 4:
-          return true; // ADIF import is optional
+          return !this.importStatus.isImporting; // Disable if import is running
         case 5:
           return (
             !this.wizardData.enableCat ||
