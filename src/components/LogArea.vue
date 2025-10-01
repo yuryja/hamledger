@@ -2,6 +2,7 @@
 import { useQsoStore } from '../store/qso';
 import { getCountryCodeForCallsign } from '../utils/callsign';
 import { DateHelper } from '../utils/dateHelper';
+import { TextMatcher } from '../utils/textMatcher';
 import QsoDetailDialog from './qso/QsoDetailDialog.vue';
 
 export default {
@@ -29,13 +30,29 @@ export default {
     filteredCurrentSession() {
       let filtered = [...this.currentSession];
 
-      // Text search
+      // Text search with wildcard/regex support
       if (this.filters.searchText.trim()) {
-        const searchTerm = this.filters.searchText.toLowerCase().trim();
+        const matchOptions = {
+          useRegex: this.filters.useRegex,
+          useWildcard: this.filters.useWildcard,
+          caseSensitive: this.filters.caseSensitive,
+        };
+
+        // Validate regex if regex mode is enabled
+        if (this.filters.useRegex) {
+          this.regexError = !TextMatcher.isValidRegex(this.filters.searchText);
+          if (this.regexError) {
+            // If regex is invalid, don't filter
+            return filtered;
+          }
+        } else {
+          this.regexError = false;
+        }
+
         filtered = filtered.filter(qso => 
-          qso.callsign?.toLowerCase().includes(searchTerm) ||
-          qso.remark?.toLowerCase().includes(searchTerm) ||
-          qso.notes?.toLowerCase().includes(searchTerm)
+          TextMatcher.matches(qso.callsign || '', this.filters.searchText, matchOptions) ||
+          TextMatcher.matches(qso.remark || '', this.filters.searchText, matchOptions) ||
+          TextMatcher.matches(qso.notes || '', this.filters.searchText, matchOptions)
         );
       }
 
@@ -87,8 +104,12 @@ export default {
         selectedMode: '',
         dateFrom: '',
         dateTo: '',
+        useRegex: false,
+        useWildcard: false,
+        caseSensitive: false,
       },
       showFilters: false,
+      regexError: false,
     };
   },
   methods: {
@@ -119,7 +140,11 @@ export default {
         selectedMode: '',
         dateFrom: '',
         dateTo: '',
+        useRegex: false,
+        useWildcard: false,
+        caseSensitive: false,
       };
+      this.regexError = false;
     },
     toggleFilters() {
       this.showFilters = !this.showFilters;
@@ -161,7 +186,25 @@ export default {
             type="text" 
             placeholder="Callsign, remark, notes..."
             class="filter-input"
+            :class="{ 'regex-error': regexError }"
           />
+          <div class="search-options">
+            <label class="checkbox-label">
+              <input type="checkbox" v-model="filters.useWildcard" :disabled="filters.useRegex" />
+              Wildcard (* ?)
+            </label>
+            <label class="checkbox-label">
+              <input type="checkbox" v-model="filters.useRegex" :disabled="filters.useWildcard" />
+              Regex
+            </label>
+            <label class="checkbox-label">
+              <input type="checkbox" v-model="filters.caseSensitive" />
+              Case sensitive
+            </label>
+          </div>
+          <div v-if="regexError" class="regex-error-message">
+            Invalid regex pattern
+          </div>
         </div>
         
         <div class="filter-group">
@@ -481,6 +524,43 @@ export default {
 
 .clear-btn:hover {
   background: #c0392b;
+}
+
+.search-options {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 0.25rem;
+  flex-wrap: wrap;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.8rem;
+  color: var(--gray-color);
+  cursor: pointer;
+}
+
+.checkbox-label input[type="checkbox"] {
+  margin: 0;
+  cursor: pointer;
+}
+
+.checkbox-label input[type="checkbox"]:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.filter-input.regex-error {
+  border-color: #e74c3c;
+  background: rgba(231, 76, 60, 0.1);
+}
+
+.regex-error-message {
+  color: #e74c3c;
+  font-size: 0.75rem;
+  margin-top: 0.25rem;
 }
 
 .tab-btn {
