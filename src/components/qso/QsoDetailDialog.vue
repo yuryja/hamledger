@@ -27,20 +27,28 @@ export default {
     return {
       showEditMode: false,
       stationInfo: {} as StationData,
+      isLoading: true,
+      mapLoaded: false,
     };
   },
   watch: {
     async show(newVal) {
       if (newVal && this.qso.callsign) {
+        this.isLoading = true;
+        this.mapLoaded = false;
         await this.qsoStore.fetchStationInfo(this.qso.callsign);
         this.stationInfo = this.qsoStore.stationInfo;
+        this.isLoading = false;
       }
     },
   },
   async created() {
     if (this.show && this.qso.callsign) {
+      this.isLoading = true;
+      this.mapLoaded = false;
       await this.qsoStore.fetchStationInfo(this.qso.callsign);
       this.stationInfo = this.qsoStore.stationInfo;
+      this.isLoading = false;
     }
   },
   methods: {
@@ -56,9 +64,15 @@ export default {
       this.$emit('qso-updated', updatedQso);
       // Refresh station info after edit
       if (updatedQso.callsign) {
+        this.isLoading = true;
+        this.mapLoaded = false;
         await this.qsoStore.fetchStationInfo(updatedQso.callsign);
         this.stationInfo = this.qsoStore.stationInfo;
+        this.isLoading = false;
       }
+    },
+    onMapLoad() {
+      this.mapLoaded = true;
     },
   },
 };
@@ -83,6 +97,10 @@ export default {
       />
 
       <div v-else class="qso-details">
+        <div v-if="isLoading" class="loading-overlay">
+          <div class="loading-spinner"></div>
+          <p>Állomás adatok betöltése...</p>
+        </div>
         <div class="main-info">
           <div class="callsign-section">
             <h3>{{ qso.callsign }}</h3>
@@ -161,6 +179,10 @@ export default {
           </div>
 
           <div class="map-container" v-if="stationInfo.geodata.lat">
+            <div v-if="!mapLoaded" class="map-loading">
+              <div class="loading-spinner"></div>
+              <p>Térkép betöltése...</p>
+            </div>
             <iframe
               width="100%"
               height="300"
@@ -182,6 +204,7 @@ export default {
                 '%2C' +
                 stationInfo.geodata.lon
               "
+              @load="onMapLoad"
             ></iframe>
           </div>
         </div>
@@ -303,11 +326,6 @@ export default {
   gap: 2rem;
 }
 
-.map-container {
-  border: 1px solid #555;
-  border-radius: 3px;
-  overflow: hidden;
-}
 
 .notes-section {
   display: flex;
@@ -354,5 +372,55 @@ export default {
   border-radius: 3px;
   cursor: pointer;
   font-weight: bold;
+}
+
+.loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(51, 51, 51, 0.9);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #555;
+  border-top: 4px solid var(--main-color);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 1rem;
+}
+
+.map-loading {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(51, 51, 51, 0.9);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 5;
+}
+
+.map-container {
+  position: relative;
+  border: 1px solid #555;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 </style>
