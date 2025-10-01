@@ -289,23 +289,6 @@ export default {
             class="filter-input search-input"
             :class="{ 'regex-error': regexError }"
           />
-          <div class="search-options">
-            <label class="checkbox-label">
-              <input type="checkbox" v-model="filters.useWildcard" :disabled="filters.useRegex" />
-              *?
-            </label>
-            <label class="checkbox-label">
-              <input type="checkbox" v-model="filters.useRegex" :disabled="filters.useWildcard" />
-              Regex
-            </label>
-            <label class="checkbox-label">
-              <input type="checkbox" v-model="filters.caseSensitive" />
-              Aa
-            </label>
-          </div>
-          <div v-if="regexError" class="regex-error-message">
-            Invalid regex pattern
-          </div>
         </div>
         
         <div class="filter-group">
@@ -350,6 +333,27 @@ export default {
           <button @click="clearFilters" class="clear-btn">
             Clear
           </button>
+        </div>
+      </div>
+      
+      <div class="filters-row checkbox-row">
+        <div class="search-options">
+          <label class="checkbox-label">
+            <input type="checkbox" v-model="filters.useWildcard" :disabled="filters.useRegex" />
+            Wildcard (*?)
+          </label>
+          <label class="checkbox-label">
+            <input type="checkbox" v-model="filters.useRegex" :disabled="filters.useWildcard" />
+            Regex
+          </label>
+          <label class="checkbox-label">
+            <input type="checkbox" v-model="filters.caseSensitive" />
+            Case sensitive
+          </label>
+        </div>
+        
+        <div v-if="regexError" class="regex-error-message">
+          Invalid regex pattern
         </div>
       </div>
     </div>
@@ -665,10 +669,15 @@ export default {
   background: #c0392b;
 }
 
+.checkbox-row {
+  margin-top: 0.5rem;
+  margin-bottom: 0;
+}
+
 .search-options {
   display: flex;
-  gap: 0.5rem;
-  margin-top: 0.25rem;
+  gap: 1rem;
+  align-items: center;
 }
 
 .checkbox-label {
