@@ -441,6 +441,7 @@ ipcMain.handle('rigctld:capabilities', async () => {
 // Execute command handler
 ipcMain.handle('execute:command', async (_, command: string) => {
   try {
+    ##AI! `require()` style import is forbidden
     const { exec } = require('child_process');
     
     return new Promise((resolve) => {
