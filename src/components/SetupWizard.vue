@@ -78,6 +78,12 @@ export default {
         }
       }
     },
+    handleKeydown(event: KeyboardEvent) {
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        this.nextStep();
+      }
+    },
     prevStep() {
       if (this.currentStep > 1) {
         this.currentStep--;
@@ -231,7 +237,7 @@ export default {
 </script>
 
 <template>
-  <div class="wizard-overlay">
+  <div class="wizard-overlay" @keydown="handleKeydown">
     <div class="wizard-container">
       <div class="wizard-header">
         <h1>HamLogger Initial Setup</h1>
