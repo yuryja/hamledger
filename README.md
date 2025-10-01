@@ -6,7 +6,8 @@
 
 _If you find my work valuable, please consider to Sponsor or Donate!_
 
-![image](./public/qso.png) ![image](./public/logbook.png)
+![image](./public/qso.png) 
+![image](./public/dxcluster.png) ![image](./public/logbook.png) ![image](./public/qso_detail.png)
 
 A modern amateur radio logging application built with Vue 3, TypeScript, and Electron.
 It just works.
