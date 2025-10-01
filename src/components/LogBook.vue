@@ -43,7 +43,6 @@ export default {
         useWildcard: false,
         caseSensitive: false,
       },
-      regexError: false,
     };
   },
   computed: {
@@ -66,14 +65,10 @@ export default {
 
         // Validate regex if regex mode is enabled
         if (this.filters.useRegex) {
-          ##AI! Unexpected side effect in "filteredQsos" computed property
-          this.regexError = !TextMatcher.isValidRegex(this.filters.searchText);
           if (this.regexError) {
             // If regex is invalid, don't filter
             return filtered;
           }
-        } else {
-          this.regexError = false;
         }
 
         filtered = filtered.filter(qso => 
@@ -128,6 +123,9 @@ export default {
     },
     filteredCount() {
       return this.filteredQsos.length;
+    },
+    regexError() {
+      return this.filters.useRegex && !TextMatcher.isValidRegex(this.filters.searchText);
     },
     visibleQsos() {
       const start = this.visibleStartIndex;
@@ -246,7 +244,6 @@ export default {
         useWildcard: false,
         caseSensitive: false,
       };
-      this.regexError = false;
       this.updateVisibleRange();
     },
   },
