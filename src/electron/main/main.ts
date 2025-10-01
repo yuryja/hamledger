@@ -644,10 +644,8 @@ ipcMain.handle('settings:load', async () => {
       const settings = JSON.parse(fs.readFileSync(userSettingsPath, 'utf8'));
       return settings;
     }
-    // If no user settings exist, load and save defaults
-    const defaultSettings = JSON.parse(fs.readFileSync(defaultSettingsPath, 'utf8'));
-    fs.writeFileSync(userSettingsPath, JSON.stringify(defaultSettings, null, 2));
-    return defaultSettings;
+    // Return null if no user settings exist - this will trigger setup wizard
+    return null;
   } catch (error) {
     console.error('Error loading settings:', error);
     return null;

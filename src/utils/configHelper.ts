@@ -18,10 +18,14 @@ export class ConfigHelper {
       const settings = await window.electronAPI.loadSettings();
       if (settings) {
         this.settings = settings;
+      } else {
+        // No settings found, throw error to trigger setup wizard
+        throw new Error('No settings found');
       }
     } catch (error) {
       console.error('Error loading settings:', error);
-      this.settings = defaultSettings;
+      // Re-throw the error so App.vue can catch it and show setup wizard
+      throw error;
     }
   }
 
