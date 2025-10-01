@@ -98,7 +98,9 @@ export const BAND_RANGES: BandRange[] = [
 export type IARURegion = 'IARU1' | 'IARU2' | 'IARU3';
 
 export function getBandFromFrequency(freq: number): BandRange | null {
-  return BAND_RANGES.find(band => freq >= band.min && freq <= band.max) || null;
+  // Convert Hz to kHz for comparison with band ranges
+  const freqKHz = freq / 1000;
+  return BAND_RANGES.find(band => freqKHz >= band.min && freqKHz <= band.max) || null;
 }
 
 export function getBandByShortName(shortName: string): BandRange | null {
