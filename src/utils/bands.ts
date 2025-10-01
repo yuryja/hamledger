@@ -1,4 +1,4 @@
-import { ConfigHelper}  from './configHelper'
+import { ConfigHelper } from './configHelper';
 
 export interface BandRange {
   name: string;
@@ -105,10 +105,13 @@ export function getBandByShortName(shortName: string): BandRange | null {
   return BAND_RANGES.find(band => band.shortName === shortName) || null;
 }
 
-export function getRegionalBandRange(shortName: string, region?: IARURegion): { min: number; max: number } | null {
+export function getRegionalBandRange(
+  shortName: string,
+  region?: IARURegion
+): { min: number; max: number } | null {
   const band = getBandByShortName(shortName);
   if (!band) return null;
-  
+
   // Use provided region or try to get from config, fallback to IARU1
   const targetRegion = region || getConfiguredRegion();
   return band[targetRegion];
@@ -117,8 +120,8 @@ export function getRegionalBandRange(shortName: string, region?: IARURegion): { 
 export function getConfiguredRegion(): IARURegion {
   try {
     // Import configHelper dynamically to avoid circular dependencies
-      const configHelper = new ConfigHelper()
-      return configHelper.getIARURegion();
+    const configHelper = new ConfigHelper();
+    return configHelper.getIARURegion();
   } catch {
     // Fallback to IARU1 if configHelper is not available
     return 'IARU1';

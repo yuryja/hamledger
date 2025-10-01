@@ -16,6 +16,7 @@ export function parseAdif(content: string): AdifRecord[] {
   let match;
 
   while ((match = regex.exec(body)) !== null) {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [_, name, length, type, value] = match;
     const fieldName = name.toLowerCase();
 

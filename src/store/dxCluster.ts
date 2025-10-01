@@ -1,10 +1,10 @@
 import { defineStore } from 'pinia';
-import type { 
-  DxClusterFilters, 
-  DxSpot, 
-  FrequencyRange, 
+import type {
+  DxClusterFilters,
+  DxSpot,
+  FrequencyRange,
   FilterArrayKey,
-  DxSpotApiResponse 
+  DxSpotApiResponse,
 } from '../types/dxCluster';
 import { getBandFrequencyRange, getAllBandShortNames } from '../utils/bands';
 
@@ -15,7 +15,6 @@ interface DxClusterState {
   lastFetchTime: Date | null;
   filters: DxClusterFilters;
 }
-
 
 export const useDxClusterStore = defineStore('dxCluster', {
   state: (): DxClusterState => ({
@@ -84,30 +83,32 @@ export const useDxClusterStore = defineStore('dxCluster', {
         }
 
         // Process and deduplicate spots
-        const rawSpots: DxSpot[] = result.data.map((spot: DxSpot): DxSpot => ({
-          Nr: spot.Nr || 0,
-          Spotter: spot.Spotter || '',
-          Frequency: spot.Frequency || '0',
-          DXCall: spot.DXCall || '',
-          Time: spot.Time || '',
-          Date: spot.Date || '',
-          Beacon: spot.Beacon || false,
-          MM: spot.MM || false,
-          AM: spot.AM || false,
-          Valid: spot.Valid || false,
-          EQSL: spot.EQSL,
-          LOTW: spot.LOTW,
-          LOTW_Date: spot.LOTW_Date,
-          DXHomecall: spot.DXHomecall || '',
-          Comment: spot.Comment || '',
-          Flag: spot.Flag || '',
-          Band: spot.Band || 0,
-          Mode: spot.Mode || 'UNKNOWN',
-          Continent_dx: spot.Continent_dx || '',
-          Continent_spotter: spot.Continent_spotter || '',
-          DXLocator: spot.DXLocator,
-          Spotters: [], // Initialize empty array, will be populated during deduplication
-        }));
+        const rawSpots: DxSpot[] = result.data.map(
+          (spot: DxSpot): DxSpot => ({
+            Nr: spot.Nr || 0,
+            Spotter: spot.Spotter || '',
+            Frequency: spot.Frequency || '0',
+            DXCall: spot.DXCall || '',
+            Time: spot.Time || '',
+            Date: spot.Date || '',
+            Beacon: spot.Beacon || false,
+            MM: spot.MM || false,
+            AM: spot.AM || false,
+            Valid: spot.Valid || false,
+            EQSL: spot.EQSL,
+            LOTW: spot.LOTW,
+            LOTW_Date: spot.LOTW_Date,
+            DXHomecall: spot.DXHomecall || '',
+            Comment: spot.Comment || '',
+            Flag: spot.Flag || '',
+            Band: spot.Band || 0,
+            Mode: spot.Mode || 'UNKNOWN',
+            Continent_dx: spot.Continent_dx || '',
+            Continent_spotter: spot.Continent_spotter || '',
+            DXLocator: spot.DXLocator,
+            Spotters: [], // Initialize empty array, will be populated during deduplication
+          })
+        );
 
         // Deduplicate spots by callsign and frequency
         const spotMap = new Map<string, DxSpot>();

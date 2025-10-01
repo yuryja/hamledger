@@ -36,11 +36,14 @@ export default {
     this.updateUTCClock();
     this.clockInterval = window.setInterval(this.updateUTCClock, 1000);
     await this.propStore.updatePropagationData();
-    
+
     // Frissítjük a propagációs adatokat 15 percenként
-    setInterval(() => {
-      this.propStore.updatePropagationData();
-    }, 15 * 60 * 1000);
+    setInterval(
+      () => {
+        this.propStore.updatePropagationData();
+      },
+      15 * 60 * 1000
+    );
 
     // Betöltjük a helyi időjárást a config maidenhead locator alapján
     await this.loadLocalWeather();
@@ -58,7 +61,7 @@ export default {
       try {
         await configHelper.initSettings();
         const grid = configHelper.getSetting(['station'], 'grid');
-        
+
         if (grid) {
           const coords = MaidenheadLocator.gridToLatLon(grid);
           await this.weatherStore.updateWeatherInfo(coords.lat, coords.lon);
@@ -85,11 +88,15 @@ export default {
         <div v-else class="prop-data">
           <div class="prop-item">
             <span class="prop-label">SFI</span>
-            <span class="prop-value" :style="{ color: sfiColor }">{{ propStore.propData.sfi }}</span>
+            <span class="prop-value" :style="{ color: sfiColor }">{{
+              propStore.propData.sfi
+            }}</span>
           </div>
           <div class="prop-item">
             <span class="prop-label">A</span>
-            <span class="prop-value" :style="{ color: aIndexColor }">{{ propStore.propData.aIndex }}</span>
+            <span class="prop-value" :style="{ color: aIndexColor }">{{
+              propStore.propData.aIndex
+            }}</span>
           </div>
           <div class="prop-item">
             <span class="prop-label">K</span>

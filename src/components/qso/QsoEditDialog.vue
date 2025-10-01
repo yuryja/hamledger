@@ -33,20 +33,20 @@ export default {
   watch: {
     show(newVal) {
       if (newVal && this.qso) {
-        this.editedQso = { 
+        this.editedQso = {
           ...this.qso,
           _id: this.qso._id,
-          _rev: this.qso._rev
+          _rev: this.qso._rev,
         };
       }
     },
     qso: {
       handler(newQso) {
         if (newQso && this.show) {
-          this.editedQso = { 
+          this.editedQso = {
             ...newQso,
             _id: newQso._id,
-            _rev: newQso._rev
+            _rev: newQso._rev,
           };
         }
       },
@@ -55,10 +55,10 @@ export default {
   },
   created() {
     if (this.qso) {
-      this.editedQso = { 
+      this.editedQso = {
         ...this.qso,
         _id: this.qso._id,
-        _rev: this.qso._rev
+        _rev: this.qso._rev,
       };
     }
   },
@@ -69,19 +69,22 @@ export default {
         console.log('Original QSO:', this.qso);
         console.log('Edited QSO:', this.editedQso);
         console.log('QSO keys:', Object.keys(this.qso));
-        
+
         // Check if we have the required PouchDB fields
         const qsoId = this.qso._id || this.qso.id;
         const qsoRev = this.qso._rev || this.qso.rev;
-        
+
         console.log('Available QSO fields:', Object.keys(this.qso));
         console.log('QSO _id:', qsoId);
         console.log('QSO _rev:', qsoRev);
-        
+
         if (!qsoId) {
           console.error('QSO _id is missing from:', this.qso);
           console.error('All QSO keys:', Object.keys(this.qso));
-          throw new Error('QSO _id is missing - cannot update QSO without ID. Available keys: ' + Object.keys(this.qso).join(', '));
+          throw new Error(
+            'QSO _id is missing - cannot update QSO without ID. Available keys: ' +
+              Object.keys(this.qso).join(', ')
+          );
         }
 
         // Ensure all required fields are present, including PouchDB required fields
@@ -91,21 +94,25 @@ export default {
           _id: qsoId,
           _rev: qsoRev,
           // Ensure numeric fields are properly converted
-          freqRx: typeof this.editedQso.freqRx === 'string' 
-            ? parseFloat(this.editedQso.freqRx) 
-            : this.editedQso.freqRx,
-          freqTx: typeof this.editedQso.freqTx === 'string' 
-            ? (this.editedQso.freqTx === '--' ? '--' : parseFloat(this.editedQso.freqTx))
-            : this.editedQso.freqTx,
+          freqRx:
+            typeof this.editedQso.freqRx === 'string'
+              ? parseFloat(this.editedQso.freqRx)
+              : this.editedQso.freqRx,
+          freqTx:
+            typeof this.editedQso.freqTx === 'string'
+              ? this.editedQso.freqTx === '--'
+                ? '--'
+                : parseFloat(this.editedQso.freqTx)
+              : this.editedQso.freqTx,
         };
 
         console.log('Final QSO to update:', qsoToUpdate);
         console.log('QSO _id:', qsoToUpdate._id);
         console.log('QSO _rev:', qsoToUpdate._rev);
-        
+
         await this.qsoStore.updateQso(qsoToUpdate);
         console.log('QSO saved successfully');
-        
+
         // Get the updated QSO from the store
         const updatedQso = this.qsoStore.allQsos.find(q => (q._id || q.id) === qsoId);
         this.$emit('qso-saved', updatedQso || qsoToUpdate);

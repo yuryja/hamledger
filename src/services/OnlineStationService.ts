@@ -13,5 +13,6 @@ export abstract class OnlineStationService {
     return new Error(message);
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   protected abstract mapToBaseStationData(rawData: any): BaseStationData;
 }

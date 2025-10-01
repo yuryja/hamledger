@@ -58,7 +58,7 @@ export interface StationData {
     label: string;
   }[];
   distance?: number;
-  portableSuffix: string | null,
+  portableSuffix: string | null;
   qrzError?: boolean;
 }
 

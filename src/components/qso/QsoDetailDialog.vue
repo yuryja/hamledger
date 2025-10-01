@@ -1,6 +1,7 @@
 <script lang="ts">
 import { useQsoStore } from '../../store/qso';
 import { QsoEntry } from '../../types/qso';
+import { StationData } from '../../types/station';
 import QsoEditDialog from './QsoEditDialog.vue';
 
 export default {
@@ -25,7 +26,7 @@ export default {
   data() {
     return {
       showEditMode: false,
-      stationInfo: null as any,
+      stationInfo: {} as StationData,
     };
   },
   watch: {
@@ -73,7 +74,13 @@ export default {
         </button>
       </div>
 
-      <QsoEditDialog v-if="showEditMode" :qso="qso" :show="true" @close="onEditComplete" @qso-saved="onEditComplete" />
+      <QsoEditDialog
+        v-if="showEditMode"
+        :qso="qso"
+        :show="true"
+        @close="onEditComplete"
+        @qso-saved="onEditComplete"
+      />
 
       <div v-else class="qso-details">
         <div class="main-info">

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { defineStore } from 'pinia';
 import '../types/electron';
 
@@ -18,10 +17,10 @@ export const useWeatherStore = defineStore('weather', {
 
       try {
         const response = await window.electronAPI.fetchWeather(lat, lon);
-        
+
         if (response.success && response.data?.current_weather) {
           const { temperature, weathercode } = response.data.current_weather;
-          
+
           // Use the weather description mapping from utils/weather.ts
           const WMO_CODES: { [key: number]: string } = {
             0: 'Clear sky',
@@ -45,7 +44,7 @@ export const useWeatherStore = defineStore('weather', {
             82: 'Violent rain showers',
             95: 'Thunderstorm',
           };
-          
+
           const description = WMO_CODES[weathercode] || 'Unknown';
           this.weatherInfo = `${Math.round(temperature)}°C ${description}`;
         } else {

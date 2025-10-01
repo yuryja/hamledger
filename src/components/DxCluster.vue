@@ -5,23 +5,22 @@ import type { DxSpot } from '../types/dxCluster';
 import { useQsoStore } from '../store/qso';
 import { useRigStore } from '../store/rig';
 import type { MagnifierPosition, ScaleTick, LayoutSpot, TimerHandle } from '../types/dxCluster';
-import { getBandFromFrequency } from '../utils/bands';
 
 export default defineComponent({
   name: 'DxCluster',
-  
+
   setup() {
     const dxStore = useDxClusterStore();
     const qsoStore = useQsoStore();
     const rigStore = useRigStore();
-    
+
     return {
       dxStore,
       qsoStore,
       rigStore,
     };
   },
-  
+
   data() {
     return {
       magnifierVisible: false as boolean,
@@ -29,7 +28,7 @@ export default defineComponent({
       magnifierPosition: { x: 0, y: 0 } as MagnifierPosition,
       magnifierFrequency: '' as string,
       magnifierTimeout: null as TimerHandle | null,
-      
+
       // Available options
       continents: ['EU', 'NA', 'SA', 'AS', 'AF', 'OC', 'AN'] as readonly string[],
       modes: ['PHONE', 'CW', 'FT8', 'FT4', 'RTTY', 'PSK31'] as readonly string[],
@@ -41,23 +40,23 @@ export default defineComponent({
     spots(): DxSpot[] {
       return this.dxStore.spots;
     },
-    
+
     error(): string | null {
       return this.dxStore.error;
     },
-    
+
     filters() {
       return this.dxStore.filters;
     },
-    
+
     availableBands(): string[] {
       return this.dxStore.availableBands;
     },
-    
+
     layoutSpots(): LayoutSpot[] {
       return this.getSpotLayout();
     },
-    
+
     scaleTicks(): { major: ScaleTick[]; minor: ScaleTick[] } {
       return this.generateScaleTicks();
     },

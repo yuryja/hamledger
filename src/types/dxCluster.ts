@@ -50,7 +50,10 @@ export interface FrequencyRange {
   max: number;
 }
 
-export type FilterArrayKey = keyof Pick<DxClusterFilters, 'selectedCdx' | 'selectedCde' | 'selectedModes'>;
+export type FilterArrayKey = keyof Pick<
+  DxClusterFilters,
+  'selectedCdx' | 'selectedCde' | 'selectedModes'
+>;
 
 export interface DxSpotApiResponse {
   success: boolean;

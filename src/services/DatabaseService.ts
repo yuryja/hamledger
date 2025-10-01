@@ -44,13 +44,13 @@ export class DatabaseService {
     try {
       // Get the latest version of the document to ensure we have the current _rev
       const currentDoc = await this.db.get(qso._id!);
-      
+
       // Merge the updates with the current document, preserving the latest _rev
       const updatedQso = {
         ...qso,
         _rev: currentDoc._rev,
       };
-      
+
       const response = await this.db.put(updatedQso);
       await this.backupToJson();
       return { ok: true, id: response.id, rev: response.rev };

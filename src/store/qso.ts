@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { defineStore } from 'pinia';
 import { useRigStore } from './rig';
 import { StationData, BaseStationData, GeoData } from '../types/station';
@@ -13,7 +12,6 @@ import * as countries from 'i18n-iso-countries';
 import en from 'i18n-iso-countries/langs/en.json';
 import '../types/electron';
 countries.registerLocale(en);
-
 
 export const useQsoStore = defineStore('qso', {
   state: () => ({
@@ -128,29 +126,29 @@ export const useQsoStore = defineStore('qso', {
       try {
         console.log('Store updateQso called with:', updatedQso);
         console.log('QSO keys:', Object.keys(updatedQso));
-        
+
         const qsoId = updatedQso._id || updatedQso.id;
         const qsoRev = updatedQso._rev || updatedQso.rev;
-        
+
         if (!qsoId) {
           console.error('QSO object:', updatedQso);
           throw new Error('QSO _id is required for update');
         }
-        
+
         // Ensure the QSO has the correct _id format
         const qsoToUpdate = {
           ...updatedQso,
           _id: qsoId,
           _rev: qsoRev,
         };
-        
+
         const response = await window.electronAPI.updateQso(qsoToUpdate);
         console.log('Update response:', response);
-        
+
         if (response.ok) {
           // Update the _rev with the new revision from the response
           const updatedQsoWithNewRev = { ...qsoToUpdate, _rev: response.rev };
-          
+
           // Update in current session if present
           const sessionIndex = this.currentSession.findIndex(qso => (qso._id || qso.id) === qsoId);
           if (sessionIndex !== -1) {
@@ -162,7 +160,7 @@ export const useQsoStore = defineStore('qso', {
           if (allIndex !== -1) {
             this.allQsos[allIndex] = updatedQsoWithNewRev;
           }
-          
+
           // Refresh the store to ensure we have the latest data
           await this.initializeStore();
         } else {
@@ -236,10 +234,10 @@ export const useQsoStore = defineStore('qso', {
         // Try to get additional info from QRZ
         // Reset QRZ error state at the beginning of each lookup
         this.stationInfo.qrzError = false;
-        
+
         // First try with the full callsign (including portable prefixes/suffixes)
         let qrzData = await qrzService.lookupStationByCallsign(callsign);
-        
+
         // If not found, try with base callsign (remove portable prefixes and suffixes)
         if (qrzData instanceof Error) {
           const baseCallsign = CallsignHelper.extractBaseCallsign(callsign);
@@ -247,7 +245,7 @@ export const useQsoStore = defineStore('qso', {
             qrzData = await qrzService.lookupStationByCallsign(baseCallsign);
           }
         }
-        
+
         if (qrzData instanceof Error) {
           this.stationInfo.qrzError = true;
           console.error('QRZ lookup failed:', qrzData);
@@ -308,7 +306,10 @@ export const useQsoStore = defineStore('qso', {
         }
 
         // Get weather if we have coordinates
-        if (this.stationInfo.geodata.lat !== undefined && this.stationInfo.geodata.lon !== undefined) {
+        if (
+          this.stationInfo.geodata.lat !== undefined &&
+          this.stationInfo.geodata.lon !== undefined
+        ) {
           try {
             const response = await window.electronAPI.fetchWeather(
               this.stationInfo.geodata.lat,
@@ -316,7 +317,7 @@ export const useQsoStore = defineStore('qso', {
             );
             if (response.success && response.data?.current_weather) {
               const { temperature, weathercode } = response.data.current_weather;
-              
+
               // Use the weather description mapping
               const WMO_CODES: { [key: number]: string } = {
                 0: 'Clear sky',
@@ -340,7 +341,7 @@ export const useQsoStore = defineStore('qso', {
                 82: 'Violent rain showers',
                 95: 'Thunderstorm',
               };
-              
+
               const description = WMO_CODES[weathercode] || 'Unknown';
               this.stationInfo.weather = `${Math.round(temperature)}°C, ${description}`;
             }
@@ -365,7 +366,6 @@ export const useQsoStore = defineStore('qso', {
         return error;
       }
     },
-
   },
   getters: {
     sessionCount: state => state.currentSession.length,

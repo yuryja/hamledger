@@ -14,7 +14,7 @@ interface FetchOptions {
     Accept: string;
   };
   timeout: number;
-  agent?: HttpsProxyAgent;
+  agent?: HttpsProxyAgent<string>;
 }
 
 const isDev = process.env.npm_lifecycle_event === 'app:dev' ? true : false;
@@ -54,11 +54,13 @@ ipcMain.handle('qso:add', async (_, qso) => {
 ipcMain.handle('qso:getAllDocs', async () => {
   try {
     const qsos = await databaseService.getAllQsos();
-    return { rows: qsos.map(doc => ({ 
-      doc,
-      id: doc._id,
-      value: { rev: doc._rev }
-    })) };
+    return {
+      rows: qsos.map(doc => ({
+        doc,
+        id: doc._id,
+        value: { rev: doc._rev },
+      })),
+    };
   } catch (error) {
     console.error('Failed to get all docs:', error);
     return { rows: [] };
@@ -165,13 +167,13 @@ ipcMain.handle('fetchWeather', async (event, lat: number, lon: number) => {
   try {
     const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`;
 
-        // Check for proxy environment variables
+    // Check for proxy environment variables
     const proxyUrl =
       process.env.HTTPS_PROXY ||
       process.env.https_proxy ||
       process.env.HTTP_PROXY ||
       process.env.http_proxy;
-  
+
     const fetchOptions: FetchOptions = {
       headers: {
         'User-Agent': 'HamLogger/1.0',

@@ -352,17 +352,17 @@ export class CallsignHelper {
    */
   public static extractBaseCallsign(callsign: string): string {
     let baseCall = callsign.toUpperCase();
-    
+
     // Remove portable prefix (e.g., DL/HA5XB -> HA5XB)
     if (baseCall.includes('/')) {
       const parts = baseCall.split('/');
-      
+
       // If there are multiple parts, find the main callsign
       // Usually the longest part or the one that matches callsign pattern best
       if (parts.length === 2) {
         // Simple case: PREFIX/CALL or CALL/SUFFIX
         const [first, second] = parts;
-        
+
         // Check which part looks more like a base callsign
         // Base callsign usually has numbers and is longer
         if (this.looksLikeBaseCallsign(first) && this.looksLikeBaseCallsign(second)) {
@@ -381,12 +381,12 @@ export class CallsignHelper {
         baseCall = parts[1];
       } else if (parts.length > 3) {
         // Complex case, find the part that looks most like a base callsign
-        baseCall = parts.reduce((best, current) => 
+        baseCall = parts.reduce((best, current) =>
           this.looksLikeBaseCallsign(current) && current.length > best.length ? current : best
         );
       }
     }
-    
+
     return baseCall;
   }
 
@@ -407,23 +407,22 @@ export class CallsignHelper {
   public static async getFlagUrl(callsign: string): Promise<string> {
     const upperCallsign = callsign.toUpperCase();
     let flagUrl = '';
-    let isComposite = false;
-    
+
     // Check if it's a portable operation
     if (upperCallsign.includes('/')) {
       const parts = upperCallsign.split('/');
-      
+
       if (parts.length === 2) {
         const [first, second] = parts;
-        
+
         // Determine which is prefix and which is base callsign
         let prefixCountry = '';
         let baseCountry = '';
-        
+
         // Check if either part is a portable suffix (P, M, MM, AM)
         const isFirstPortableSuffix = ['P', 'M', 'MM', 'AM'].includes(first);
         const isSecondPortableSuffix = ['P', 'M', 'MM', 'AM'].includes(second);
-        
+
         if (this.looksLikeBaseCallsign(first) && this.looksLikeBaseCallsign(second)) {
           // Both look like callsigns, treat first as prefix
           prefixCountry = this.getCountryCodeForCallsign(first);
@@ -437,46 +436,51 @@ export class CallsignHelper {
           baseCountry = this.getCountryCodeForCallsign(first);
           prefixCountry = this.getCountryCodeForCallsign(second);
         }
-        
+
         // Only create composite flag if we have two different countries AND neither is a portable suffix
-        if (prefixCountry && baseCountry && prefixCountry !== baseCountry && 
-            prefixCountry !== 'xx' && baseCountry !== 'xx' &&
-            !isFirstPortableSuffix && !isSecondPortableSuffix) {
+        if (
+          prefixCountry &&
+          baseCountry &&
+          prefixCountry !== baseCountry &&
+          prefixCountry !== 'xx' &&
+          baseCountry !== 'xx' &&
+          !isFirstPortableSuffix &&
+          !isSecondPortableSuffix
+        ) {
           flagUrl = await this.createCompositeFlagUrl(prefixCountry, baseCountry);
-          isComposite = true;
         }
       } else if (parts.length === 3) {
         // Handle three-part callsigns like MM/HA5XB/MM
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const [first, middle, third] = parts;
-        
+
         // Middle part is usually the base callsign
         if (this.looksLikeBaseCallsign(middle)) {
           const baseCountry = this.getCountryCodeForCallsign(middle);
-          
+
           // Check if first part gives a valid country code (could be prefix like MM for UK)
           const firstCountry = this.getCountryCodeForCallsign(first);
-          
+
           // Create composite flag if first part is a valid country different from base
           if (firstCountry !== 'xx' && firstCountry !== baseCountry && baseCountry !== 'xx') {
             flagUrl = await this.createCompositeFlagUrl(firstCountry, baseCountry);
-            isComposite = true;
           }
         }
       }
     }
-    
+
     // If no composite flag was created, use regular single country flag
     if (!flagUrl) {
       const countryCode = this.getCountryCodeForCallsign(upperCallsign);
       flagUrl = countryCode !== 'xx' ? `https://flagcdn.com/h80/${countryCode}.png` : '';
     }
-    
+
     // Check for portable suffixes and add icon if needed
     const portableSuffix = this.getPortableSuffix(upperCallsign);
     if (portableSuffix && flagUrl) {
-      return await this.addPortableIcon(flagUrl, portableSuffix, isComposite);
+      return await this.addPortableIcon(flagUrl, portableSuffix);
     }
-    
+
     return flagUrl;
   }
 
@@ -487,10 +491,10 @@ export class CallsignHelper {
    */
   public static getPortableSuffix(callsign: string): string | null {
     const upperCallsign = callsign.toUpperCase();
-    
+
     if (upperCallsign.includes('/')) {
       const parts = upperCallsign.split('/');
-      
+
       // Check all parts for portable suffixes, prioritize the last one
       for (let i = parts.length - 1; i >= 0; i--) {
         if (['P', 'M', 'MM', 'AM'].includes(parts[i])) {
@@ -498,7 +502,7 @@ export class CallsignHelper {
         }
       }
     }
-    
+
     return null;
   }
 
@@ -509,67 +513,67 @@ export class CallsignHelper {
    * @param isComposite - Whether the flag is already a composite
    * @returns Promise that resolves to data URL with portable icon
    */
-  private static async addPortableIcon(flagUrl: string, suffix: string, isComposite: boolean): Promise<string> {
-    return new Promise<string>((resolve) => {
+  private static async addPortableIcon(flagUrl: string, suffix: string): Promise<string> {
+    return new Promise<string>(resolve => {
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
       if (!ctx) {
         resolve(flagUrl);
         return;
       }
-      
+
       canvas.width = 80;
       canvas.height = 60;
-      
+
       const flagImg = new Image();
       flagImg.crossOrigin = 'anonymous';
-      
+
       flagImg.onload = () => {
         // Draw the base flag
         ctx.drawImage(flagImg, 0, 0, canvas.width, canvas.height);
-        
+
         // Get the appropriate icon URL
         const iconUrl = this.getPortableIconUrl(suffix);
         if (!iconUrl) {
           resolve(canvas.toDataURL());
           return;
         }
-        
+
         // Load and draw the icon
         const iconImg = new Image();
         iconImg.crossOrigin = 'anonymous';
-        
+
         iconImg.onload = () => {
           // Draw portable icon in bottom-right corner
           const iconSize = 20;
           const iconX = canvas.width - iconSize - 2;
           const iconY = canvas.height - iconSize - 2;
-          
+
           // Draw background circle for icon
           ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
           ctx.beginPath();
-          ctx.arc(iconX + iconSize/2, iconY + iconSize/2, iconSize/2 + 1, 0, 2 * Math.PI);
+          ctx.arc(iconX + iconSize / 2, iconY + iconSize / 2, iconSize / 2 + 1, 0, 2 * Math.PI);
           ctx.fill();
-          
+
           // Draw border
           ctx.strokeStyle = '#333';
           ctx.lineWidth = 1;
           ctx.stroke();
-          
+
           // Draw the icon
           ctx.drawImage(iconImg, iconX, iconY, iconSize, iconSize);
-          
+
           resolve(canvas.toDataURL());
         };
-        
+
         iconImg.onerror = () => {
           // Fallback to original flag if icon fails to load
           resolve(canvas.toDataURL());
         };
-        
+
         iconImg.src = iconUrl;
       };
-      
+
       flagImg.onerror = () => resolve(flagUrl);
       flagImg.src = flagUrl;
     });
@@ -582,12 +586,12 @@ export class CallsignHelper {
    */
   private static getPortableIconUrl(suffix: string): string | null {
     const iconUrls = {
-      'P': 'https://img.icons8.com/?size=100&id=25055&format=png&color=000000', // Portable - walking person
-      'M': 'https://img.icons8.com/?size=100&id=1548&format=png&color=000000',  // Mobile - handheld radio
-      'MM': 'https://img.icons8.com/?size=100&id=17856&format=png&color=000000', // Maritime Mobile - ship
-      'AM': 'https://img.icons8.com/?size=100&id=2487&format=png&color=000000'   // Aeronautical Mobile - airplane
+      P: 'https://img.icons8.com/?size=100&id=25055&format=png&color=000000', // Portable - walking person
+      M: 'https://img.icons8.com/?size=100&id=1548&format=png&color=000000', // Mobile - handheld radio
+      MM: 'https://img.icons8.com/?size=100&id=17856&format=png&color=000000', // Maritime Mobile - ship
+      AM: 'https://img.icons8.com/?size=100&id=2487&format=png&color=000000', // Aeronautical Mobile - airplane
     };
-    
+
     return iconUrls[suffix] || null;
   }
 
@@ -598,15 +602,14 @@ export class CallsignHelper {
    */
   public static getPortableSuffixMeaning(suffix: string): string | null {
     const meanings = {
-      'P': 'Portable',
-      'M': 'Mobile',
-      'MM': 'Maritime Mobile',
-      'AM': 'Aeronautical Mobile'
+      P: 'Portable',
+      M: 'Mobile',
+      MM: 'Maritime Mobile',
+      AM: 'Aeronautical Mobile',
     };
-    
+
     return meanings[suffix] || null;
   }
-
 
   /**
    * Create a composite flag from two country codes
@@ -615,8 +618,11 @@ export class CallsignHelper {
    * @param baseCountry - Country code for the base callsign
    * @returns Promise that resolves to data URL for the composite flag
    */
-  private static async createCompositeFlagUrl(prefixCountry: string, baseCountry: string): Promise<string> {
-    return new Promise<string>((resolve) => {
+  private static async createCompositeFlagUrl(
+    prefixCountry: string,
+    baseCountry: string
+  ): Promise<string> {
+    return new Promise<string>(resolve => {
       // Create a canvas element
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
@@ -624,26 +630,26 @@ export class CallsignHelper {
         resolve(`https://flagcdn.com/h80/${baseCountry}.png`);
         return;
       }
-      
+
       canvas.width = 80;
       canvas.height = 60;
-      
+
       // Create image elements for both flags
       const prefixImg = new Image();
       const baseImg = new Image();
-      
+
       // Set CORS to allow loading external images
       prefixImg.crossOrigin = 'anonymous';
       baseImg.crossOrigin = 'anonymous';
-      
+
       let loadedCount = 0;
-      
+
       const onImageLoad = () => {
         loadedCount++;
         if (loadedCount === 2) {
           // Both images loaded, create composite
           ctx.clearRect(0, 0, canvas.width, canvas.height);
-          
+
           // Draw base country flag (top-left triangle)
           ctx.save();
           ctx.beginPath();
@@ -654,7 +660,7 @@ export class CallsignHelper {
           ctx.clip();
           ctx.drawImage(baseImg, 0, 0, canvas.width, canvas.height);
           ctx.restore();
-          
+
           // Draw prefix country flag (bottom-right triangle)
           ctx.save();
           ctx.beginPath();
@@ -665,7 +671,7 @@ export class CallsignHelper {
           ctx.clip();
           ctx.drawImage(prefixImg, 0, 0, canvas.width, canvas.height);
           ctx.restore();
-          
+
           // Add a diagonal line to separate the flags
           ctx.strokeStyle = '#333';
           ctx.lineWidth = 1;
@@ -673,19 +679,19 @@ export class CallsignHelper {
           ctx.moveTo(canvas.width, 0);
           ctx.lineTo(canvas.width, canvas.height);
           ctx.stroke();
-          
+
           resolve(canvas.toDataURL());
         }
       };
-      
+
       // Handle errors - fallback to base country flag
       const onError = () => resolve(`https://flagcdn.com/h80/${baseCountry}.png`);
-      
+
       prefixImg.onload = onImageLoad;
       baseImg.onload = onImageLoad;
       prefixImg.onerror = onError;
       baseImg.onerror = onError;
-      
+
       prefixImg.src = `https://flagcdn.com/h80/${prefixCountry}.png`;
       baseImg.src = `https://flagcdn.com/h80/${baseCountry}.png`;
     });
