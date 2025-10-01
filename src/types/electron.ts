@@ -14,6 +14,15 @@ declare global {
         lat: number,
         lon: number
       ) => Promise<{ success: boolean; data?: any; error?: string }>;
+      rigctldConnect: (
+        host: string,
+        port: number,
+        model?: number,
+        device?: string
+      ) => Promise<{ success: boolean; data?: any; error?: string }>;
+      rigctldDisconnect: () => Promise<{ success: boolean; data?: any; error?: string }>;
+      rigctldCommand: (command: string) => Promise<{ success: boolean; data?: any; error?: string }>;
+      rigctldGetCapabilities: () => Promise<{ success: boolean; data?: any; error?: string }>;
     };
   }
 }

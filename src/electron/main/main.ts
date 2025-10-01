@@ -4,6 +4,7 @@ import { app, BrowserWindow, ipcMain, dialog } from 'electron';
 import fs from 'fs';
 import fetch from 'node-fetch';
 import { HttpsProxyAgent } from 'https-proxy-agent';
+import { Socket } from 'net';
 import { parseAdif } from '../../utils/adif';
 import { QsoEntry } from '../../types/qso';
 import { databaseService } from '../../services/DatabaseService';
@@ -268,6 +269,172 @@ app.whenReady().then(() => {
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
     app.quit();
+  }
+});
+
+// Rigctld connection management
+let rigctldSocket: Socket | null = null;
+let rigctldHost = 'localhost';
+let rigctldPort = 4532;
+
+// Rigctld handlers
+ipcMain.handle('rigctld:connect', async (_, host: string, port: number, model?: number, device?: string) => {
+  try {
+    // Close existing connection if any
+    if (rigctldSocket) {
+      rigctldSocket.destroy();
+      rigctldSocket = null;
+    }
+
+    rigctldHost = host;
+    rigctldPort = port;
+
+    return new Promise((resolve) => {
+      rigctldSocket = new Socket();
+      
+      rigctldSocket.setTimeout(5000);
+      
+      rigctldSocket.on('connect', () => {
+        console.log(`Connected to rigctld at ${host}:${port}`);
+        resolve({ success: true, data: { connected: true } });
+      });
+
+      rigctldSocket.on('error', (error) => {
+        console.error('Rigctld connection error:', error);
+        rigctldSocket = null;
+        resolve({ success: false, error: error.message });
+      });
+
+      rigctldSocket.on('timeout', () => {
+        console.error('Rigctld connection timeout');
+        rigctldSocket?.destroy();
+        rigctldSocket = null;
+        resolve({ success: false, error: 'Connection timeout' });
+      });
+
+      rigctldSocket.connect(port, host);
+    });
+  } catch (error) {
+    console.error('Rigctld connect error:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error',
+    };
+  }
+});
+
+ipcMain.handle('rigctld:disconnect', async () => {
+  try {
+    if (rigctldSocket) {
+      rigctldSocket.destroy();
+      rigctldSocket = null;
+      console.log('Disconnected from rigctld');
+    }
+    return { success: true, data: { connected: false } };
+  } catch (error) {
+    console.error('Rigctld disconnect error:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error',
+    };
+  }
+});
+
+ipcMain.handle('rigctld:command', async (_, command: string) => {
+  try {
+    if (!rigctldSocket) {
+      return { success: false, error: 'Not connected to rigctld' };
+    }
+
+    return new Promise((resolve) => {
+      let responseData = '';
+      
+      const timeout = setTimeout(() => {
+        resolve({ success: false, error: 'Command timeout' });
+      }, 5000);
+
+      const onData = (data: Buffer) => {
+        responseData += data.toString();
+        
+        // Check if we have a complete response
+        if (responseData.includes('\n')) {
+          clearTimeout(timeout);
+          rigctldSocket?.off('data', onData);
+          
+          const lines = responseData.trim().split('\n');
+          
+          // Check for error response
+          if (lines[0].startsWith('RPRT ')) {
+            const errorCode = parseInt(lines[0].split(' ')[1]);
+            if (errorCode !== 0) {
+              resolve({ success: false, error: `Rigctld error code: ${errorCode}` });
+              return;
+            }
+          }
+          
+          // For get commands, return the data
+          if (lines.length > 1 && !lines[0].startsWith('RPRT ')) {
+            resolve({ success: true, data: lines.slice(0, -1) });
+          } else {
+            resolve({ success: true, data: null });
+          }
+        }
+      };
+
+      rigctldSocket?.on('data', onData);
+      rigctldSocket?.write(command + '\n');
+    });
+  } catch (error) {
+    console.error('Rigctld command error:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error',
+    };
+  }
+});
+
+ipcMain.handle('rigctld:capabilities', async () => {
+  try {
+    if (!rigctldSocket) {
+      return { success: false, error: 'Not connected to rigctld' };
+    }
+
+    return new Promise((resolve) => {
+      let responseData = '';
+      
+      const timeout = setTimeout(() => {
+        resolve({ success: false, error: 'Capabilities timeout' });
+      }, 10000);
+
+      const onData = (data: Buffer) => {
+        responseData += data.toString();
+        
+        // Check if we have a complete response (dump_caps ends with RPRT)
+        if (responseData.includes('RPRT ')) {
+          clearTimeout(timeout);
+          rigctldSocket?.off('data', onData);
+          
+          const lines = responseData.trim().split('\n');
+          const rprtIndex = lines.findIndex(line => line.startsWith('RPRT '));
+          
+          if (rprtIndex > 0) {
+            const capabilityLines = lines.slice(0, rprtIndex);
+            resolve({ success: true, data: capabilityLines });
+          } else {
+            resolve({ success: false, error: 'Invalid capabilities response' });
+          }
+        }
+      };
+
+      rigctldSocket?.on('data', onData);
+      rigctldSocket?.write('dump_caps\n');
+    });
+  } catch (error) {
+    console.error('Rigctld capabilities error:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error',
+    };
   }
 });
 
