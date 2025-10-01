@@ -67,7 +67,7 @@ async function startRigctld(): Promise<void> {
     // Get rig configuration from settings
     const rigConfig = settings?.rig || {};
     const rigModel = rigConfig.rigModel || 1025; // Default to Yaesu FT-1000MP
-    const rigDevice = rigConfig.device || '/dev/ttyUSB0'; // Default device
+    const rigDevice = rigConfig.device || ''; // Default device
     const rigPort = rigConfig.port || 4532; // Default port
     
     // Check if rigctld is already running on configured port
