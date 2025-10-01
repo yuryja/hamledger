@@ -445,9 +445,8 @@ export default {
                 showEditDialog = true;
               "
             >
-            ##AI! Object is possibly 'undefined'.
-              <td>{{ this.DateHelper.formatUTCDate(new Date(entry.datetime)) }}</td>
-              <td>{{ this.DateHelper.formatUTCTime(new Date(entry.datetime)) }}</td>
+              <td>{{ DateHelper.formatUTCDate(new Date(entry.datetime)) }}</td>
+              <td>{{ DateHelper.formatUTCTime(new Date(entry.datetime)) }}</td>
               <td>
                 <img
                   v-if="getCountryCodeForCallsign(entry.callsign) !== 'xx'"
