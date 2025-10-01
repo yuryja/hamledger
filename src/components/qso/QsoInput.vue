@@ -62,7 +62,7 @@ export default {
     },
     handleKeydown(e: KeyboardEvent) {
       const input = this.$refs.callsignInput as HTMLInputElement;
-      if (input.value != '' && e.shiftKey && e.key === 'Enter') {
+      if (input.value != '' && e.key === 'Enter') {
         e.preventDefault();
         this.qsoStore.addQso();
         // Refocus callsign input after adding QSO
