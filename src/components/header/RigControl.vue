@@ -10,6 +10,8 @@ export default {
       rigModel: '',
       rigPort: '',
       showConnectionDialog: false,
+      rigModels: [] as Array<{id: number, manufacturer: string, model: string, status: string}>,
+      loadingModels: false,
       connectionForm: {
         host: 'localhost',
         port: 4532,
@@ -20,6 +22,7 @@ export default {
   },
   async mounted() {
     await this.loadRigConfig();
+    await this.loadRigModels();
     // Auto-connect if configuration exists
     if (this.connectionForm.host && this.connectionForm.port) {
       await this.handleConnect();
@@ -39,6 +42,27 @@ export default {
       if (this.rigStore.isConnected) return 'status-connected';
       return 'status-disconnected';
     },
+    groupedModels() {
+      const grouped = new Map();
+      
+      for (const model of this.rigModels) {
+        if (!grouped.has(model.manufacturer)) {
+          grouped.set(model.manufacturer, {
+            name: model.manufacturer,
+            models: []
+          });
+        }
+        grouped.get(model.manufacturer).models.push(model);
+      }
+      
+      // Sort manufacturers and models within each group
+      const result = Array.from(grouped.values()).sort((a, b) => a.name.localeCompare(b.name));
+      result.forEach(group => {
+        group.models.sort((a, b) => a.model.localeCompare(b.model));
+      });
+      
+      return result;
+    },
   },
   methods: {
     async loadRigConfig() {
@@ -51,6 +75,48 @@ export default {
       this.connectionForm.port = configHelper.getSetting(['rig'], 'port') || 4532;
       this.connectionForm.model = configHelper.getSetting(['rig'], 'rigModel');
       this.connectionForm.device = configHelper.getSetting(['rig'], 'device');
+    },
+
+    async loadRigModels() {
+      this.loadingModels = true;
+      try {
+        const response = await window.electronAPI.executeCommand('rigctld -l');
+        if (response.success && response.data) {
+          this.rigModels = this.parseRigModels(response.data);
+        } else {
+          console.error('Failed to load rig models:', response.error);
+        }
+      } catch (error) {
+        console.error('Error loading rig models:', error);
+      } finally {
+        this.loadingModels = false;
+      }
+    },
+
+    parseRigModels(output: string): Array<{id: number, manufacturer: string, model: string, status: string}> {
+      const lines = output.split('\n');
+      const models = [];
+      
+      for (const line of lines) {
+        // Skip header and empty lines
+        if (line.trim() === '' || line.includes('Rig #') || line.includes('---')) {
+          continue;
+        }
+        
+        // Parse each line: "  1025  Yaesu                  MARK-V Field FT-1000MP  20210318.0      Stable      RIG_MODEL_FT1000MPMKVFLD"
+        const match = line.match(/^\s*(\d+)\s+([^\s]+)\s+(.+?)\s+\d{8}\.\d+\s+(Alpha|Beta|Stable|Untested)\s+/);
+        if (match) {
+          const [, id, manufacturer, model, status] = match;
+          models.push({
+            id: parseInt(id),
+            manufacturer: manufacturer.trim(),
+            model: model.trim(),
+            status: status.trim()
+          });
+        }
+      }
+      
+      return models;
     },
     
     async handleConnect() {
@@ -175,12 +241,24 @@ export default {
           </div>
           <div class="form-group">
             <label for="model">Rig Model (optional):</label>
-            <input
+            <select
               id="model"
               v-model.number="connectionForm.model"
-              type="number"
-              placeholder="e.g. 1025"
-            />
+              :disabled="loadingModels"
+            >
+              <option :value="undefined">Select a rig model...</option>
+              <optgroup v-for="manufacturer in groupedModels" :key="manufacturer.name" :label="manufacturer.name">
+                <option 
+                  v-for="model in manufacturer.models" 
+                  :key="model.id" 
+                  :value="model.id"
+                  :title="`Status: ${model.status}`"
+                >
+                  {{ model.model }} ({{ model.id }}) - {{ model.status }}
+                </option>
+              </optgroup>
+            </select>
+            <div v-if="loadingModels" class="loading-text">Loading rig models...</div>
           </div>
           <div class="form-group">
             <label for="device">Device (optional):</label>
@@ -382,9 +460,33 @@ export default {
   font-size: 0.9rem;
 }
 
-.form-group input:focus {
+.form-group input:focus,
+.form-group select:focus {
   outline: none;
   border-color: #007bff;
+}
+
+.form-group select {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #555;
+  border-radius: 4px;
+  background: #1a1a1a;
+  color: white;
+  font-size: 0.9rem;
+}
+
+.form-group select:disabled {
+  background: #333;
+  color: #999;
+  cursor: not-allowed;
+}
+
+.loading-text {
+  font-size: 0.8rem;
+  color: #999;
+  margin-top: 0.2rem;
+  font-style: italic;
 }
 
 .dialog-buttons {
