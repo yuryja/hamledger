@@ -99,7 +99,7 @@ export default {
       <div v-else class="qso-details">
         <div v-if="isLoading" class="loading-overlay">
           <div class="loading-spinner"></div>
-          <p>Állomás adatok betöltése...</p>
+          <p>Loading station data...</p>
         </div>
         <div class="main-info">
           <div class="callsign-section">
@@ -181,7 +181,7 @@ export default {
           <div class="map-container" v-if="stationInfo.geodata.lat">
             <div v-if="!mapLoaded" class="map-loading">
               <div class="loading-spinner"></div>
-              <p>Térkép betöltése...</p>
+              <p>Loading map...</p>
             </div>
             <iframe
               width="100%"
