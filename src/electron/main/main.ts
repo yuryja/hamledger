@@ -438,6 +438,35 @@ ipcMain.handle('rigctld:capabilities', async () => {
   }
 });
 
+// Execute command handler
+ipcMain.handle('execute:command', async (_, command: string) => {
+  try {
+    const { exec } = require('child_process');
+    
+    return new Promise((resolve) => {
+      exec(command, { timeout: 10000 }, (error: any, stdout: string, stderr: string) => {
+        if (error) {
+          console.error('Command execution error:', error);
+          resolve({ success: false, error: error.message });
+          return;
+        }
+        
+        if (stderr) {
+          console.warn('Command stderr:', stderr);
+        }
+        
+        resolve({ success: true, data: stdout });
+      });
+    });
+  } catch (error) {
+    console.error('Execute command error:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error',
+    };
+  }
+});
+
 // Settings file path
 const userSettingsPath = join(app.getPath('userData'), 'settings.json');
 const defaultSettingsPath = join(app.getAppPath(), 'src/settings.json');

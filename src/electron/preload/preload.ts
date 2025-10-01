@@ -17,4 +17,5 @@ contextBridge.exposeInMainWorld('electronAPI', {
   rigctldDisconnect: () => ipcRenderer.invoke('rigctld:disconnect'),
   rigctldCommand: (command: string) => ipcRenderer.invoke('rigctld:command', command),
   rigctldGetCapabilities: () => ipcRenderer.invoke('rigctld:capabilities'),
+  executeCommand: (command: string) => ipcRenderer.invoke('execute:command', command),
 });
