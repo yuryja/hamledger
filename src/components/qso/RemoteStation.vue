@@ -86,6 +86,9 @@ export default {
         </div>
       </div>
     </div>
+    <div v-else class="no-station-info">
+      <p>Enter a callsign</p>
+    </div>
   </section>
 </template>
 
@@ -176,6 +179,15 @@ export default {
 .station-greeting-line {
   margin-top: 0.3rem;
   color: var(--main-color);
+  font-style: italic;
+}
+
+.no-station-info {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100px;
+  color: var(--gray-color);
   font-style: italic;
 }
 </style>
