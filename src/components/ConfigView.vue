@@ -57,11 +57,19 @@ export default {
       
       try {
         await configHelper.updateSetting(field.path, field.key, value);
-        // Update the field value to reflect the change in the UI
-        field.value = value;
         
-        // Force Vue to re-render the component
-        this.$forceUpdate();
+        // Find and update the field in configFields array to trigger reactivity
+        const fieldIndex = this.configFields.findIndex(f => 
+          f.key === field.key && 
+          f.path.join('.') === field.path.join('.')
+        );
+        
+        if (fieldIndex !== -1) {
+          this.$set(this.configFields, fieldIndex, {
+            ...this.configFields[fieldIndex],
+            value: value
+          });
+        }
       } catch (error) {
         console.error('Error updating setting:', error);
       }
@@ -173,7 +181,7 @@ export default {
                   <input
                     type="checkbox"
                     :id="getFieldId(field)"
-                    :checked="field.value"
+                    :checked="!!field.value"
                     @change="handleChange(field, $event)"
                   />
                   <span class="slider"></span>
