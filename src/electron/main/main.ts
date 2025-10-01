@@ -338,8 +338,9 @@ ipcMain.handle('fetchWeather', async (event, lat: number, lon: number) => {
 // DX Spots API handler
 ipcMain.handle('fetchDxSpots', async (event, params: string) => {
   try {
-    ##AI! url shall come from config
-    const url = `https://dxheat.com/source/spots/?${params}`;
+    const settings = loadSettings();
+    const baseUrl = settings?.apis?.dxheat?.baseUrl || 'https://dxheat.com';
+    const url = `${baseUrl}/source/spots/?${params}`;
 
     // Check for proxy environment variables
     const proxyUrl =
@@ -618,6 +619,19 @@ ipcMain.handle('execute:command', async (_, command: string) => {
 // Settings file path
 const userSettingsPath = join(app.getPath('userData'), 'settings.json');
 const defaultSettingsPath = join(app.getAppPath(), 'src/settings.json');
+
+// Load settings helper function
+function loadSettings(): any {
+  try {
+    if (fs.existsSync(userSettingsPath)) {
+      return JSON.parse(fs.readFileSync(userSettingsPath, 'utf8'));
+    }
+    return JSON.parse(fs.readFileSync(defaultSettingsPath, 'utf8'));
+  } catch (error) {
+    console.error('Error loading settings:', error);
+    return null;
+  }
+}
 
 // Settings handlers
 ipcMain.handle('settings:load', async () => {

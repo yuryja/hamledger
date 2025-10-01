@@ -26,6 +26,10 @@
     "openMeteo": {
       "baseUrl": "https://api.open-meteo.com/v1",
       "rateLimit": 1000
+    },
+    "dxheat": {
+      "baseUrl": "https://dxheat.com",
+      "rateLimit": 1000
     }
   },
   "database": {
