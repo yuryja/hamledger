@@ -54,10 +54,10 @@ export default {
       return 'status-disconnected';
     },
     currentFrequency() {
-      return this.rigStore.currentFrequency;
+      return this.rigStore.currentFrequency();
     },
     splitFrequency() {
-      return this.rigStore.splitFrequency;
+      return this.rigStore.splitFrequency();
     },
   },
   methods: {
