@@ -414,7 +414,7 @@ app.on('before-quit', () => {
 let rigctldSocket: Socket | null = null;
 
 // Rigctld handlers
-ipcMain.handle('rigctld:connect', async (_, host: string, port: number, _model?: number, _device?: string) => {
+ipcMain.handle('rigctld:connect', async (_, host: string, port: number) => {
   try {
     // Close existing connection if any
     if (rigctldSocket) {
