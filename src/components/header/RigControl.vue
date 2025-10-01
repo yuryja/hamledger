@@ -109,7 +109,7 @@ export default {
 
     parseRigModels(output: string): RigModel[] {
       const lines = output.split('\n');
-      const models = [];
+      const models: RigModel[] = [];
       
       for (const line of lines) {
         // Skip header and empty lines
@@ -121,8 +121,7 @@ export default {
         const match = line.match(/^\s*(\d+)\s+([^\s]+)\s+(.+?)\s+\d{8}\.\d+\s+(Alpha|Beta|Stable|Untested)\s+/);
         if (match) {
           const [, id, manufacturer, model, status] = match;
-          models.push(
-            ##AI!Argument of type '{ id: number; manufacturer: string; model: string; status: string; }' is not assignable to parameter of type 'never'.ts-plugin(2345){
+          models.push({
             id: parseInt(id),
             manufacturer: manufacturer.trim(),
             model: model.trim(),
