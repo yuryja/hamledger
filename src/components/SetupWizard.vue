@@ -214,7 +214,9 @@ export default {
         rig: {
           ...defaultSettings.rig,
           enabled: this.wizardData.enableCat,
-          rigctldPath: this.wizardData.enableCat ? this.wizardData.rigctldPath : defaultSettings.rig.rigctldPath || 'rigctld',
+          rigctldPath: this.wizardData.enableCat
+            ? this.wizardData.rigctldPath
+            : defaultSettings.rig.rigctldPath || 'rigctld',
         },
       };
 
