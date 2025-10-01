@@ -249,6 +249,80 @@ ipcMain.handle('adif:import', async () => {
   }
 });
 
+// ADIF file selection handler
+ipcMain.handle('adif:selectFile', async () => {
+  try {
+    const { filePaths } = await dialog.showOpenDialog({
+      properties: ['openFile'],
+      filters: [{ name: 'ADIF Files', extensions: ['adi', 'adif'] }],
+    });
+
+    if (filePaths.length === 0) {
+      return { success: false };
+    }
+
+    return { success: true, filePath: filePaths[0] };
+  } catch (error) {
+    console.error('ADIF file selection error:', error);
+    return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
+  }
+});
+
+// ADIF file parsing handler
+ipcMain.handle('adif:parseFile', async (_, filePath: string) => {
+  try {
+    const content = fs.readFileSync(filePath, 'utf8');
+    const records = parseAdif(content);
+    
+    return { success: true, totalCount: records.length };
+  } catch (error) {
+    console.error('ADIF file parsing error:', error);
+    return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
+  }
+});
+
+// ADIF import with progress handler
+ipcMain.handle('adif:importWithProgress', async (event, filePath: string) => {
+  try {
+    const content = fs.readFileSync(filePath, 'utf8');
+    const records = parseAdif(content);
+    let importedCount = 0;
+
+    // Convert ADIF records to QSO format and save to DB with progress updates
+    for (const record of records) {
+      const qso: QsoEntry = {
+        callsign: record.call,
+        datetime: new Date(
+          `${record.qso_date.replace(
+            /(\d{4})(\d{2})(\d{2})/,
+            '$1-$2-$3'
+          )}T${record.time_on.replace(/(\d{2})(\d{2})(\d{2})?/, '$1:$2')}Z`
+        ).toISOString(),
+        band: record.band,
+        freqRx: parseFloat(record.freq) || 0,
+        mode: record.mode,
+        rstr: record.rst_rcvd || '59',
+        rstt: record.rst_sent || '59',
+        remark: record.comment || '--',
+        notes: record.notes || '--',
+      };
+
+      await databaseService.saveQso(qso);
+      importedCount++;
+
+      // Send progress update every 10 records or on the last record
+      if (importedCount % 10 === 0 || importedCount === records.length) {
+        event.sender.send('adif:importProgress', { imported: importedCount });
+      }
+    }
+
+    return { success: true, count: importedCount };
+  } catch (error) {
+    console.error('ADIF import with progress error:', error);
+    return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
+  }
+});
+
 // Propagation Data API handler
 ipcMain.handle('fetchPropagationData', async () => {
   try {

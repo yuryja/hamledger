@@ -6,6 +6,12 @@ contextBridge.exposeInMainWorld('electronAPI', {
   addQso: (qso: any) => ipcRenderer.invoke('qso:add', qso),
   getAllDocs: () => ipcRenderer.invoke('qso:getAllDocs'),
   importAdif: () => ipcRenderer.invoke('adif:import'),
+  selectAdifFile: () => ipcRenderer.invoke('adif:selectFile'),
+  parseAdifFile: (filePath: string) => ipcRenderer.invoke('adif:parseFile', filePath),
+  importAdifWithProgress: (filePath: string) => ipcRenderer.invoke('adif:importWithProgress', filePath),
+  onAdifImportProgress: (callback: (progress: { imported: number }) => void) => {
+    ipcRenderer.on('adif:importProgress', (_, progress) => callback(progress));
+  },
   loadSettings: () => ipcRenderer.invoke('settings:load'),
   saveSettings: (settings: any) => ipcRenderer.invoke('settings:save', settings),
   updateQso: (qso: any) => ipcRenderer.invoke('qso:update', qso),
