@@ -632,3 +632,28 @@ ipcMain.handle('settings:save', async (_, settings) => {
     throw error;
   }
 });
+
+// Restart rigctld with new settings
+async function restartRigctld(): Promise<void> {
+  console.log('Restarting rigctld...');
+  stopRigctld();
+  
+  // Wait a moment for the process to fully stop
+  await new Promise(resolve => setTimeout(resolve, 1000));
+  
+  await startRigctld();
+}
+
+// Rigctld restart handler
+ipcMain.handle('rigctld:restart', async () => {
+  try {
+    await restartRigctld();
+    return { success: true };
+  } catch (error) {
+    console.error('Error restarting rigctld:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error',
+    };
+  }
+});

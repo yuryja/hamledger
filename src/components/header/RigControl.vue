@@ -172,7 +172,11 @@ export default {
     },
     
     async saveConnectionSettings() {
-      // Save to config
+      // Check if model changed
+      const currentModel = configHelper.getSetting(['rig'], 'rigModel');
+      const modelChanged = currentModel !== this.connectionForm.model;
+      
+      // Save to config (only save the model number, not the name)
       await configHelper.updateSetting(['rig'], 'host', this.connectionForm.host);
       await configHelper.updateSetting(['rig'], 'port', this.connectionForm.port);
       if (this.connectionForm.model) {
@@ -180,6 +184,30 @@ export default {
       }
       if (this.connectionForm.device) {
         await configHelper.updateSetting(['rig'], 'device', this.connectionForm.device);
+      }
+      
+      // Update the displayed rig model name
+      if (this.connectionForm.model) {
+        const rigModel = this.rigModels.find(model => model.id === this.connectionForm.model);
+        if (rigModel) {
+          this.rigModel = `${rigModel.manufacturer} ${rigModel.model}`;
+        }
+      }
+      
+      // If model changed, restart rigctld
+      if (modelChanged) {
+        console.log('Rig model changed, restarting rigctld...');
+        try {
+          const response = await window.electronAPI.rigctldRestart();
+          if (!response.success) {
+            console.error('Failed to restart rigctld:', response.error);
+          }
+        } catch (error) {
+          console.error('Error restarting rigctld:', error);
+        }
+        
+        // Wait a moment for rigctld to restart
+        await new Promise(resolve => setTimeout(resolve, 2000));
       }
       
       // Connect with new settings
