@@ -66,6 +66,7 @@ export default {
 
         // Validate regex if regex mode is enabled
         if (this.filters.useRegex) {
+          ##AI! Unexpected side effect in "filteredQsos" computed property
           this.regexError = !TextMatcher.isValidRegex(this.filters.searchText);
           if (this.regexError) {
             // If regex is invalid, don't filter
