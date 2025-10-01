@@ -1,3 +1,5 @@
+import { configHelper } from './configHelper';
+
 interface GeocodingResult {
   lat: number;
   lon: number;
@@ -6,12 +8,14 @@ interface GeocodingResult {
 
 export async function geocodeLocation(qth: string): Promise<GeocodingResult | null> {
   try {
+    const baseUrl = configHelper.getSetting(['apis', 'nominatim'], 'baseUrl') || 'https://nominatim.openstreetmap.org';
+    const userAgent = configHelper.getSetting(['apis', 'nominatim'], 'userAgent') || 'HamLogger/1.0';
+    
     const response = await fetch(
-      ##AI! url shall come from config
-      `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(qth)}&format=json&limit=1`,
+      `${baseUrl}/search?q=${encodeURIComponent(qth)}&format=json&limit=1`,
       {
         headers: {
-          'User-Agent': 'HamLogger/1.0',
+          'User-Agent': userAgent,
         },
       }
     );
