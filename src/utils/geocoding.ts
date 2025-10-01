@@ -7,6 +7,7 @@ interface GeocodingResult {
 export async function geocodeLocation(qth: string): Promise<GeocodingResult | null> {
   try {
     const response = await fetch(
+      ##AI! url shall come from config
       `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(qth)}&format=json&limit=1`,
       {
         headers: {
