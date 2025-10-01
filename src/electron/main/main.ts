@@ -338,6 +338,7 @@ ipcMain.handle('fetchWeather', async (event, lat: number, lon: number) => {
 // DX Spots API handler
 ipcMain.handle('fetchDxSpots', async (event, params: string) => {
   try {
+    ##AI! url shall come from config
     const url = `https://dxheat.com/source/spots/?${params}`;
 
     // Check for proxy environment variables
