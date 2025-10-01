@@ -207,13 +207,13 @@ export default {
 
         this.importStatus.totalCount = parseResult.totalCount || 0;
 
-        // Import with progress updates
-        const importResult = await window.electronAPI.importAdifWithProgress(fileResult.filePath);
-        
-        // Listen for progress updates
+        // Listen for progress updates BEFORE starting import
         window.electronAPI.onAdifImportProgress((progress) => {
           this.importStatus.importedCount = progress.imported;
         });
+
+        // Import with progress updates
+        const importResult = await window.electronAPI.importAdifWithProgress(fileResult.filePath);
 
         if (importResult.success) {
           this.importStatus.success = true;
