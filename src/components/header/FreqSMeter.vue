@@ -29,10 +29,11 @@ export default {
     },
     txFrequency: {
       get() {
-        return this.rigStore.splitFrequency || '0.000000';
+        return this.rigStore.splitFrequency || '0';
       },
       set(value: string) {
-        this.rigStore.setTxFrequency(value);
+        const frequency = parseFloat(value) * 1000000; // Convert MHz to Hz
+        this.rigStore.setSplitFrequency(frequency);
       },
     },
     splitActive() {
