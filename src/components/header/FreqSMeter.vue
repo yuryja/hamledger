@@ -19,6 +19,33 @@ export default {
     majorTicks(): MajorTick[] {
       return this.smeterHelper.getMajorTicks();
     },
+    frequency: {
+      get() {
+        return this.rigStore.currentFrequency;
+      },
+      set(value: string) {
+        this.rigStore.setFrequencyFromString(value);
+      },
+    },
+    txFrequency: {
+      get() {
+        return this.rigStore.splitFrequency || '0.000000';
+      },
+      set(value: string) {
+        this.rigStore.setTxFrequency(value);
+      },
+    },
+    splitActive() {
+      return this.rigStore.rigState.split;
+    },
+    selectedMode: {
+      get() {
+        return this.rigStore.currentMode;
+      },
+      set(value: string) {
+        this.rigStore.setMode(value);
+      },
+    },
   },
 };
 </script>
@@ -29,7 +56,7 @@ export default {
       <div class="freq-display">
         <button
           class="split-btn mode-badge"
-          :class="{ active: rigStore.splitActive }"
+          :class="{ active: splitActive }"
           @click="rigStore.toggleSplit()"
         >
           SPLIT
@@ -39,21 +66,19 @@ export default {
             <input
               v-if="isEditing"
               type="text"
-              :value="rigStore.frequency"
-              @input="e => rigStore.setFrequency((e.target as HTMLInputElement).value)"
+              v-model="frequency"
               @blur="isEditing = false"
               @keyup.enter="isEditing = false"
               class="freq-input"
             />
             <template v-else>
-              <span>{{ rigStore.frequency }}</span>
-              <template v-if="rigStore.splitActive">
+              <span>{{ frequency }}</span>
+              <template v-if="splitActive">
                 <span class="tx-freq" @click.stop="isTxEditing = true">
                   <input
                     v-if="isTxEditing"
                     type="text"
-                    :value="rigStore.txFrequency"
-                    @input="e => rigStore.setTxFrequency((e.target as HTMLInputElement).value)"
+                    v-model="txFrequency"
                     @blur="isTxEditing = false"
                     @keyup.enter="isTxEditing = false"
                     style="
@@ -64,7 +89,7 @@ export default {
                       width: 60px;
                     "
                   />
-                  <span v-else>({{ rigStore.txFrequency }})</span>
+                  <span v-else>({{ txFrequency }})</span>
                 </span>
               </template>
             </template>
@@ -99,7 +124,7 @@ export default {
             type="radio"
             :id="'mode-' + mode.value.toLowerCase()"
             :value="mode.value"
-            v-model="rigStore.selectedMode"
+            v-model="selectedMode"
             name="rig-mode"
           />
           <label :for="'mode-' + mode.value.toLowerCase()" class="mode-badge">

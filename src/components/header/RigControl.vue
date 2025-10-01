@@ -26,20 +26,6 @@ export default {
     }
   },
   computed: {
-    modes() {
-      return this.rigStore.modes;
-    },
-    selectedMode: {
-      get() {
-        return this.rigStore.currentMode;
-      },
-      set(newMode: string) {
-        this.rigStore.setMode(newMode);
-      },
-    },
-    splitActive() {
-      return this.rigStore.rigState.split;
-    },
     isConnected() {
       return this.rigStore.isConnected;
     },
@@ -52,12 +38,6 @@ export default {
       if (this.rigStore.isLoading) return 'status-connecting';
       if (this.rigStore.isConnected) return 'status-connected';
       return 'status-disconnected';
-    },
-    currentFrequency() {
-      return this.rigStore.currentFrequency();
-    },
-    splitFrequency() {
-      return this.rigStore.splitFrequency();
     },
   },
   methods: {
@@ -146,20 +126,6 @@ export default {
         </div>
         <div class="connection-status" :class="connectionStatusClass">
           {{ connectionStatus }}
-        </div>
-        <div v-if="isConnected" class="rig-state">
-          <div class="frequency-display">
-            <span class="freq-label">RX:</span>
-            <span class="frequency">{{ currentFrequency }} MHz</span>
-          </div>
-          <div v-if="splitActive" class="frequency-display">
-            <span class="freq-label">TX:</span>
-            <span class="frequency">{{ splitFrequency }} MHz</span>
-          </div>
-          <div class="mode-display">
-            <span class="mode-label">Mode:</span>
-            <span class="mode">{{ selectedMode }}</span>
-          </div>
         </div>
         <div v-if="rigStore.error" class="error-message">
           {{ rigStore.error }}
@@ -290,31 +256,6 @@ export default {
   color: black;
 }
 
-.rig-state {
-  display: flex;
-  flex-direction: column;
-  gap: 0.2rem;
-  font-size: 0.9rem;
-}
-
-.frequency-display,
-.mode-display {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.freq-label,
-.mode-label {
-  color: var(--gray-color);
-  font-weight: bold;
-}
-
-.frequency,
-.mode {
-  color: white;
-  font-family: monospace;
-}
 
 .error-message {
   color: #dc3545;
