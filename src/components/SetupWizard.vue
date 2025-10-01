@@ -250,6 +250,11 @@ export default {
           ></div>
         </div>
         <p class="step-indicator">Step {{ currentStep }} of {{ totalSteps }}</p>
+        <div class="hint-box">
+          <p class="hint-text">
+            💡 <strong>Tipp:</strong> Minden beállítás később módosítható a Konfiguráció menüben.
+          </p>
+        </div>
       </div>
 
       <div class="wizard-content">
@@ -475,6 +480,22 @@ export default {
   color: var(--gray-color);
   margin: 0;
   font-size: 0.9rem;
+}
+
+.hint-box {
+  margin-top: 1rem;
+  padding: 0.75rem;
+  background: rgba(255, 215, 0, 0.1);
+  border: 1px solid rgba(255, 215, 0, 0.3);
+  border-radius: 4px;
+}
+
+.hint-text {
+  color: var(--gray-color);
+  margin: 0;
+  font-size: 0.85rem;
+  text-align: center;
+  line-height: 1.4;
 }
 
 .wizard-content {
