@@ -236,7 +236,7 @@ export default {
               v-model.number="connectionForm.port"
               type="number"
               placeholder="4532"
-              
+              required
             />
           </div>
           <div class="form-group">
