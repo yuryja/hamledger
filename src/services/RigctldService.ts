@@ -75,7 +75,10 @@ export class RigctldService {
 
   public async getFrequency(): Promise<RigctldResponse> {
     try {
-      return await window.electronAPI.rigctldCommand('f');
+      console.log('RIG GET: f (get frequency)');
+      const response = await window.electronAPI.rigctldCommand('f');
+      console.log('RIG GET RESPONSE:', response);
+      return response;
     } catch (error) {
       return {
         success: false,
@@ -86,7 +89,11 @@ export class RigctldService {
 
   public async setFrequency(frequency: number): Promise<RigctldResponse> {
     try {
-      return await window.electronAPI.rigctldCommand(`F ${frequency}`);
+      const command = `F ${frequency}`;
+      console.log('RIG SET:', command);
+      const response = await window.electronAPI.rigctldCommand(command);
+      console.log('RIG SET RESPONSE:', response);
+      return response;
     } catch (error) {
       return {
         success: false,
@@ -97,7 +104,10 @@ export class RigctldService {
 
   public async getMode(): Promise<RigctldResponse> {
     try {
-      return await window.electronAPI.rigctldCommand('m');
+      console.log('RIG GET: m (get mode)');
+      const response = await window.electronAPI.rigctldCommand('m');
+      console.log('RIG GET RESPONSE:', response);
+      return response;
     } catch (error) {
       return {
         success: false,
@@ -108,7 +118,11 @@ export class RigctldService {
 
   public async setMode(mode: string, passband: number = 0): Promise<RigctldResponse> {
     try {
-      return await window.electronAPI.rigctldCommand(`M ${mode} ${passband}`);
+      const command = `M ${mode} ${passband}`;
+      console.log('RIG SET:', command);
+      const response = await window.electronAPI.rigctldCommand(command);
+      console.log('RIG SET RESPONSE:', response);
+      return response;
     } catch (error) {
       return {
         success: false,
@@ -119,7 +133,10 @@ export class RigctldService {
 
   public async getVfo(): Promise<RigctldResponse> {
     try {
-      return await window.electronAPI.rigctldCommand('v');
+      console.log('RIG GET: v (get VFO)');
+      const response = await window.electronAPI.rigctldCommand('v');
+      console.log('RIG GET RESPONSE:', response);
+      return response;
     } catch (error) {
       return {
         success: false,
@@ -130,7 +147,11 @@ export class RigctldService {
 
   public async setVfo(vfo: string): Promise<RigctldResponse> {
     try {
-      return await window.electronAPI.rigctldCommand(`V ${vfo}`);
+      const command = `V ${vfo}`;
+      console.log('RIG SET:', command);
+      const response = await window.electronAPI.rigctldCommand(command);
+      console.log('RIG SET RESPONSE:', response);
+      return response;
     } catch (error) {
       return {
         success: false,
@@ -141,7 +162,10 @@ export class RigctldService {
 
   public async getPtt(): Promise<RigctldResponse> {
     try {
-      return await window.electronAPI.rigctldCommand('t');
+      console.log('RIG GET: t (get PTT)');
+      const response = await window.electronAPI.rigctldCommand('t');
+      console.log('RIG GET RESPONSE:', response);
+      return response;
     } catch (error) {
       return {
         success: false,
@@ -152,7 +176,11 @@ export class RigctldService {
 
   public async setPtt(ptt: boolean): Promise<RigctldResponse> {
     try {
-      return await window.electronAPI.rigctldCommand(`T ${ptt ? '1' : '0'}`);
+      const command = `T ${ptt ? '1' : '0'}`;
+      console.log('RIG SET:', command);
+      const response = await window.electronAPI.rigctldCommand(command);
+      console.log('RIG SET RESPONSE:', response);
+      return response;
     } catch (error) {
       return {
         success: false,
@@ -163,7 +191,10 @@ export class RigctldService {
 
   public async getSplit(): Promise<RigctldResponse> {
     try {
-      return await window.electronAPI.rigctldCommand('s');
+      console.log('RIG GET: s (get split)');
+      const response = await window.electronAPI.rigctldCommand('s');
+      console.log('RIG GET RESPONSE:', response);
+      return response;
     } catch (error) {
       return {
         success: false,
@@ -174,7 +205,11 @@ export class RigctldService {
 
   public async setSplit(split: boolean, txVfo: string = 'VFOB'): Promise<RigctldResponse> {
     try {
-      return await window.electronAPI.rigctldCommand(`S ${split ? '1' : '0'} ${txVfo}`);
+      const command = `S ${split ? '1' : '0'} ${txVfo}`;
+      console.log('RIG SET:', command);
+      const response = await window.electronAPI.rigctldCommand(command);
+      console.log('RIG SET RESPONSE:', response);
+      return response;
     } catch (error) {
       return {
         success: false,
@@ -185,7 +220,10 @@ export class RigctldService {
 
   public async getSplitFrequency(): Promise<RigctldResponse> {
     try {
-      return await window.electronAPI.rigctldCommand('i');
+      console.log('RIG GET: i (get split frequency)');
+      const response = await window.electronAPI.rigctldCommand('i');
+      console.log('RIG GET RESPONSE:', response);
+      return response;
     } catch (error) {
       return {
         success: false,
@@ -196,7 +234,11 @@ export class RigctldService {
 
   public async setSplitFrequency(frequency: number): Promise<RigctldResponse> {
     try {
-      return await window.electronAPI.rigctldCommand(`I ${frequency}`);
+      const command = `I ${frequency}`;
+      console.log('RIG SET:', command);
+      const response = await window.electronAPI.rigctldCommand(command);
+      console.log('RIG SET RESPONSE:', response);
+      return response;
     } catch (error) {
       return {
         success: false,
@@ -207,7 +249,10 @@ export class RigctldService {
 
   public async getRit(): Promise<RigctldResponse> {
     try {
-      return await window.electronAPI.rigctldCommand('j');
+      console.log('RIG GET: j (get RIT)');
+      const response = await window.electronAPI.rigctldCommand('j');
+      console.log('RIG GET RESPONSE:', response);
+      return response;
     } catch (error) {
       return {
         success: false,
@@ -218,7 +263,11 @@ export class RigctldService {
 
   public async setRit(rit: number): Promise<RigctldResponse> {
     try {
-      return await window.electronAPI.rigctldCommand(`J ${rit}`);
+      const command = `J ${rit}`;
+      console.log('RIG SET:', command);
+      const response = await window.electronAPI.rigctldCommand(command);
+      console.log('RIG SET RESPONSE:', response);
+      return response;
     } catch (error) {
       return {
         success: false,
@@ -229,7 +278,10 @@ export class RigctldService {
 
   public async getXit(): Promise<RigctldResponse> {
     try {
-      return await window.electronAPI.rigctldCommand('z');
+      console.log('RIG GET: z (get XIT)');
+      const response = await window.electronAPI.rigctldCommand('z');
+      console.log('RIG GET RESPONSE:', response);
+      return response;
     } catch (error) {
       return {
         success: false,
@@ -240,7 +292,11 @@ export class RigctldService {
 
   public async setXit(xit: number): Promise<RigctldResponse> {
     try {
-      return await window.electronAPI.rigctldCommand(`Z ${xit}`);
+      const command = `Z ${xit}`;
+      console.log('RIG SET:', command);
+      const response = await window.electronAPI.rigctldCommand(command);
+      console.log('RIG SET RESPONSE:', response);
+      return response;
     } catch (error) {
       return {
         success: false,
@@ -251,7 +307,10 @@ export class RigctldService {
 
   public async sendCommand(command: string): Promise<RigctldResponse> {
     try {
-      return await window.electronAPI.rigctldCommand(command);
+      console.log('RIG COMMAND:', command);
+      const response = await window.electronAPI.rigctldCommand(command);
+      console.log('RIG COMMAND RESPONSE:', response);
+      return response;
     } catch (error) {
       return {
         success: false,
