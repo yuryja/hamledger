@@ -865,8 +865,9 @@ export default defineComponent({
 }
 
 .spot-info:hover {
-  background: rgba(255, 165, 0, 0.1);
+  border: 1px solid var(--main-color);
   border-radius: var(--border-radius);
+  padding: calc(0.5rem - 1px);
 }
 
 .spot-call {
