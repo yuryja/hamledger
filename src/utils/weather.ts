@@ -1,3 +1,5 @@
+import { configHelper } from './configHelper';
+
 interface WeatherResult {
   temperature: number;
   weatherCode: number;
@@ -29,9 +31,10 @@ const WMO_CODES: { [key: number]: string } = {
 
 export async function getWeather(lat: number, lon: number): Promise<WeatherResult | null> {
   try {
+    const baseUrl = configHelper.getSetting(['apis', 'openMeteo'], 'baseUrl') || 'https://api.open-meteo.com/v1';
+    
     const response = await fetch(
-      ##AI! url shall come from config
-      `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`
+      `${baseUrl}/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`
     );
 
     const data = await response.json();
