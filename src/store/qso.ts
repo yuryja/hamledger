@@ -60,13 +60,13 @@ export const useQsoStore = defineStore('qso', {
       const newQso: QsoEntry = {
         callsign: this.qsoForm.callsign.toUpperCase(),
         band: bandName,
-        freqRx: rigStore.rigState.frequency,
+        freqRx: rigStore.rigState.frequency / 1000000, // Convert Hz to MHz
         mode: rigStore.rigState.mode,
         datetime: now.toISOString(),
       };
 
       // Handle TX frequency
-      newQso.freqTx = rigStore.rigState.split ? rigStore.rigState.splitFreq : '--';
+      newQso.freqTx = rigStore.rigState.split ? (rigStore.rigState.splitFreq! / 1000000) : '--';
 
       // Use form values or defaults for RST
       newQso.rstr = this.qsoForm.rstr || '59';
