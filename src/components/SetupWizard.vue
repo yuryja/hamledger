@@ -631,7 +631,8 @@ export default {
             <div v-if="hamlibStatus.error" class="error-message">
               ❌ Installation failed: {{ hamlibStatus.error }}
               <p class="error-help">
-                You can manually download Hamlib from:
+                <strong>Note:</strong> If you see an "Access denied" error, please allow administrator privileges when prompted.
+                You can also manually download Hamlib from:
                 <a
                   href="https://hamlib.sourceforge.net/snapshots/"
                   target="_blank"
