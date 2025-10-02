@@ -707,11 +707,19 @@ input:checked + .slider:before {
   position: relative;
   display: flex;
   align-items: center;
+  width: 100%;
 }
 
 .password-field input {
   flex: 1;
   padding-right: 3rem;
+  background: #444;
+  border: 1px solid #555;
+  padding: 0.5rem;
+  padding-right: 3rem;
+  color: #fff;
+  border-radius: 3px;
+  width: 100%;
 }
 
 .password-toggle {
