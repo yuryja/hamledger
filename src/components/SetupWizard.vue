@@ -45,6 +45,7 @@ export default {
           band.shortName
         )
       ),
+      isWindows: navigator.platform.toLowerCase().includes('win'),
     };
   },
   computed: {
@@ -494,6 +495,21 @@ export default {
             </label>
           </div>
 
+          <!-- Windows Hamlib Warning -->
+          <div v-if="wizardData.enableCat && isWindows" class="warning-box">
+            <div class="warning-icon">⚠️</div>
+            <div class="warning-content">
+              <p class="warning-title">Windows Users</p>
+              <p class="warning-text">
+                On Windows, you must install Hamlib first before enabling CAT control.
+                Download it from: 
+                <a href="https://hamlib.sourceforge.net/snapshots/" target="_blank" class="warning-link">
+                  hamlib.sourceforge.net/snapshots/
+                </a>
+              </p>
+            </div>
+          </div>
+
           <div v-if="wizardData.enableCat" class="form-group">
             <label for="rigctldPath">rigctld Path</label>
             <input
@@ -883,5 +899,49 @@ export default {
   display: flex;
   align-items: center;
   gap: 0.5rem;
+}
+
+.warning-box {
+  margin: 1rem 0;
+  padding: 1rem;
+  background: rgba(255, 193, 7, 0.1);
+  border: 1px solid rgba(255, 193, 7, 0.3);
+  border-radius: 4px;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.warning-icon {
+  font-size: 1.2rem;
+  flex-shrink: 0;
+  margin-top: 0.1rem;
+}
+
+.warning-content {
+  flex: 1;
+}
+
+.warning-title {
+  color: #ffc107;
+  font-weight: bold;
+  margin: 0 0 0.5rem;
+  font-size: 0.95rem;
+}
+
+.warning-text {
+  color: var(--gray-color);
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.warning-link {
+  color: var(--main-color);
+  text-decoration: none;
+}
+
+.warning-link:hover {
+  text-decoration: underline;
 }
 </style>
