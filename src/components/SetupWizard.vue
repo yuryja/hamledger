@@ -46,6 +46,7 @@ export default {
         )
       ),
       isWindows: navigator.platform.toLowerCase().includes('win'),
+      isLinux: navigator.platform.toLowerCase().includes('linux'),
     };
   },
   computed: {
@@ -243,6 +244,22 @@ export default {
       } catch (error) {
         console.error('Error importing ADIF:', error);
         return false;
+      }
+    },
+    async copyToClipboard(text) {
+      try {
+        await navigator.clipboard.writeText(text);
+        // Optional: Show a brief success indication
+        console.log('Command copied to clipboard:', text);
+      } catch (error) {
+        console.error('Failed to copy to clipboard:', error);
+        // Fallback: select the text for manual copying
+        const textArea = document.createElement('textarea');
+        textArea.value = text;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
       }
     },
     async completeSetup() {
@@ -507,6 +524,46 @@ export default {
                   hamlib.sourceforge.net/snapshots/
                 </a>
               </p>
+            </div>
+          </div>
+
+          <!-- Linux Hamlib Warning -->
+          <div v-if="wizardData.enableCat && isLinux" class="warning-box">
+            <div class="warning-icon">⚠️</div>
+            <div class="warning-content">
+              <p class="warning-title">Linux Users</p>
+              <p class="warning-text">
+                On Linux, you must install Hamlib first before enabling CAT control.
+                (You may need sudo rights)
+              </p>
+              <div class="command-section">
+                <p class="command-label">For Ubuntu/Debian:</p>
+                <div class="command-box">
+                  <code class="command-text">apt install libhamlib-utils</code>
+                  <button 
+                    type="button" 
+                    class="copy-btn" 
+                    @click="copyToClipboard('apt install libhamlib-utils')"
+                    title="Copy to clipboard"
+                  >
+                    📋
+                  </button>
+                </div>
+              </div>
+              <div class="command-section">
+                <p class="command-label">For RPM based distributions:</p>
+                <div class="command-box">
+                  <code class="command-text">sudo rpm install libhamlib-utils</code>
+                  <button 
+                    type="button" 
+                    class="copy-btn" 
+                    @click="copyToClipboard('sudo rpm install libhamlib-utils')"
+                    title="Copy to clipboard"
+                  >
+                    📋
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -943,5 +1000,52 @@ export default {
 
 .warning-link:hover {
   text-decoration: underline;
+}
+
+.command-section {
+  margin-top: 1rem;
+}
+
+.command-label {
+  color: var(--gray-color);
+  font-size: 0.85rem;
+  margin: 0 0 0.25rem;
+  font-weight: bold;
+}
+
+.command-box {
+  display: flex;
+  align-items: center;
+  background: #2b2b2b;
+  border: 1px solid #444;
+  border-radius: 4px;
+  padding: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.command-text {
+  flex: 1;
+  font-family: 'Courier New', monospace;
+  font-size: 0.85rem;
+  color: #fff;
+  background: transparent;
+  border: none;
+  user-select: all;
+}
+
+.copy-btn {
+  background: transparent;
+  border: none;
+  color: var(--main-color);
+  cursor: pointer;
+  padding: 0.25rem;
+  margin-left: 0.5rem;
+  border-radius: 2px;
+  font-size: 0.9rem;
+  transition: background-color 0.2s;
+}
+
+.copy-btn:hover {
+  background: rgba(255, 215, 0, 0.1);
 }
 </style>
