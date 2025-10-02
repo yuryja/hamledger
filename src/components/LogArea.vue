@@ -160,10 +160,6 @@ export default {
           @click="showFilters = !showFilters"
         />
       </h2>
-      <button @click="showFilters = !showFilters" class="filter-toggle-btn">
-        {{ showFilters ? 'Hide Filters' : 'Show Filters' }}
-        <span class="toggle-icon">{{ showFilters ? '▲' : '▼' }}</span>
-      </button>
       <div class="qso-count">
         <span>This session: {{ sessionCount }} QSO</span>
         <span v-if="filteredCount !== sessionCount" class="filtered-count">
@@ -585,29 +581,6 @@ export default {
   cursor: pointer;
   border-radius: 3px;
   font-weight: bold;
-}
-
-.filter-toggle-btn {
-  background: #444;
-  border: 1px solid #666;
-  color: var(--gray-color);
-  padding: 0.5rem 1rem;
-  cursor: pointer;
-  border-radius: 3px;
-  font-size: 0.9rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  transition: background-color 0.2s;
-}
-
-.filter-toggle-btn:hover {
-  background: #555;
-}
-
-.toggle-icon {
-  font-size: 0.8rem;
-  color: var(--main-color);
 }
 
 .filter-icon {
