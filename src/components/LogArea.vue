@@ -151,16 +151,16 @@ export default {
 <template>
   <main class="log-container">
     <div class="log-header">
-      <h2 class="section-title">
-        Log Area
+      <div class="header-left">
+        <h2 class="section-title">Log Area</h2>
         <button 
           @click="showFilters = !showFilters" 
-          class="filter-toggle-btn-small"
+          class="filter-toggle-btn"
           :title="showFilters ? 'Hide Filters' : 'Show Filters'"
         >
-          {{ showFilters ? '▲' : '▼' }}
+          Filters {{ showFilters ? '▲' : '▼' }}
         </button>
-      </h2>
+      </div>
       <div class="qso-count">
         <span>This session: {{ sessionCount }} QSO</span>
         <span v-if="filteredCount !== sessionCount" class="filtered-count">
@@ -356,10 +356,16 @@ export default {
 
 .log-header {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 1rem;
   margin-bottom: 1rem;
   flex-shrink: 0;
+}
+
+.header-left {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
 }
 
 .table-wrapper {
@@ -584,21 +590,21 @@ export default {
   font-weight: bold;
 }
 
-.filter-toggle-btn-small {
+.filter-toggle-btn {
   background: #444;
   border: 1px solid #666;
   color: var(--gray-color);
-  padding: 0.2rem 0.4rem;
-  margin-left: 0.5rem;
+  padding: 0.4rem 0.8rem;
   cursor: pointer;
   border-radius: 3px;
-  font-size: 0.7rem;
-  line-height: 1;
+  font-size: 0.8rem;
   transition: background-color 0.2s;
-  vertical-align: middle;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
-.filter-toggle-btn-small:hover {
+.filter-toggle-btn:hover {
   background: #555;
   color: var(--main-color);
 }
