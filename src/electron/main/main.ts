@@ -774,18 +774,57 @@ ipcMain.handle('hamlib:downloadAndInstall', async event => {
     console.log('Extracting Hamlib...');
     sendProgress(60);
 
+    const tempExtractDir = join(userDataPath, 'hamlib_temp');
+    
     await new Promise<void>((resolve, reject) => {
       fs.createReadStream(zipPath)
-        .pipe(Extract({ path: hamlibDir }))
+        .pipe(Extract({ path: tempExtractDir }))
         .on('close', () => {
           console.log('Extraction completed');
-          sendProgress(90);
+          sendProgress(70);
           resolve();
         })
         .on('error', reject);
     });
 
-    // Clean up zip file
+    // Find the extracted folder (should be something like hamlib-w64-4.6.5)
+    const extractedContents = fs.readdirSync(tempExtractDir);
+    const hamlibFolder = extractedContents.find(item => {
+      const itemPath = join(tempExtractDir, item);
+      return fs.statSync(itemPath).isDirectory() && item.startsWith('hamlib');
+    });
+
+    if (!hamlibFolder) {
+      throw new Error('Hamlib folder not found in extracted archive');
+    }
+
+    const extractedHamlibPath = join(tempExtractDir, hamlibFolder);
+    console.log('Found Hamlib folder:', hamlibFolder);
+
+    // Move contents from extracted folder to final destination
+    const moveContents = (src: string, dest: string) => {
+      if (!fs.existsSync(dest)) {
+        fs.mkdirSync(dest, { recursive: true });
+      }
+      
+      const items = fs.readdirSync(src);
+      for (const item of items) {
+        const srcPath = join(src, item);
+        const destPath = join(dest, item);
+        
+        if (fs.statSync(srcPath).isDirectory()) {
+          moveContents(srcPath, destPath);
+        } else {
+          fs.copyFileSync(srcPath, destPath);
+        }
+      }
+    };
+
+    moveContents(extractedHamlibPath, hamlibDir);
+    sendProgress(80);
+
+    // Clean up temporary extraction directory and zip file
+    fs.rmSync(tempExtractDir, { recursive: true, force: true });
     fs.unlinkSync(zipPath);
 
     // Verify installation
