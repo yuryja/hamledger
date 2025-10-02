@@ -1,6 +1,6 @@
 <script lang="ts">
 export default {
-  name: 'Awards',
+  name: 'AwardsPage',
 };
 </script>
 
@@ -32,12 +32,6 @@ export default {
   align-items: center;
   gap: 1rem;
   margin-bottom: 1rem;
-}
-
-.section-title {
-  color: #fff;
-  font-size: 1.5rem;
-  margin: 0;
 }
 
 .awards-content {

@@ -553,11 +553,11 @@ export default {
               <div class="command-section">
                 <p class="command-label">For RPM based distributions:</p>
                 <div class="command-box">
-                  <code class="command-text">sudo rpm install libhamlib-utils</code>
+                  <code class="command-text">rpm install libhamlib-utils</code>
                   <button 
                     type="button" 
                     class="copy-btn" 
-                    @click="copyToClipboard('sudo rpm install libhamlib-utils')"
+                    @click="copyToClipboard('rpm install libhamlib-utils')"
                     title="Copy to clipboard"
                   >
                     📋
