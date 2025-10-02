@@ -9,6 +9,10 @@ import { exec, spawn, ChildProcess } from 'child_process';
 import { parseAdif } from '../../utils/adif';
 import { QsoEntry } from '../../types/qso';
 import { databaseService } from '../../services/DatabaseService';
+import { createWriteStream } from 'fs';
+import { pipeline } from 'stream';
+import { promisify } from 'util';
+import { Extract } from 'unzipper';
 
 interface FetchOptions {
   headers: {
@@ -693,6 +697,148 @@ ipcMain.handle('execute:command', async (_, command: string) => {
     };
   }
 });
+
+// Check if rigctld is in PATH
+ipcMain.handle('hamlib:checkRigctldInPath', async () => {
+  try {
+    return new Promise(resolve => {
+      exec('where rigctld', { timeout: 5000 }, (error: Error | null, stdout: string) => {
+        if (error) {
+          resolve({ success: false, inPath: false });
+          return;
+        }
+        resolve({ success: true, inPath: true, path: stdout.trim() });
+      });
+    });
+  } catch (error) {
+    console.error('Error checking rigctld in PATH:', error);
+    return { success: false, inPath: false };
+  }
+});
+
+// Download and install Hamlib for Windows
+ipcMain.handle('hamlib:downloadAndInstall', async (event) => {
+  try {
+    const hamlibUrl = 'https://github.com/Hamlib/Hamlib/releases/download/4.6.5/hamlib-w64-4.6.5.zip';
+    const userDataPath = app.getPath('userData');
+    const hamlibDir = join(userDataPath, 'hamlib');
+    const zipPath = join(userDataPath, 'hamlib-w64-4.6.5.zip');
+    const hamlibBinPath = join(hamlibDir, 'bin');
+
+    // Create hamlib directory if it doesn't exist
+    if (!fs.existsSync(hamlibDir)) {
+      fs.mkdirSync(hamlibDir, { recursive: true });
+    }
+
+    // Check if already installed
+    if (fs.existsSync(join(hamlibBinPath, 'rigctld.exe'))) {
+      // Add to PATH if not already there
+      await addToSystemPath(hamlibBinPath);
+      return { success: true, message: 'Hamlib already installed', path: hamlibBinPath };
+    }
+
+    // Download progress callback
+    const sendProgress = (progress: number) => {
+      event.sender.send('hamlib:downloadProgress', { progress });
+    };
+
+    // Download the zip file
+    console.log('Downloading Hamlib...');
+    sendProgress(0);
+
+    const response = await fetch(hamlibUrl);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const totalSize = parseInt(response.headers.get('content-length') || '0');
+    let downloadedSize = 0;
+
+    const fileStream = createWriteStream(zipPath);
+    const pipelineAsync = promisify(pipeline);
+
+    // Track download progress
+    response.body?.on('data', (chunk: Buffer) => {
+      downloadedSize += chunk.length;
+      if (totalSize > 0) {
+        const progress = Math.round((downloadedSize / totalSize) * 50); // 50% for download
+        sendProgress(progress);
+      }
+    });
+
+    await pipelineAsync(response.body!, fileStream);
+    console.log('Download completed');
+
+    // Extract the zip file
+    console.log('Extracting Hamlib...');
+    sendProgress(60);
+
+    await new Promise<void>((resolve, reject) => {
+      fs.createReadStream(zipPath)
+        .pipe(Extract({ path: hamlibDir }))
+        .on('close', () => {
+          console.log('Extraction completed');
+          sendProgress(90);
+          resolve();
+        })
+        .on('error', reject);
+    });
+
+    // Clean up zip file
+    fs.unlinkSync(zipPath);
+
+    // Verify installation
+    if (!fs.existsSync(join(hamlibBinPath, 'rigctld.exe'))) {
+      throw new Error('rigctld.exe not found after extraction');
+    }
+
+    // Add to system PATH
+    await addToSystemPath(hamlibBinPath);
+    sendProgress(100);
+
+    console.log('Hamlib installation completed');
+    return { success: true, message: 'Hamlib installed successfully', path: hamlibBinPath };
+
+  } catch (error) {
+    console.error('Hamlib installation error:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error',
+    };
+  }
+});
+
+// Add directory to system PATH on Windows
+async function addToSystemPath(dirPath: string): Promise<void> {
+  return new Promise((resolve, reject) => {
+    // Use PowerShell to add to system PATH
+    const psCommand = `
+      $currentPath = [Environment]::GetEnvironmentVariable('PATH', 'User')
+      if ($currentPath -notlike '*${dirPath.replace(/\\/g, '\\\\')}*') {
+        $newPath = $currentPath + ';${dirPath.replace(/\\/g, '\\\\')}'
+        [Environment]::SetEnvironmentVariable('PATH', $newPath, 'User')
+        Write-Output 'PATH updated'
+      } else {
+        Write-Output 'PATH already contains directory'
+      }
+    `;
+
+    exec(`powershell -Command "${psCommand}"`, (error, stdout, stderr) => {
+      if (error) {
+        console.error('Error adding to PATH:', error);
+        reject(error);
+        return;
+      }
+      
+      if (stderr) {
+        console.warn('PATH update stderr:', stderr);
+      }
+      
+      console.log('PATH update result:', stdout);
+      resolve();
+    });
+  });
+}
 
 // Settings file path
 const userSettingsPath = join(app.getPath('userData'), 'settings.json');

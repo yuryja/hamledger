@@ -13,6 +13,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
   onAdifImportProgress: (callback: (progress: { imported: number }) => void) => {
     ipcRenderer.on('adif:importProgress', (_, progress) => callback(progress));
   },
+  onHamlibDownloadProgress: (callback: (progress: { progress: number }) => void) => {
+    ipcRenderer.on('hamlib:downloadProgress', (_, progress) => callback(progress));
+  },
   loadSettings: () => ipcRenderer.invoke('settings:load'),
   saveSettings: (settings: any) => ipcRenderer.invoke('settings:save', settings),
   updateQso: (qso: any) => ipcRenderer.invoke('qso:update', qso),
@@ -26,4 +29,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
   rigctldGetCapabilities: () => ipcRenderer.invoke('rigctld:capabilities'),
   rigctldRestart: () => ipcRenderer.invoke('rigctld:restart'),
   executeCommand: (command: string) => ipcRenderer.invoke('execute:command', command),
+  downloadAndInstallHamlib: () => ipcRenderer.invoke('hamlib:downloadAndInstall'),
+  checkRigctldInPath: () => ipcRenderer.invoke('hamlib:checkRigctldInPath'),
 });

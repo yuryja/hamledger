@@ -40,6 +40,14 @@ export default {
         error: null as string | null,
         success: false,
       },
+      hamlibStatus: {
+        isInstalling: false,
+        downloadProgress: 0,
+        error: null as string | null,
+        success: false,
+        isChecking: false,
+        inPath: false,
+      },
       availableBands: BAND_RANGES.filter(band =>
         ['160', '80', '60', '40', '30', '20', '17', '15', '12', '10', '6', '2', '70'].includes(
           band.shortName
@@ -136,9 +144,13 @@ export default {
 
       this.isValidating = true;
       try {
-        const result = await window.electronAPI.executeCommand(
-          `which ${this.wizardData.rigctldPath}`
-        );
+        let result;
+        if (this.isWindows) {
+          result = await window.electronAPI.executeCommand(`where ${this.wizardData.rigctldPath}`);
+        } else {
+          result = await window.electronAPI.executeCommand(`which ${this.wizardData.rigctldPath}`);
+        }
+        
         if (result.success && result.data.trim()) {
           delete this.validationErrors.rigctldPath;
           return true;
@@ -151,6 +163,50 @@ export default {
         return false;
       } finally {
         this.isValidating = false;
+      }
+    },
+    async checkRigctldInPath() {
+      if (!this.isWindows) return;
+      
+      this.hamlibStatus.isChecking = true;
+      try {
+        const result = await window.electronAPI.checkRigctldInPath();
+        this.hamlibStatus.inPath = result.inPath;
+        if (result.inPath) {
+          delete this.validationErrors.rigctldPath;
+        }
+      } catch (error) {
+        console.error('Error checking rigctld in PATH:', error);
+      } finally {
+        this.hamlibStatus.isChecking = false;
+      }
+    },
+    async downloadAndInstallHamlib() {
+      this.hamlibStatus.isInstalling = true;
+      this.hamlibStatus.error = null;
+      this.hamlibStatus.downloadProgress = 0;
+
+      try {
+        // Listen for download progress
+        window.electronAPI.onHamlibDownloadProgress?.((progress) => {
+          this.hamlibStatus.downloadProgress = progress.progress;
+        });
+
+        const result = await window.electronAPI.downloadAndInstallHamlib();
+        
+        if (result.success) {
+          this.hamlibStatus.success = true;
+          this.hamlibStatus.inPath = true;
+          delete this.validationErrors.rigctldPath;
+          console.log('Hamlib installed successfully:', result.message);
+        } else {
+          this.hamlibStatus.error = result.error || 'Installation failed';
+        }
+      } catch (error) {
+        console.error('Error installing Hamlib:', error);
+        this.hamlibStatus.error = 'An unexpected error occurred during installation';
+      } finally {
+        this.hamlibStatus.isInstalling = false;
       }
     },
     toggleBand(bandShortName: string) {
@@ -513,14 +569,69 @@ export default {
             </label>
           </div>
 
-          <!-- Windows Hamlib Warning -->
-          <div v-if="wizardData.enableCat && isWindows" class="warning-box">
-            <div class="warning-icon">⚠️</div>
-            <div class="warning-content">
-              <p class="warning-title">Windows Users</p>
-              <p class="warning-text">
-                On Windows, you must install Hamlib first before enabling CAT control. Download it
-                from:
+          <!-- Windows Hamlib Auto-Install -->
+          <div v-if="wizardData.enableCat && isWindows" class="hamlib-section">
+            <div class="info-box">
+              <p class="info-text">
+                HamLogger can automatically download and install Hamlib for Windows.
+              </p>
+            </div>
+
+            <!-- Check rigctld status -->
+            <div class="hamlib-controls">
+              <button
+                type="button"
+                @click="checkRigctldInPath"
+                :disabled="hamlibStatus.isChecking || hamlibStatus.isInstalling"
+                class="btn btn-small"
+              >
+                <span v-if="!hamlibStatus.isChecking">Check rigctld</span>
+                <span v-else class="loading-text">
+                  <span class="spinner"></span>
+                  Checking...
+                </span>
+              </button>
+
+              <button
+                v-if="!hamlibStatus.inPath && !hamlibStatus.success"
+                type="button"
+                @click="downloadAndInstallHamlib"
+                :disabled="hamlibStatus.isInstalling"
+                class="btn btn-primary"
+              >
+                <span v-if="!hamlibStatus.isInstalling">Install Hamlib</span>
+                <span v-else class="loading-text">
+                  <span class="spinner"></span>
+                  Installing...
+                </span>
+              </button>
+            </div>
+
+            <!-- Installation Progress -->
+            <div v-if="hamlibStatus.isInstalling" class="install-progress">
+              <div class="progress-info">
+                <span class="progress-text">
+                  Installing Hamlib... {{ hamlibStatus.downloadProgress }}%
+                </span>
+              </div>
+              <div class="progress-bar-container">
+                <div
+                  class="progress-bar-fill"
+                  :style="{ width: `${hamlibStatus.downloadProgress}%` }"
+                ></div>
+              </div>
+            </div>
+
+            <!-- Installation Success -->
+            <div v-if="hamlibStatus.success || hamlibStatus.inPath" class="success-message">
+              ✅ Hamlib is available and ready to use!
+            </div>
+
+            <!-- Installation Error -->
+            <div v-if="hamlibStatus.error" class="error-message">
+              ❌ Installation failed: {{ hamlibStatus.error }}
+              <p class="error-help">
+                You can manually download Hamlib from:
                 <a
                   href="https://hamlib.sourceforge.net/snapshots/"
                   target="_blank"
@@ -1052,5 +1163,30 @@ export default {
 
 .copy-btn:hover {
   background: rgba(255, 215, 0, 0.1);
+}
+
+.hamlib-section {
+  margin: 1rem 0;
+}
+
+.hamlib-controls {
+  display: flex;
+  gap: 1rem;
+  margin: 1rem 0;
+  align-items: center;
+}
+
+.install-progress {
+  margin: 1rem 0;
+  padding: 1rem;
+  background: #2b2b2b;
+  border: 1px solid #444;
+  border-radius: 4px;
+}
+
+.error-help {
+  margin-top: 0.5rem;
+  font-size: 0.85rem;
+  color: var(--gray-color);
 }
 </style>
