@@ -47,7 +47,12 @@ export const useQsoStore = defineStore('qso', {
   actions: {
     async init() {
       if (!this.initialized) {
-        await this.initializeStore();
+        this.isLoading = true;
+        try {
+          await this.initializeStore();
+        } finally {
+          this.isLoading = false;
+        }
       }
     },
     async addQso() {

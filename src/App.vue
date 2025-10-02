@@ -65,7 +65,11 @@ export default {
       <SetupWizard v-if="showSetupWizard" @complete="onSetupComplete" />
     </template>
     <div v-else class="loading-container">
-      <p>Loading...</p>
+      <div class="loading-content">
+        <div class="loading-spinner"></div>
+        <span class="loading-text">Initializing application...</span>
+        <div class="loading-subtext">Please wait while we set up everything</div>
+      </div>
     </div>
   </div>
 </template>
@@ -85,7 +89,43 @@ export default {
   align-items: center;
   justify-content: center;
   height: 100vh;
+  background: #1a1a1a;
+}
+
+.loading-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  background: #2b2b2b;
+  padding: 2rem;
+  border-radius: 8px;
+  border: 1px solid #444;
+}
+
+.loading-spinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid #444;
+  border-top: 4px solid var(--main-color);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.loading-text {
+  color: var(--main-color);
+  font-size: 1.1rem;
+  font-weight: bold;
+}
+
+.loading-subtext {
   color: var(--gray-color);
-  font-size: 1.2rem;
+  font-size: 0.9rem;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 </style>

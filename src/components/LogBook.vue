@@ -56,6 +56,9 @@ export default {
     isStoreLoading() {
       return this.qsoStore.isLoading;
     },
+    showLoadingOverlay() {
+      return this.isStoreLoading || this.isLoadingQsos || (!this.qsoStore.initialized && this.totalCount === 0);
+    },
     filteredQsos() {
       let filtered = [...this.allQsos];
 
@@ -143,9 +146,14 @@ export default {
       return this.visibleStartIndex * this.itemHeight;
     },
   },
-  mounted() {
+  async mounted() {
     this.updateContainerHeight();
     window.addEventListener('resize', this.updateContainerHeight);
+    
+    // Show loading if QSOs are not yet loaded
+    if (!this.qsoStore.initialized && this.qsoStore.allQsos.length === 0) {
+      this.isLoadingQsos = true;
+    }
   },
   beforeUnmount() {
     window.removeEventListener('resize', this.updateContainerHeight);
@@ -397,15 +405,16 @@ export default {
     </div>
 
     <!-- QSO Loading Overlay -->
-    <div v-if="isStoreLoading || isLoadingQsos" class="qso-loading-overlay">
+    <div v-if="showLoadingOverlay" class="qso-loading-overlay">
       <div class="loading-content">
         <div class="loading-spinner"></div>
         <span class="loading-text">Loading QSOs...</span>
-        <div class="loading-subtext">Processing {{ totalCount }} QSOs</div>
+        <div class="loading-subtext" v-if="totalCount > 0">Processing {{ totalCount }} QSOs</div>
+        <div class="loading-subtext" v-else>Initializing logbook...</div>
       </div>
     </div>
 
-    <div class="table-wrapper" ref="tableWrapper" @scroll="onScroll" :class="{ 'loading': isStoreLoading || isLoadingQsos }">
+    <div class="table-wrapper" ref="tableWrapper" @scroll="onScroll" :class="{ 'loading': showLoadingOverlay }">
       <div class="virtual-scroll-container" :style="{ height: totalHeight + 'px' }">
         <table class="qso-table" :style="{ transform: `translateY(${offsetY}px)` }">
           <thead>
