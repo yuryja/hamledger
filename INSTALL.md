@@ -56,10 +56,10 @@ If you want to use CAT control functionality (radio control), you need to instal
 2. Go through the Setup Wizard
 3. When asked about CAT Control, check "Enable CAT Control"
 4. HamLedger will automatically check for and install Hamlib if needed
-5. **Important**: When prompted for administrator privileges during Hamlib installation, click "Yes" to allow PATH modification
+5. The installation will add Hamlib to your user PATH automatically
 6. Enter `rigctld` as the rigctld path (since it will be in your PATH after installation)
 
-**Note**: The automatic Hamlib installation may request administrator privileges to modify the system PATH. This is normal and required for proper functionality.
+**Note**: The automatic Hamlib installation adds the Hamlib bin directory to your user PATH, so no administrator privileges are required.
 
 ### Linux Installation
 

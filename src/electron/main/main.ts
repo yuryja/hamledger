@@ -848,61 +848,49 @@ ipcMain.handle('hamlib:downloadAndInstall', async event => {
   }
 });
 
-// Add directory to system PATH on Windows
+// Add directory to user PATH on Windows
 async function addToSystemPath(dirPath: string): Promise<void> {
   return new Promise((resolve, reject) => {
-    // Use PowerShell with elevated privileges to add to system PATH
+    // Use PowerShell to add to user PATH (no elevation needed)
     const psCommand = `
       try {
         $currentPath = [Environment]::GetEnvironmentVariable('PATH', 'User')
+        if ($currentPath -eq $null) { $currentPath = '' }
         if ($currentPath -notlike '*${dirPath.replace(/\\/g, '\\\\')}*') {
-          $newPath = $currentPath + ';${dirPath.replace(/\\/g, '\\\\')}'
+          if ($currentPath -ne '' -and -not $currentPath.EndsWith(';')) {
+            $currentPath += ';'
+          }
+          $newPath = $currentPath + '${dirPath.replace(/\\/g, '\\\\')}'
           [Environment]::SetEnvironmentVariable('PATH', $newPath, 'User')
-          Write-Output 'PATH updated successfully'
+          Write-Output 'User PATH updated successfully'
         } else {
-          Write-Output 'PATH already contains directory'
+          Write-Output 'User PATH already contains directory'
         }
       } catch {
-        Write-Error 'Failed to update PATH: Access denied or other error'
+        Write-Error "Failed to update user PATH: $($_.Exception.Message)"
         exit 1
       }
     `;
 
-    // Try to run PowerShell with elevated privileges
-    const elevatedCommand = `powershell -Command "Start-Process powershell -ArgumentList '-Command \\"${psCommand.replace(/"/g, '\\"')}\\"' -Verb RunAs -Wait"`;
+    // Run PowerShell command directly (no elevation needed for user PATH)
+    const command = `powershell -Command "${psCommand}"`;
 
-    exec(elevatedCommand, { timeout: 30000 }, (error, stdout, stderr) => {
+    exec(command, { timeout: 15000 }, (error, stdout, stderr) => {
       if (error) {
-        console.error('Error adding to PATH with elevation:', error);
-
-        // Fallback: try without elevation (user PATH only)
-        const fallbackCommand = `powershell -Command "${psCommand}"`;
-        exec(fallbackCommand, (fallbackError, fallbackStdout, fallbackStderr) => {
-          if (fallbackError) {
-            console.error('Fallback PATH update also failed:', fallbackError);
-            reject(
-              new Error(
-                'Failed to update PATH. Please add the Hamlib bin directory to your PATH manually.'
-              )
-            );
-            return;
-          }
-
-          if (fallbackStderr) {
-            console.warn('Fallback PATH update stderr:', fallbackStderr);
-          }
-
-          console.log('Fallback PATH update result:', fallbackStdout);
-          resolve();
-        });
+        console.error('Error adding to user PATH:', error);
+        reject(
+          new Error(
+            'Failed to update user PATH. Please add the Hamlib bin directory to your user PATH manually.'
+          )
+        );
         return;
       }
 
       if (stderr) {
-        console.warn('PATH update stderr:', stderr);
+        console.warn('User PATH update stderr:', stderr);
       }
 
-      console.log('PATH update result:', stdout);
+      console.log('User PATH update result:', stdout);
       resolve();
     });
   });
