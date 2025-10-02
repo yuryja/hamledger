@@ -25,6 +25,7 @@ export class RigctldService {
 
   public async connect(): Promise<RigctldResponse> {
     try {
+      ##AI! Property 'electronAPI' does not exist on type 'Window & typeof globalThis
       const response = await window.electronAPI.rigctldConnect(
         this.connection.host,
         this.connection.port,
