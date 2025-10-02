@@ -833,11 +833,12 @@ ipcMain.handle('hamlib:downloadAndInstall', async event => {
       throw new Error('rigctld.exe not found after extraction');
     }
 
-    // Add to system PATH
+    // Add bin directory to system PATH
     await addToSystemPath(hamlibBinPath);
     sendProgress(100);
 
     console.log('Hamlib installation completed');
+    console.log('Added to PATH:', hamlibBinPath);
     return { success: true, message: 'Hamlib installed successfully', path: hamlibBinPath };
   } catch (error) {
     console.error('Hamlib installation error:', error);
@@ -851,20 +852,28 @@ ipcMain.handle('hamlib:downloadAndInstall', async event => {
 // Add directory to user PATH on Windows
 async function addToSystemPath(dirPath: string): Promise<void> {
   return new Promise((resolve, reject) => {
+    // Ensure we're adding the bin directory specifically
+    const binPath = dirPath.endsWith('bin') ? dirPath : join(dirPath, 'bin');
+    
     // Use PowerShell to add to user PATH (no elevation needed)
     const psCommand = `
       try {
+        $binPath = '${binPath.replace(/\\/g, '\\\\')}'
         $currentPath = [Environment]::GetEnvironmentVariable('PATH', 'User')
         if ($currentPath -eq $null) { $currentPath = '' }
-        if ($currentPath -notlike '*${dirPath.replace(/\\/g, '\\\\')}*') {
+        
+        Write-Output "Current PATH: $currentPath"
+        Write-Output "Adding bin path: $binPath"
+        
+        if ($currentPath -notlike "*$binPath*") {
           if ($currentPath -ne '' -and -not $currentPath.EndsWith(';')) {
             $currentPath += ';'
           }
-          $newPath = $currentPath + '${dirPath.replace(/\\/g, '\\\\')}'
+          $newPath = $currentPath + $binPath
           [Environment]::SetEnvironmentVariable('PATH', $newPath, 'User')
-          Write-Output 'User PATH updated successfully'
+          Write-Output 'User PATH updated successfully with bin directory'
         } else {
-          Write-Output 'User PATH already contains directory'
+          Write-Output 'User PATH already contains bin directory'
         }
       } catch {
         Write-Error "Failed to update user PATH: $($_.Exception.Message)"
