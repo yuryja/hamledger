@@ -139,9 +139,11 @@ rigctld --version
 #### Linux
 
 - **Jogosultság megtagadva soros portokhoz**: Add hozzá a felhasználódat a `dialout` csoporthoz:
+
   ```bash
   sudo usermod -a -G dialout $USER
   ```
+
   Majd jelentkezz ki és vissza.
 
 - **rigctld nem található**: Győződj meg róla, hogy a Hamlib telepítve van a disztribúciód csomagkezelőjével

@@ -145,10 +145,11 @@ rigctld --version
 #### Linux
 
 - **Permission denied for serial ports**: Add your user to the `dialout` group:
+
   ```bash
   sudo usermod -a -G dialout $USER
   ```
+
   Then log out and back in.
 
 - **rigctld not found**: Make sure Hamlib is installed using your distribution's package manager
-

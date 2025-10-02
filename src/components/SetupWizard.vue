@@ -150,7 +150,7 @@ export default {
         } else {
           result = await window.electronAPI.executeCommand(`which ${this.wizardData.rigctldPath}`);
         }
-        
+
         if (result.success && result.data.trim()) {
           delete this.validationErrors.rigctldPath;
           return true;
@@ -167,7 +167,7 @@ export default {
     },
     async checkRigctldInPath() {
       if (!this.isWindows) return;
-      
+
       this.hamlibStatus.isChecking = true;
       try {
         const result = await window.electronAPI.checkRigctldInPath();
@@ -188,12 +188,12 @@ export default {
 
       try {
         // Listen for download progress
-        window.electronAPI.onHamlibDownloadProgress?.((progress) => {
+        window.electronAPI.onHamlibDownloadProgress?.(progress => {
           this.hamlibStatus.downloadProgress = progress.progress;
         });
 
         const result = await window.electronAPI.downloadAndInstallHamlib();
-        
+
         if (result.success) {
           this.hamlibStatus.success = true;
           this.hamlibStatus.inPath = true;
@@ -631,8 +631,8 @@ export default {
             <div v-if="hamlibStatus.error" class="error-message">
               ❌ Installation failed: {{ hamlibStatus.error }}
               <p class="error-help">
-                <strong>Note:</strong> If you see an "Access denied" error, please allow administrator privileges when prompted.
-                You can also manually download Hamlib from:
+                <strong>Note:</strong> If you see an "Access denied" error, please allow
+                administrator privileges when prompted. You can also manually download Hamlib from:
                 <a
                   href="https://hamlib.sourceforge.net/snapshots/"
                   target="_blank"

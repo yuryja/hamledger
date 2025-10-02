@@ -717,9 +717,10 @@ ipcMain.handle('hamlib:checkRigctldInPath', async () => {
 });
 
 // Download and install Hamlib for Windows
-ipcMain.handle('hamlib:downloadAndInstall', async (event) => {
+ipcMain.handle('hamlib:downloadAndInstall', async event => {
   try {
-    const hamlibUrl = 'https://github.com/Hamlib/Hamlib/releases/download/4.6.5/hamlib-w64-4.6.5.zip';
+    const hamlibUrl =
+      'https://github.com/Hamlib/Hamlib/releases/download/4.6.5/hamlib-w64-4.6.5.zip';
     const userDataPath = app.getPath('userData');
     const hamlibDir = join(userDataPath, 'hamlib');
     const zipPath = join(userDataPath, 'hamlib-w64-4.6.5.zip');
@@ -798,7 +799,6 @@ ipcMain.handle('hamlib:downloadAndInstall', async (event) => {
 
     console.log('Hamlib installation completed');
     return { success: true, message: 'Hamlib installed successfully', path: hamlibBinPath };
-
   } catch (error) {
     console.error('Hamlib installation error:', error);
     return {
@@ -834,30 +834,34 @@ async function addToSystemPath(dirPath: string): Promise<void> {
     exec(elevatedCommand, { timeout: 30000 }, (error, stdout, stderr) => {
       if (error) {
         console.error('Error adding to PATH with elevation:', error);
-        
+
         // Fallback: try without elevation (user PATH only)
         const fallbackCommand = `powershell -Command "${psCommand}"`;
         exec(fallbackCommand, (fallbackError, fallbackStdout, fallbackStderr) => {
           if (fallbackError) {
             console.error('Fallback PATH update also failed:', fallbackError);
-            reject(new Error('Failed to update PATH. Please add the Hamlib bin directory to your PATH manually.'));
+            reject(
+              new Error(
+                'Failed to update PATH. Please add the Hamlib bin directory to your PATH manually.'
+              )
+            );
             return;
           }
-          
+
           if (fallbackStderr) {
             console.warn('Fallback PATH update stderr:', fallbackStderr);
           }
-          
+
           console.log('Fallback PATH update result:', fallbackStdout);
           resolve();
         });
         return;
       }
-      
+
       if (stderr) {
         console.warn('PATH update stderr:', stderr);
       }
-      
+
       console.log('PATH update result:', stdout);
       resolve();
     });
