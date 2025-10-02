@@ -153,12 +153,13 @@ export default {
     <div class="log-header">
       <h2 class="section-title">
         Log Area
-        <img 
-          src="https://img.icons8.com/?size=100&id=3004&format=png&color=000000" 
-          alt="Filter" 
-          class="filter-icon"
-          @click="showFilters = !showFilters"
-        />
+        <button 
+          @click="showFilters = !showFilters" 
+          class="filter-toggle-btn-small"
+          :title="showFilters ? 'Hide Filters' : 'Show Filters'"
+        >
+          {{ showFilters ? '▲' : '▼' }}
+        </button>
       </h2>
       <div class="qso-count">
         <span>This session: {{ sessionCount }} QSO</span>
@@ -583,17 +584,22 @@ export default {
   font-weight: bold;
 }
 
-.filter-icon {
-  width: 20px;
-  height: 20px;
+.filter-toggle-btn-small {
+  background: #444;
+  border: 1px solid #666;
+  color: var(--gray-color);
+  padding: 0.2rem 0.4rem;
   margin-left: 0.5rem;
   cursor: pointer;
-  opacity: 0.7;
-  transition: opacity 0.2s;
+  border-radius: 3px;
+  font-size: 0.7rem;
+  line-height: 1;
+  transition: background-color 0.2s;
   vertical-align: middle;
 }
 
-.filter-icon:hover {
-  opacity: 1;
+.filter-toggle-btn-small:hover {
+  background: #555;
+  color: var(--main-color);
 }
 </style>
