@@ -145,10 +145,20 @@ export default {
       this.isValidating = true;
       try {
         let result;
+        const rigctldPath = this.wizardData.rigctldPath.trim();
+        
         if (this.isWindows) {
-          result = await window.electronAPI.executeCommand(`where ${this.wizardData.rigctldPath}`);
+          // Check if it's an absolute path (contains : or starts with \ or /)
+          if (rigctldPath.includes(':') || rigctldPath.startsWith('\\') || rigctldPath.startsWith('/')) {
+            // For absolute paths, check if the file exists directly
+            result = await window.electronAPI.executeCommand(`if exist "${rigctldPath}" echo "exists"`);
+          } else {
+            // For relative paths or commands in PATH, use where
+            result = await window.electronAPI.executeCommand(`where ${rigctldPath}`);
+          }
         } else {
-          result = await window.electronAPI.executeCommand(`which ${this.wizardData.rigctldPath}`);
+          // On Linux, use which for both cases
+          result = await window.electronAPI.executeCommand(`which ${rigctldPath}`);
         }
 
         if (result.success && result.data.trim()) {

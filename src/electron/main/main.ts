@@ -702,7 +702,8 @@ ipcMain.handle('execute:command', async (_, command: string) => {
 ipcMain.handle('hamlib:checkRigctldInPath', async () => {
   try {
     return new Promise(resolve => {
-      exec('where rigctld', { timeout: 5000 }, (error: Error | null, stdout: string) => {
+      const command = process.platform === 'win32' ? 'where rigctld' : 'which rigctld';
+      exec(command, { timeout: 5000 }, (error: Error | null, stdout: string) => {
         if (error) {
           resolve({ success: false, inPath: false });
           return;
