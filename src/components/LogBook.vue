@@ -33,6 +33,7 @@ export default {
         error: null as string | null,
         success: false,
       },
+      isLoadingQsos: false,
       filters: {
         searchText: '',
         selectedBand: '',
@@ -51,6 +52,9 @@ export default {
     },
     totalCount() {
       return this.qsoStore.totalCount;
+    },
+    isStoreLoading() {
+      return this.qsoStore.isLoading;
     },
     filteredQsos() {
       let filtered = [...this.allQsos];
@@ -213,8 +217,13 @@ export default {
           this.importStatus.importedCount = importResult.count || 0;
           console.log(`Successfully imported ${importResult.count} QSOs from ADIF file`);
           
-          // Refresh the QSO store to show new data
-          await this.qsoStore.initializeStore();
+          // Refresh the QSO store to show new data (non-blocking)
+          this.isLoadingQsos = true;
+          try {
+            await this.qsoStore.initializeStore();
+          } finally {
+            this.isLoadingQsos = false;
+          }
         } else {
           this.importStatus.error = importResult.error || 'Import failed';
         }
@@ -387,7 +396,16 @@ export default {
       ❌ Import failed: {{ importStatus.error }}
     </div>
 
-    <div class="table-wrapper" ref="tableWrapper" @scroll="onScroll">
+    <!-- QSO Loading Overlay -->
+    <div v-if="isStoreLoading || isLoadingQsos" class="qso-loading-overlay">
+      <div class="loading-content">
+        <div class="loading-spinner"></div>
+        <span class="loading-text">Loading QSOs...</span>
+        <div class="loading-subtext">Processing {{ totalCount }} QSOs</div>
+      </div>
+    </div>
+
+    <div class="table-wrapper" ref="tableWrapper" @scroll="onScroll" :class="{ 'loading': isStoreLoading || isLoadingQsos }">
       <div class="virtual-scroll-container" :style="{ height: totalHeight + 'px' }">
         <table class="qso-table" :style="{ transform: `translateY(${offsetY}px)` }">
           <thead>
@@ -488,6 +506,7 @@ export default {
   height: 100%;
   display: flex;
   flex-direction: column;
+  position: relative;
 }
 
 .log-header {
@@ -790,5 +809,61 @@ export default {
   display: flex;
   align-items: center;
   gap: 0.5rem;
+}
+
+.qso-loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  border-radius: 5px;
+}
+
+.loading-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  background: #2b2b2b;
+  padding: 2rem;
+  border-radius: 8px;
+  border: 1px solid #444;
+}
+
+.loading-spinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid #444;
+  border-top: 4px solid var(--main-color);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.loading-text {
+  color: var(--main-color);
+  font-size: 1.1rem;
+  font-weight: bold;
+}
+
+.loading-subtext {
+  color: var(--gray-color);
+  font-size: 0.9rem;
+}
+
+.table-wrapper.loading {
+  opacity: 0.3;
+  pointer-events: none;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 </style>

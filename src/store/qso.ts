@@ -20,6 +20,7 @@ export const useQsoStore = defineStore('qso', {
     allQsos: [] as QsoEntry[],
     currentUTCTime: '',
     initialized: false,
+    isLoading: false,
     stationInfo: {
       baseData: {} as BaseStationData,
       geodata: {} as GeoData,
@@ -109,21 +110,42 @@ export const useQsoStore = defineStore('qso', {
     },
     async initializeStore() {
       try {
-        // Load QSOs in background without blocking UI
-        setTimeout(async () => {
-          const result = await window.electronAPI.getAllDocs();
-          console.debug('Raw database result:', result);
-          this.allQsos = result.rows.map(row => {
-            const qso = row.doc as QsoEntry;
-            // Ensure _id and _rev are properly set
-            qso._id = qso._id || row.id;
-            qso._rev = qso._rev || (row.value && row.value.rev);
-            return qso;
-          });
-        }, 0);
+        this.isLoading = true;
+        
+        // Use setTimeout to allow UI to update before starting heavy work
+        await new Promise(resolve => setTimeout(resolve, 10));
+        
+        const result = await window.electronAPI.getAllDocs();
+        console.debug('Raw database result:', result);
+        
+        // Process QSOs in chunks to avoid blocking UI
+        const qsos = result.rows.map(row => {
+          const qso = row.doc as QsoEntry;
+          // Ensure _id and _rev are properly set
+          qso._id = qso._id || row.id;
+          qso._rev = qso._rev || (row.value && row.value.rev);
+          return qso;
+        });
+        
+        // Process in chunks of 1000 to avoid blocking
+        const chunkSize = 1000;
+        this.allQsos = [];
+        
+        for (let i = 0; i < qsos.length; i += chunkSize) {
+          const chunk = qsos.slice(i, i + chunkSize);
+          this.allQsos.push(...chunk);
+          
+          // Allow UI to update between chunks
+          if (i + chunkSize < qsos.length) {
+            await new Promise(resolve => setTimeout(resolve, 1));
+          }
+        }
+        
         this.initialized = true;
       } catch (error) {
         console.error('Failed to initialize QSO store:', error);
+      } finally {
+        this.isLoading = false;
       }
     },
 
@@ -167,7 +189,12 @@ export const useQsoStore = defineStore('qso', {
           }
 
           // Refresh the store to ensure we have the latest data
-          await this.initializeStore();
+          this.isLoading = true;
+          try {
+            await this.initializeStore();
+          } finally {
+            this.isLoading = false;
+          }
         } else {
           throw new Error(`Update failed: ${response.error || 'Unknown error'}`);
         }
@@ -181,7 +208,12 @@ export const useQsoStore = defineStore('qso', {
       try {
         const result = await window.electronAPI.importAdif();
         if (result.imported) {
-          await this.initializeStore();
+          this.isLoading = true;
+          try {
+            await this.initializeStore();
+          } finally {
+            this.isLoading = false;
+          }
           return { success: true, count: result.count };
         }
         return { success: false, error: result.error };
