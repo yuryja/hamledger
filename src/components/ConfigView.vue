@@ -10,6 +10,7 @@ export default {
       selectedCategory: 'Station',
       searchQuery: '',
       configFields: [] as ConfigField[],
+      passwordVisibility: {} as { [key: string]: boolean },
     };
   },
   computed: {
@@ -206,6 +207,12 @@ export default {
         };
       }
     },
+    togglePasswordVisibility(fieldId: string) {
+      this.passwordVisibility[fieldId] = !this.passwordVisibility[fieldId];
+    },
+    isPasswordField(field: ConfigField): boolean {
+      return field.key === 'password' && field.path.includes('qrz');
+    },
     async toggleCategoryEnabled(enabled: boolean) {
       const categoryKey = this.selectedCategory.toLowerCase().replace(' ', '');
       const categoryMap = {
@@ -364,6 +371,23 @@ export default {
                   {{ option }}
                 </option>
               </select>
+
+              <!-- Password field with reveal button -->
+              <div v-else-if="isPasswordField(field)" class="password-field">
+                <input
+                  :type="passwordVisibility[getFieldId(field)] ? 'text' : 'password'"
+                  :id="getFieldId(field)"
+                  :value="field.value"
+                  @input="handleChange(field, $event)"
+                />
+                <button
+                  type="button"
+                  class="password-toggle"
+                  @click="togglePasswordVisibility(getFieldId(field))"
+                >
+                  {{ passwordVisibility[getFieldId(field)] ? '👁️' : '👁️‍🗨️' }}
+                </button>
+              </div>
 
               <!-- String with conditional disable for comPort -->
               <input
@@ -677,5 +701,35 @@ input:checked + .slider:before {
 
 .config-fields.disabled .config-field {
   background: #2a2a2a;
+}
+
+.password-field {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.password-field input {
+  flex: 1;
+  padding-right: 3rem;
+}
+
+.password-toggle {
+  position: absolute;
+  right: 0.5rem;
+  background: none;
+  border: none;
+  color: var(--gray-color);
+  cursor: pointer;
+  padding: 0.25rem;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s;
+}
+
+.password-toggle:hover {
+  color: var(--main-color);
 }
 </style>
