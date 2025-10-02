@@ -149,6 +149,7 @@ export const useQsoStore = defineStore('qso', {
         this.initialized = true;
       } catch (error) {
         console.error('Failed to initialize QSO store:', error);
+        this.initialized = true; // Set to true even on error to stop loading
       } finally {
         this.isLoading = false;
       }

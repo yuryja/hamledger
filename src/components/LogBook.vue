@@ -57,7 +57,7 @@ export default {
       return this.qsoStore.isLoading;
     },
     showLoadingOverlay() {
-      return this.isStoreLoading || this.isLoadingQsos || (!this.qsoStore.initialized && this.totalCount === 0);
+      return this.isStoreLoading || this.isLoadingQsos;
     },
     filteredQsos() {
       let filtered = [...this.allQsos];
@@ -150,9 +150,16 @@ export default {
     this.updateContainerHeight();
     window.addEventListener('resize', this.updateContainerHeight);
     
-    // Show loading if QSOs are not yet loaded
-    if (!this.qsoStore.initialized && this.qsoStore.allQsos.length === 0) {
+    // Show loading if store is not initialized yet
+    if (!this.qsoStore.initialized) {
       this.isLoadingQsos = true;
+      
+      // Watch for store initialization completion
+      this.$watch(() => this.qsoStore.initialized, (newVal) => {
+        if (newVal) {
+          this.isLoadingQsos = false;
+        }
+      });
     }
   },
   beforeUnmount() {
