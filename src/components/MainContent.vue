@@ -6,6 +6,7 @@ import LogArea from './LogArea.vue';
 import LogBook from './LogBook.vue';
 import ConfigView from './ConfigView.vue';
 import DxCluster from './DxCluster.vue';
+import Awards from './Awards.vue';
 import { configHelper } from '../utils/configHelper';
 
 export default {
@@ -17,6 +18,7 @@ export default {
     LogBook,
     ConfigView,
     DxCluster,
+    Awards,
   },
   setup() {
     const currentView = ref('qso');
@@ -48,6 +50,7 @@ export default {
       </div>
     </template>
     <LogBook v-else-if="currentView === 'logbook'" />
+    <Awards v-else-if="currentView === 'awards'" />
     <ConfigView v-else-if="currentView === 'settings'" />
   </div>
 </template>
