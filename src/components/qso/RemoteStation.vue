@@ -40,7 +40,11 @@ export default {
     <h2 class="section-title">Remote Station</h2>
     <div v-if="isValid && callsign" class="remote-station-boxes">
       <!-- Station details with integrated location -->
-      <div class="station-block station-remote" :class="{ 'qrz-error': stationInfo?.qrzError }">
+      <div 
+        class="station-block station-remote" 
+        :class="{ 'qrz-error': stationInfo?.qrzError }"
+        :title="stationInfo?.qrzError ? 'QRZ lookup failed. Please check your QRZ.com credentials in settings.' : ''"
+      >
         <img
           v-if="stationInfo?.flag"
           :src="stationInfo.flag"
@@ -126,6 +130,7 @@ export default {
 
 .qrz-error {
   background: rgba(255, 0, 0, 0.1);
+  cursor: help;
 }
 
 .station-flag {
