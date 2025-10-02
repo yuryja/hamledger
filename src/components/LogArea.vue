@@ -98,6 +98,7 @@ export default {
       sortOrder: 'desc',
       selectedQso: null,
       showEditDialog: false,
+      showFilters: false,
       filters: {
         searchText: '',
         selectedBand: '',
@@ -151,6 +152,10 @@ export default {
   <main class="log-container">
     <div class="log-header">
       <h2 class="section-title">Log Area</h2>
+      <button @click="showFilters = !showFilters" class="filter-toggle-btn">
+        {{ showFilters ? 'Hide Filters' : 'Show Filters' }}
+        <span class="toggle-icon">{{ showFilters ? '▲' : '▼' }}</span>
+      </button>
       <div class="qso-count">
         <span>This session: {{ sessionCount }} QSO</span>
         <span v-if="filteredCount !== sessionCount" class="filtered-count">
@@ -162,7 +167,7 @@ export default {
     </div>
 
     <!-- Filters Panel -->
-    <div class="filters-panel">
+    <div v-if="showFilters" class="filters-panel">
       <div class="filters-content">
         <div class="filters-row">
           <div class="filter-group search-group">
@@ -572,5 +577,28 @@ export default {
   cursor: pointer;
   border-radius: 3px;
   font-weight: bold;
+}
+
+.filter-toggle-btn {
+  background: #444;
+  border: 1px solid #666;
+  color: var(--gray-color);
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  border-radius: 3px;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: background-color 0.2s;
+}
+
+.filter-toggle-btn:hover {
+  background: #555;
+}
+
+.toggle-icon {
+  font-size: 0.8rem;
+  color: var(--main-color);
 }
 </style>
