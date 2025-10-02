@@ -43,7 +43,6 @@ export default {
       <div 
         class="station-block station-remote" 
         :class="{ 'qrz-error': stationInfo?.qrzError }"
-        :title="stationInfo?.qrzError ? 'QRZ lookup failed. Please check your QRZ.com credentials in settings.' : ''"
       >
         <img
           v-if="stationInfo?.flag"
@@ -52,6 +51,9 @@ export default {
           class="station-flag"
         />
         <div class="station-info">
+          <div v-if="stationInfo?.qrzError" class="qrz-error-message">
+            ⚠️ QRZ lookup failed. Please check your QRZ.com credentials in settings.
+          </div>
           <p class="station-name">Remote: {{ stationInfo?.baseData?.name }}</p>
           <p class="station-qth">QTH: {{ stationInfo?.baseData?.qth || 'Loading...' }}</p>
           <p class="station-country">
@@ -130,7 +132,17 @@ export default {
 
 .qrz-error {
   background: rgba(255, 0, 0, 0.1);
-  cursor: help;
+}
+
+.qrz-error-message {
+  color: #ff6b6b;
+  font-size: 0.8rem;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+  padding: 0.3rem;
+  background: rgba(255, 107, 107, 0.1);
+  border: 1px solid #ff6b6b;
+  border-radius: 3px;
 }
 
 .station-flag {
