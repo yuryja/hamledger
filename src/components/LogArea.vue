@@ -151,7 +151,15 @@ export default {
 <template>
   <main class="log-container">
     <div class="log-header">
-      <h2 class="section-title">Log Area</h2>
+      <h2 class="section-title">
+        Log Area
+        <img 
+          src="https://img.icons8.com/?size=100&id=3004&format=png&color=000000" 
+          alt="Filter" 
+          class="filter-icon"
+          @click="showFilters = !showFilters"
+        />
+      </h2>
       <button @click="showFilters = !showFilters" class="filter-toggle-btn">
         {{ showFilters ? 'Hide Filters' : 'Show Filters' }}
         <span class="toggle-icon">{{ showFilters ? '▲' : '▼' }}</span>
@@ -600,5 +608,19 @@ export default {
 .toggle-icon {
   font-size: 0.8rem;
   color: var(--main-color);
+}
+
+.filter-icon {
+  width: 20px;
+  height: 20px;
+  margin-left: 0.5rem;
+  cursor: pointer;
+  opacity: 0.7;
+  transition: opacity 0.2s;
+  vertical-align: middle;
+}
+
+.filter-icon:hover {
+  opacity: 1;
 }
 </style>
