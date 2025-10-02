@@ -273,7 +273,7 @@ ipcMain.handle('adif:parseFile', async (_, filePath: string) => {
   try {
     const content = fs.readFileSync(filePath, 'utf8');
     const records = parseAdif(content);
-    
+
     return { success: true, totalCount: records.length };
   } catch (error) {
     console.error('ADIF file parsing error:', error);

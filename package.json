@@ -23,6 +23,7 @@
     "test:coverage": "vitest run --coverage --environment jsdom",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
+    "docker:build:win": "docker run --rm -v $(pwd):/project -w /project electronuserland/builder:wine bash -c 'export ELECTRON_GET_USE_PROXY=1; npm install && npm run build:win'",
     "build:win": "npm run app:build && electron-builder --win",
     "build:mac": "npm run app:build && electron-builder --mac",
     "build:linux": "npm run app:build && electron-builder --linux",

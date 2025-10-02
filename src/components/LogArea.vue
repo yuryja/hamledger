@@ -46,10 +46,11 @@ export default {
           }
         }
 
-        filtered = filtered.filter(qso => 
-          TextMatcher.matches(qso.callsign || '', this.filters.searchText, matchOptions) ||
-          TextMatcher.matches(qso.remark || '', this.filters.searchText, matchOptions) ||
-          TextMatcher.matches(qso.notes || '', this.filters.searchText, matchOptions)
+        filtered = filtered.filter(
+          qso =>
+            TextMatcher.matches(qso.callsign || '', this.filters.searchText, matchOptions) ||
+            TextMatcher.matches(qso.remark || '', this.filters.searchText, matchOptions) ||
+            TextMatcher.matches(qso.notes || '', this.filters.searchText, matchOptions)
         );
       }
 
@@ -153,8 +154,8 @@ export default {
     <div class="log-header">
       <div class="header-left">
         <h2 class="section-title">Log Area</h2>
-        <button 
-          @click="showFilters = !showFilters" 
+        <button
+          @click="showFilters = !showFilters"
           class="filter-toggle-btn"
           :title="showFilters ? 'Hide Filters' : 'Show Filters'"
         >
@@ -177,15 +178,15 @@ export default {
         <div class="filters-row">
           <div class="filter-group search-group">
             <label>Search:</label>
-            <input 
-              v-model="filters.searchText" 
-              type="text" 
+            <input
+              v-model="filters.searchText"
+              type="text"
               placeholder="Callsign, remark, notes..."
               class="filter-input search-input"
               :class="{ 'regex-error': regexError }"
             />
           </div>
-          
+
           <div class="filter-group">
             <label>Band:</label>
             <select v-model="filters.selectedBand" class="filter-select">
@@ -195,7 +196,7 @@ export default {
               </option>
             </select>
           </div>
-          
+
           <div class="filter-group">
             <label>Mode:</label>
             <select v-model="filters.selectedMode" class="filter-select">
@@ -205,32 +206,22 @@ export default {
               </option>
             </select>
           </div>
-          
+
           <div class="filter-group">
             <label>From:</label>
-            <input 
-              v-model="filters.dateFrom" 
-              type="date" 
-              class="filter-input date-input"
-            />
+            <input v-model="filters.dateFrom" type="date" class="filter-input date-input" />
           </div>
-          
+
           <div class="filter-group">
             <label>To:</label>
-            <input 
-              v-model="filters.dateTo" 
-              type="date" 
-              class="filter-input date-input"
-            />
+            <input v-model="filters.dateTo" type="date" class="filter-input date-input" />
           </div>
-          
+
           <div class="filter-group">
-            <button @click="clearFilters" class="clear-btn">
-              Clear
-            </button>
+            <button @click="clearFilters" class="clear-btn">Clear</button>
           </div>
         </div>
-        
+
         <div class="filters-row checkbox-row">
           <div class="search-options">
             <label class="checkbox-label">
@@ -246,10 +237,8 @@ export default {
               Case sensitive
             </label>
           </div>
-          
-          <div v-if="regexError" class="regex-error-message">
-            Invalid regex pattern
-          </div>
+
+          <div v-if="regexError" class="regex-error-message">Invalid regex pattern</div>
         </div>
       </div>
     </div>
@@ -444,7 +433,6 @@ export default {
   font-weight: bold;
 }
 
-
 .filters-panel {
   background: #2b2b2b;
   border: 1px solid #444;
@@ -544,12 +532,12 @@ export default {
   white-space: nowrap;
 }
 
-.checkbox-label input[type="checkbox"] {
+.checkbox-label input[type='checkbox'] {
   margin: 0;
   cursor: pointer;
 }
 
-.checkbox-label input[type="checkbox"]:disabled {
+.checkbox-label input[type='checkbox']:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }

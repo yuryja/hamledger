@@ -26,9 +26,9 @@ export class TextMatcher {
         // Escape special regex characters except * and ?
         const escapedPattern = searchPattern
           .replace(/[.+^${}()|[\]\\]/g, '\\$&')
-          .replace(/\*/g, '.*')  // * matches any sequence of characters
-          .replace(/\?/g, '.');  // ? matches any single character
-        
+          .replace(/\*/g, '.*') // * matches any sequence of characters
+          .replace(/\?/g, '.'); // ? matches any single character
+
         const flags = options.caseSensitive ? '' : 'i';
         const regex = new RegExp(`^${escapedPattern}$`, flags);
         return regex.test(searchText);

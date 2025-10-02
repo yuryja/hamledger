@@ -210,7 +210,7 @@ export default {
         this.importStatus.totalCount = parseResult.totalCount || 0;
 
         // Listen for progress updates BEFORE starting import
-        window.electronAPI.onAdifImportProgress((progress) => {
+        window.electronAPI.onAdifImportProgress(progress => {
           this.importStatus.importedCount = progress.imported;
         });
 
@@ -451,9 +451,9 @@ export default {
             </div>
 
             <div class="import-controls">
-              <button 
-                type="button" 
-                @click="selectAndImportAdifFile" 
+              <button
+                type="button"
+                @click="selectAndImportAdifFile"
                 :disabled="importStatus.isImporting"
                 class="btn btn-primary import-btn"
               >
@@ -469,18 +469,19 @@ export default {
             <div v-if="importStatus.isImporting" class="import-progress">
               <div class="progress-info">
                 <span class="progress-text">
-                  Imported {{ importStatus.importedCount }} 
+                  Imported {{ importStatus.importedCount }}
                   <span v-if="importStatus.totalCount > 0">of {{ importStatus.totalCount }}</span>
                   QSOs
                 </span>
               </div>
               <div class="progress-bar-container">
-                <div 
-                  class="progress-bar-fill" 
-                  :style="{ 
-                    width: importStatus.totalCount > 0 
-                      ? `${(importStatus.importedCount / importStatus.totalCount) * 100}%` 
-                      : '0%' 
+                <div
+                  class="progress-bar-fill"
+                  :style="{
+                    width:
+                      importStatus.totalCount > 0
+                        ? `${(importStatus.importedCount / importStatus.totalCount) * 100}%`
+                        : '0%',
                   }"
                 ></div>
               </div>
@@ -518,9 +519,13 @@ export default {
             <div class="warning-content">
               <p class="warning-title">Windows Users</p>
               <p class="warning-text">
-                On Windows, you must install Hamlib first before enabling CAT control.
-                Download it from: 
-                <a href="https://hamlib.sourceforge.net/snapshots/" target="_blank" class="warning-link">
+                On Windows, you must install Hamlib first before enabling CAT control. Download it
+                from:
+                <a
+                  href="https://hamlib.sourceforge.net/snapshots/"
+                  target="_blank"
+                  class="warning-link"
+                >
                   hamlib.sourceforge.net/snapshots/
                 </a>
               </p>
@@ -533,16 +538,16 @@ export default {
             <div class="warning-content">
               <p class="warning-title">Linux Users</p>
               <p class="warning-text">
-                On Linux, you must install Hamlib first before enabling CAT control.
-                (You may need sudo rights)
+                On Linux, you must install Hamlib first before enabling CAT control. (You may need
+                sudo rights)
               </p>
               <div class="command-section">
                 <p class="command-label">For Ubuntu/Debian:</p>
                 <div class="command-box">
                   <code class="command-text">apt install libhamlib-utils</code>
-                  <button 
-                    type="button" 
-                    class="copy-btn" 
+                  <button
+                    type="button"
+                    class="copy-btn"
                     @click="copyToClipboard('apt install libhamlib-utils')"
                     title="Copy to clipboard"
                   >
@@ -554,9 +559,9 @@ export default {
                 <p class="command-label">For RPM based distributions:</p>
                 <div class="command-box">
                   <code class="command-text">rpm install libhamlib-utils</code>
-                  <button 
-                    type="button" 
-                    class="copy-btn" 
+                  <button
+                    type="button"
+                    class="copy-btn"
                     @click="copyToClipboard('rpm install libhamlib-utils')"
                     title="Copy to clipboard"
                   >

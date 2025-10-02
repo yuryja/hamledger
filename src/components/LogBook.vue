@@ -78,10 +78,11 @@ export default {
           }
         }
 
-        filtered = filtered.filter(qso => 
-          TextMatcher.matches(qso.callsign || '', this.filters.searchText, matchOptions) ||
-          TextMatcher.matches(qso.remark || '', this.filters.searchText, matchOptions) ||
-          TextMatcher.matches(qso.notes || '', this.filters.searchText, matchOptions)
+        filtered = filtered.filter(
+          qso =>
+            TextMatcher.matches(qso.callsign || '', this.filters.searchText, matchOptions) ||
+            TextMatcher.matches(qso.remark || '', this.filters.searchText, matchOptions) ||
+            TextMatcher.matches(qso.notes || '', this.filters.searchText, matchOptions)
         );
       }
 
@@ -149,17 +150,20 @@ export default {
   async mounted() {
     this.updateContainerHeight();
     window.addEventListener('resize', this.updateContainerHeight);
-    
+
     // Show loading if store is not initialized yet
     if (!this.qsoStore.initialized) {
       this.isLoadingQsos = true;
-      
+
       // Watch for store initialization completion
-      this.$watch(() => this.qsoStore.initialized, (newVal) => {
-        if (newVal) {
-          this.isLoadingQsos = false;
+      this.$watch(
+        () => this.qsoStore.initialized,
+        newVal => {
+          if (newVal) {
+            this.isLoadingQsos = false;
+          }
         }
-      });
+      );
     }
   },
   beforeUnmount() {
@@ -220,7 +224,7 @@ export default {
         this.importStatus.totalCount = parseResult.totalCount || 0;
 
         // Listen for progress updates BEFORE starting import
-        window.electronAPI.onAdifImportProgress((progress) => {
+        window.electronAPI.onAdifImportProgress(progress => {
           this.importStatus.importedCount = progress.imported;
         });
 
@@ -231,7 +235,7 @@ export default {
           this.importStatus.success = true;
           this.importStatus.importedCount = importResult.count || 0;
           console.log(`Successfully imported ${importResult.count} QSOs from ADIF file`);
-          
+
           // Refresh the QSO store to show new data (non-blocking)
           this.isLoadingQsos = true;
           try {
@@ -285,11 +289,7 @@ export default {
         </span>
       </div>
       <div class="log-actions">
-        <button 
-          class="action-btn" 
-          @click="handleImportAdif"
-          :disabled="importStatus.isImporting"
-        >
+        <button class="action-btn" @click="handleImportAdif" :disabled="importStatus.isImporting">
           <span v-if="!importStatus.isImporting">Import ADIF</span>
           <span v-else class="loading-text">
             <span class="spinner"></span>
@@ -304,15 +304,15 @@ export default {
       <div class="filters-row">
         <div class="filter-group search-group">
           <label>Search:</label>
-          <input 
-            v-model="filters.searchText" 
-            type="text" 
+          <input
+            v-model="filters.searchText"
+            type="text"
             placeholder="Callsign, remark, notes..."
             class="filter-input search-input"
             :class="{ 'regex-error': regexError }"
           />
         </div>
-        
+
         <div class="filter-group">
           <label>Band:</label>
           <select v-model="filters.selectedBand" class="filter-select">
@@ -322,7 +322,7 @@ export default {
             </option>
           </select>
         </div>
-        
+
         <div class="filter-group">
           <label>Mode:</label>
           <select v-model="filters.selectedMode" class="filter-select">
@@ -332,32 +332,22 @@ export default {
             </option>
           </select>
         </div>
-        
+
         <div class="filter-group">
           <label>From:</label>
-          <input 
-            v-model="filters.dateFrom" 
-            type="date" 
-            class="filter-input date-input"
-          />
+          <input v-model="filters.dateFrom" type="date" class="filter-input date-input" />
         </div>
-        
+
         <div class="filter-group">
           <label>To:</label>
-          <input 
-            v-model="filters.dateTo" 
-            type="date" 
-            class="filter-input date-input"
-          />
+          <input v-model="filters.dateTo" type="date" class="filter-input date-input" />
         </div>
-        
+
         <div class="filter-group">
-          <button @click="clearFilters" class="clear-btn">
-            Clear
-          </button>
+          <button @click="clearFilters" class="clear-btn">Clear</button>
         </div>
       </div>
-      
+
       <div class="filters-row checkbox-row">
         <div class="search-options">
           <label class="checkbox-label">
@@ -373,10 +363,8 @@ export default {
             Case sensitive
           </label>
         </div>
-        
-        <div v-if="regexError" class="regex-error-message">
-          Invalid regex pattern
-        </div>
+
+        <div v-if="regexError" class="regex-error-message">Invalid regex pattern</div>
       </div>
     </div>
 
@@ -384,18 +372,19 @@ export default {
     <div v-if="importStatus.isImporting" class="import-progress">
       <div class="progress-info">
         <span class="progress-text">
-          Imported {{ importStatus.importedCount }} 
+          Imported {{ importStatus.importedCount }}
           <span v-if="importStatus.totalCount > 0">of {{ importStatus.totalCount }}</span>
           QSOs
         </span>
       </div>
       <div class="progress-bar-container">
-        <div 
-          class="progress-bar-fill" 
-          :style="{ 
-            width: importStatus.totalCount > 0 
-              ? `${(importStatus.importedCount / importStatus.totalCount) * 100}%` 
-              : '0%' 
+        <div
+          class="progress-bar-fill"
+          :style="{
+            width:
+              importStatus.totalCount > 0
+                ? `${(importStatus.importedCount / importStatus.totalCount) * 100}%`
+                : '0%',
           }"
         ></div>
       </div>
@@ -421,7 +410,12 @@ export default {
       </div>
     </div>
 
-    <div class="table-wrapper" ref="tableWrapper" @scroll="onScroll" :class="{ 'loading': showLoadingOverlay }">
+    <div
+      class="table-wrapper"
+      ref="tableWrapper"
+      @scroll="onScroll"
+      :class="{ loading: showLoadingOverlay }"
+    >
       <div class="virtual-scroll-container" :style="{ height: totalHeight + 'px' }">
         <table class="qso-table" :style="{ transform: `translateY(${offsetY}px)` }">
           <thead>
@@ -627,7 +621,6 @@ export default {
   font-weight: bold;
 }
 
-
 .filters-panel {
   background: #2b2b2b;
   border: 1px solid #444;
@@ -723,12 +716,12 @@ export default {
   white-space: nowrap;
 }
 
-.checkbox-label input[type="checkbox"] {
+.checkbox-label input[type='checkbox'] {
   margin: 0;
   cursor: pointer;
 }
 
-.checkbox-label input[type="checkbox"]:disabled {
+.checkbox-label input[type='checkbox']:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }

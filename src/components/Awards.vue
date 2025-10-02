@@ -10,9 +10,7 @@ export default {
       <h2 class="section-title">Awards and Statistics</h2>
     </div>
     <div class="awards-content">
-      <div class="not-available-message">
-        Not yet available
-      </div>
+      <div class="not-available-message">Not yet available</div>
     </div>
   </main>
 </template>

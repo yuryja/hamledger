@@ -40,10 +40,7 @@ export default {
     <h2 class="section-title">Remote Station</h2>
     <div v-if="isValid && callsign" class="remote-station-boxes">
       <!-- Station details with integrated location -->
-      <div 
-        class="station-block station-remote" 
-        :class="{ 'qrz-error': stationInfo?.qrzError }"
-      >
+      <div class="station-block station-remote" :class="{ 'qrz-error': stationInfo?.qrzError }">
         <img
           v-if="stationInfo?.flag"
           :src="stationInfo.flag"

@@ -72,7 +72,7 @@ export const useQsoStore = defineStore('qso', {
       };
 
       // Handle TX frequency
-      newQso.freqTx = rigStore.rigState.split ? (rigStore.rigState.splitFreq! / 1000000) : '--';
+      newQso.freqTx = rigStore.rigState.split ? rigStore.rigState.splitFreq! / 1000000 : '--';
 
       // Use form values or defaults for RST
       newQso.rstr = this.qsoForm.rstr || '59';
@@ -116,13 +116,13 @@ export const useQsoStore = defineStore('qso', {
     async initializeStore() {
       try {
         this.isLoading = true;
-        
+
         // Use setTimeout to allow UI to update before starting heavy work
         await new Promise(resolve => setTimeout(resolve, 10));
-        
+
         const result = await window.electronAPI.getAllDocs();
         console.debug('Raw database result:', result);
-        
+
         // Process QSOs in chunks to avoid blocking UI
         const qsos = result.rows.map(row => {
           const qso = row.doc as QsoEntry;
@@ -131,21 +131,21 @@ export const useQsoStore = defineStore('qso', {
           qso._rev = qso._rev || (row.value && row.value.rev);
           return qso;
         });
-        
+
         // Process in chunks of 1000 to avoid blocking
         const chunkSize = 1000;
         this.allQsos = [];
-        
+
         for (let i = 0; i < qsos.length; i += chunkSize) {
           const chunk = qsos.slice(i, i + chunkSize);
           this.allQsos.push(...chunk);
-          
+
           // Allow UI to update between chunks
           if (i + chunkSize < qsos.length) {
             await new Promise(resolve => setTimeout(resolve, 1));
           }
         }
-        
+
         this.initialized = true;
       } catch (error) {
         console.error('Failed to initialize QSO store:', error);

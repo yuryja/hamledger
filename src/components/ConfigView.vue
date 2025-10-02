@@ -35,20 +35,20 @@ export default {
     currentCategoryEnabled() {
       const categoryKey = this.selectedCategory.toLowerCase().replace(' ', '');
       const categoryMap = {
-        'station': 'station',
-        'catcontrol': 'rig',
-        'onlineservices': 'qrz',
-        'apis': 'apis',
-        'database': 'database',
-        'ui': 'ui',
-        'logging': 'logging'
+        station: 'station',
+        catcontrol: 'rig',
+        onlineservices: 'qrz',
+        apis: 'apis',
+        database: 'database',
+        ui: 'ui',
+        logging: 'logging',
       };
-      
+
       const actualKey = categoryMap[categoryKey] || categoryKey;
-      const enabledField = this.configFields.find(f => 
-        f.path[0] === actualKey && f.key === 'enabled'
+      const enabledField = this.configFields.find(
+        f => f.path[0] === actualKey && f.key === 'enabled'
       );
-      
+
       return enabledField ? enabledField.value : true;
     },
     hasCategoryEnabler() {
@@ -57,11 +57,11 @@ export default {
       return categoriesWithEnabler.includes(categoryKey);
     },
     isRigModelDummy() {
-      const rigModelField = this.configFields.find(f => 
-        f.path[0] === 'rig' && f.key === 'rigModel'
+      const rigModelField = this.configFields.find(
+        f => f.path[0] === 'rig' && f.key === 'rigModel'
       );
       return rigModelField ? rigModelField.value === 1 : false;
-    }
+    },
   },
   async mounted() {
     await configHelper.initSettings();
@@ -78,7 +78,9 @@ export default {
         ui: 'UI',
         logging: 'Logging',
       };
-      return displayNames[categoryName] || categoryName.charAt(0).toUpperCase() + categoryName.slice(1);
+      return (
+        displayNames[categoryName] || categoryName.charAt(0).toUpperCase() + categoryName.slice(1)
+      );
     },
     getFieldId(field: ConfigField): string {
       return configHelper.getFieldId(field);
@@ -90,7 +92,7 @@ export default {
       const target = event.target as HTMLInputElement;
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       let value: any;
-      
+
       if (target.type === 'checkbox') {
         value = target.checked;
       } else if (target.type === 'number') {
@@ -98,20 +100,19 @@ export default {
       } else {
         value = target.value;
       }
-      
+
       try {
         await configHelper.updateSetting(field.path, field.key, value);
-        
+
         // Find and update the field in configFields array to trigger reactivity
-        const fieldIndex = this.configFields.findIndex(f => 
-          f.key === field.key && 
-          f.path.join('.') === field.path.join('.')
+        const fieldIndex = this.configFields.findIndex(
+          f => f.key === field.key && f.path.join('.') === field.path.join('.')
         );
-        
+
         if (fieldIndex !== -1) {
           this.configFields[fieldIndex] = {
             ...this.configFields[fieldIndex],
-            value: value
+            value: value,
           };
         }
       } catch (error) {
@@ -141,33 +142,31 @@ export default {
       }
 
       await configHelper.updateSetting(field.path, field.key, currentBands);
-      
+
       // Update the field in the reactive array
-      const fieldIndex = this.configFields.findIndex(f => 
-        f.key === field.key && 
-        f.path.join('.') === field.path.join('.')
+      const fieldIndex = this.configFields.findIndex(
+        f => f.key === field.key && f.path.join('.') === field.path.join('.')
       );
-      
+
       if (fieldIndex !== -1) {
         this.configFields[fieldIndex] = {
           ...this.configFields[fieldIndex],
-          value: currentBands
+          value: currentBands,
         };
       }
     },
     async selectAllHFBands(field: ConfigField) {
       const hfBands = ['160', '80', '60', '40', '30', '20', '17', '15', '12', '10'];
       await configHelper.updateSetting(field.path, field.key, hfBands);
-      
-      const fieldIndex = this.configFields.findIndex(f => 
-        f.key === field.key && 
-        f.path.join('.') === field.path.join('.')
+
+      const fieldIndex = this.configFields.findIndex(
+        f => f.key === field.key && f.path.join('.') === field.path.join('.')
       );
-      
+
       if (fieldIndex !== -1) {
         this.configFields[fieldIndex] = {
           ...this.configFields[fieldIndex],
-          value: hfBands
+          value: hfBands,
         };
       }
     },
@@ -179,31 +178,29 @@ export default {
         ...vhfUhfBands.filter(band => !currentBands.includes(band)),
       ];
       await configHelper.updateSetting(field.path, field.key, newBands);
-      
-      const fieldIndex = this.configFields.findIndex(f => 
-        f.key === field.key && 
-        f.path.join('.') === field.path.join('.')
+
+      const fieldIndex = this.configFields.findIndex(
+        f => f.key === field.key && f.path.join('.') === field.path.join('.')
       );
-      
+
       if (fieldIndex !== -1) {
         this.configFields[fieldIndex] = {
           ...this.configFields[fieldIndex],
-          value: newBands
+          value: newBands,
         };
       }
     },
     async clearAllBands(field: ConfigField) {
       await configHelper.updateSetting(field.path, field.key, []);
-      
-      const fieldIndex = this.configFields.findIndex(f => 
-        f.key === field.key && 
-        f.path.join('.') === field.path.join('.')
+
+      const fieldIndex = this.configFields.findIndex(
+        f => f.key === field.key && f.path.join('.') === field.path.join('.')
       );
-      
+
       if (fieldIndex !== -1) {
         this.configFields[fieldIndex] = {
           ...this.configFields[fieldIndex],
-          value: []
+          value: [],
         };
       }
     },
@@ -216,23 +213,23 @@ export default {
     async toggleCategoryEnabled(enabled: boolean) {
       const categoryKey = this.selectedCategory.toLowerCase().replace(' ', '');
       const categoryMap = {
-        'catcontrol': 'rig',
-        'onlineservices': 'qrz',
-        'database': 'database'
+        catcontrol: 'rig',
+        onlineservices: 'qrz',
+        database: 'database',
       };
-      
+
       const actualKey = categoryMap[categoryKey];
       if (actualKey) {
         await configHelper.updateSetting([actualKey], 'enabled', enabled);
-        
-        const fieldIndex = this.configFields.findIndex(f => 
-          f.path[0] === actualKey && f.key === 'enabled'
+
+        const fieldIndex = this.configFields.findIndex(
+          f => f.path[0] === actualKey && f.key === 'enabled'
         );
-        
+
         if (fieldIndex !== -1) {
           this.configFields[fieldIndex] = {
             ...this.configFields[fieldIndex],
-            value: enabled
+            value: enabled,
           };
         }
       }
@@ -287,12 +284,17 @@ export default {
                   />
                   <span class="slider"></span>
                 </div>
-                <span class="toggle-label">{{ currentCategoryEnabled ? 'Enabled' : 'Disabled' }}</span>
+                <span class="toggle-label">{{
+                  currentCategoryEnabled ? 'Enabled' : 'Disabled'
+                }}</span>
               </div>
             </div>
           </div>
 
-          <div class="config-fields" :class="{ 'disabled': hasCategoryEnabler && !currentCategoryEnabled }">
+          <div
+            class="config-fields"
+            :class="{ disabled: hasCategoryEnabler && !currentCategoryEnabled }"
+          >
             <div v-for="field in filteredFields" :key="getFieldId(field)" class="config-field">
               <div class="field-header">
                 <label :for="getFieldId(field)">{{ getFieldLabel(field) }}</label>
@@ -305,7 +307,10 @@ export default {
               </div>
 
               <!-- Boolean (skip enabled field if it's the category enabler) -->
-              <div v-if="field.type === 'boolean' && !(hasCategoryEnabler && field.key === 'enabled')" class="boolean-field">
+              <div
+                v-if="field.type === 'boolean' && !(hasCategoryEnabler && field.key === 'enabled')"
+                class="boolean-field"
+              >
                 <div class="toggle-switch">
                   <input
                     type="checkbox"
