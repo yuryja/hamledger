@@ -11,6 +11,18 @@ export default {
       searchQuery: '',
       configFields: [] as ConfigField[],
       passwordVisibility: {} as { [key: string]: boolean },
+      hamlibStatus: {
+        isInstalling: false,
+        downloadProgress: 0,
+        error: null as string | null,
+        success: false,
+        isChecking: false,
+        inPath: false,
+      },
+      isValidating: false,
+      validationErrors: {} as { [key: string]: string },
+      isWindows: navigator.platform.toLowerCase().includes('win'),
+      isLinux: navigator.platform.toLowerCase().includes('linux'),
     };
   },
   computed: {
@@ -210,6 +222,115 @@ export default {
     isPasswordField(field: ConfigField): boolean {
       return field.key === 'password' && field.path.includes('qrz');
     },
+    async checkRigctldInPath() {
+      if (!this.isWindows) return;
+
+      this.hamlibStatus.isChecking = true;
+      try {
+        const result = await window.electronAPI.checkRigctldInPath();
+        this.hamlibStatus.inPath = result.inPath;
+        if (result.inPath) {
+          delete this.validationErrors.rigctldPath;
+        } else {
+          this.validationErrors.rigctldPath = 'rigctld not found in PATH';
+        }
+      } catch (error) {
+        console.error('Error checking rigctld in PATH:', error);
+        this.validationErrors.rigctldPath = 'Error checking rigctld availability';
+      } finally {
+        this.hamlibStatus.isChecking = false;
+      }
+    },
+    async downloadAndInstallHamlib() {
+      this.hamlibStatus.isInstalling = true;
+      this.hamlibStatus.error = null;
+      this.hamlibStatus.downloadProgress = 0;
+
+      try {
+        // Listen for download progress
+        window.electronAPI.onHamlibDownloadProgress?.(progress => {
+          this.hamlibStatus.downloadProgress = progress.progress;
+        });
+
+        const result = await window.electronAPI.downloadAndInstallHamlib();
+
+        if (result.success) {
+          this.hamlibStatus.success = true;
+          this.hamlibStatus.inPath = true;
+          delete this.validationErrors.rigctldPath;
+          console.log('Hamlib installed successfully:', result.message);
+        } else {
+          this.hamlibStatus.error = result.error || 'Installation failed';
+        }
+      } catch (error) {
+        console.error('Error installing Hamlib:', error);
+        this.hamlibStatus.error = 'An unexpected error occurred during installation';
+      } finally {
+        this.hamlibStatus.isInstalling = false;
+      }
+    },
+    async testRigctldPath(field: ConfigField) {
+      this.isValidating = true;
+      try {
+        let result;
+        const rigctldPath = field.value.trim();
+        
+        if (this.isWindows) {
+          // Check if it's an absolute path (contains : or starts with \ or /)
+          if (rigctldPath.includes(':') || rigctldPath.startsWith('\\') || rigctldPath.startsWith('/')) {
+            // For absolute paths, check if the file exists directly
+            result = await window.electronAPI.executeCommand(`if exist "${rigctldPath}" echo "exists"`);
+          } else {
+            // For relative paths or commands in PATH, use where
+            result = await window.electronAPI.executeCommand(`where ${rigctldPath}`);
+          }
+        } else {
+          // On Linux, use which for both cases
+          result = await window.electronAPI.executeCommand(`which ${rigctldPath}`);
+        }
+
+        const fieldId = this.getFieldId(field);
+        if (result.success && result.data.trim()) {
+          delete this.validationErrors[fieldId];
+          return true;
+        } else {
+          this.validationErrors[fieldId] = 'rigctld not found in the specified path';
+          return false;
+        }
+      } catch {
+        const fieldId = this.getFieldId(field);
+        this.validationErrors[fieldId] = 'Error checking rigctld path';
+        return false;
+      } finally {
+        this.isValidating = false;
+      }
+    },
+    async restartRigctld() {
+      try {
+        await window.electronAPI.rigctldRestart();
+        console.log('Rigctld restarted successfully');
+      } catch (error) {
+        console.error('Error restarting rigctld:', error);
+      }
+    },
+    async copyToClipboard(text: string) {
+      try {
+        await navigator.clipboard.writeText(text);
+        console.log('Command copied to clipboard:', text);
+      } catch (error) {
+        console.error('Failed to copy to clipboard:', error);
+        // Fallback: select the text for manual copying
+        const textArea = document.createElement('textarea');
+        textArea.value = text;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+      }
+    },
+    isRigctldPathField(field: ConfigField): boolean {
+      return field.key === 'rigctldPath' && field.path.includes('rig');
+    },
     async toggleCategoryEnabled(enabled: boolean) {
       const categoryKey = this.selectedCategory.toLowerCase().replace(' ', '');
       const categoryMap = {
@@ -392,6 +513,138 @@ export default {
                 >
                   {{ passwordVisibility[getFieldId(field)] ? '👁️' : '👁️‍🗨️' }}
                 </button>
+              </div>
+
+              <!-- rigctld Path field with special controls -->
+              <div v-else-if="isRigctldPathField(field)" class="rigctld-field">
+                <input
+                  type="text"
+                  :id="getFieldId(field)"
+                  :value="field.value"
+                  @input="handleChange(field, $event)"
+                  @blur="testRigctldPath(field)"
+                  :class="{ error: validationErrors[getFieldId(field)] }"
+                />
+                
+                <!-- Windows Hamlib Controls -->
+                <div v-if="isWindows" class="hamlib-controls">
+                  <button
+                    type="button"
+                    @click="checkRigctldInPath"
+                    :disabled="hamlibStatus.isChecking || hamlibStatus.isInstalling"
+                    class="btn btn-small"
+                  >
+                    <span v-if="!hamlibStatus.isChecking">Check rigctld</span>
+                    <span v-else class="loading-text">
+                      <span class="spinner"></span>
+                      Checking...
+                    </span>
+                  </button>
+
+                  <button
+                    v-if="!hamlibStatus.inPath && !hamlibStatus.success"
+                    type="button"
+                    @click="downloadAndInstallHamlib"
+                    :disabled="hamlibStatus.isInstalling"
+                    class="btn btn-small btn-primary"
+                  >
+                    <span v-if="!hamlibStatus.isInstalling">Install Hamlib</span>
+                    <span v-else class="loading-text">
+                      <span class="spinner"></span>
+                      Installing...
+                    </span>
+                  </button>
+
+                  <button
+                    type="button"
+                    @click="restartRigctld"
+                    class="btn btn-small"
+                  >
+                    Restart rigctld
+                  </button>
+                </div>
+
+                <!-- Linux Warning -->
+                <div v-if="isLinux" class="warning-box">
+                  <div class="warning-icon">⚠️</div>
+                  <div class="warning-content">
+                    <p class="warning-title">Linux Users</p>
+                    <p class="warning-text">
+                      On Linux, you must install Hamlib first before enabling CAT control.
+                    </p>
+                    <div class="command-section">
+                      <p class="command-label">For Ubuntu/Debian:</p>
+                      <div class="command-box">
+                        <code class="command-text">apt install libhamlib-utils</code>
+                        <button
+                          type="button"
+                          class="copy-btn"
+                          @click="copyToClipboard('apt install libhamlib-utils')"
+                          title="Copy to clipboard"
+                        >
+                          📋
+                        </button>
+                      </div>
+                    </div>
+                    <div class="command-section">
+                      <p class="command-label">For RPM based distributions:</p>
+                      <div class="command-box">
+                        <code class="command-text">rpm install libhamlib-utils</code>
+                        <button
+                          type="button"
+                          class="copy-btn"
+                          @click="copyToClipboard('rpm install libhamlib-utils')"
+                          title="Copy to clipboard"
+                        >
+                          📋
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Installation Progress -->
+                <div v-if="hamlibStatus.isInstalling" class="install-progress">
+                  <div class="progress-info">
+                    <span class="progress-text">
+                      Installing Hamlib... {{ hamlibStatus.downloadProgress }}%
+                    </span>
+                  </div>
+                  <div class="progress-bar-container">
+                    <div
+                      class="progress-bar-fill"
+                      :style="{ width: `${hamlibStatus.downloadProgress}%` }"
+                    ></div>
+                  </div>
+                </div>
+
+                <!-- Installation Success -->
+                <div v-if="hamlibStatus.success || hamlibStatus.inPath" class="success-message">
+                  ✅ Hamlib is available and ready to use!
+                </div>
+
+                <!-- Installation Error -->
+                <div v-if="hamlibStatus.error" class="error-message">
+                  ❌ Installation failed: {{ hamlibStatus.error }}
+                  <p class="error-help">
+                    You can manually download Hamlib from:
+                    <a
+                      href="https://hamlib.sourceforge.net/snapshots/"
+                      target="_blank"
+                      class="warning-link"
+                    >
+                      hamlib.sourceforge.net/snapshots/
+                    </a>
+                  </p>
+                </div>
+
+                <!-- Validation Error -->
+                <span v-if="validationErrors[getFieldId(field)]" class="error-message">
+                  {{ validationErrors[getFieldId(field)] }}
+                </span>
+                <span v-if="isValidating" class="info-message">
+                  Checking rigctld availability...
+                </span>
               </div>
 
               <!-- String with conditional disable for comPort -->
@@ -744,5 +997,215 @@ input:checked + .slider:before {
 
 .password-toggle:hover {
   color: var(--main-color);
+}
+
+.rigctld-field {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  width: 100%;
+}
+
+.hamlib-controls {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.loading-text {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid transparent;
+  border-top: 2px solid currentColor;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.warning-box {
+  margin: 1rem 0;
+  padding: 1rem;
+  background: rgba(255, 193, 7, 0.1);
+  border: 1px solid rgba(255, 193, 7, 0.3);
+  border-radius: 4px;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.warning-icon {
+  font-size: 1.2rem;
+  flex-shrink: 0;
+  margin-top: 0.1rem;
+}
+
+.warning-content {
+  flex: 1;
+}
+
+.warning-title {
+  color: #ffc107;
+  font-weight: bold;
+  margin: 0 0 0.5rem;
+  font-size: 0.95rem;
+}
+
+.warning-text {
+  color: var(--gray-color);
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.warning-link {
+  color: var(--main-color);
+  text-decoration: none;
+}
+
+.warning-link:hover {
+  text-decoration: underline;
+}
+
+.command-section {
+  margin-top: 1rem;
+}
+
+.command-label {
+  color: var(--gray-color);
+  font-size: 0.85rem;
+  margin: 0 0 0.25rem;
+  font-weight: bold;
+}
+
+.command-box {
+  display: flex;
+  align-items: center;
+  background: #2b2b2b;
+  border: 1px solid #444;
+  border-radius: 4px;
+  padding: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.command-text {
+  flex: 1;
+  font-family: 'Courier New', monospace;
+  font-size: 0.85rem;
+  color: #fff;
+  background: transparent;
+  border: none;
+  user-select: all;
+}
+
+.copy-btn {
+  background: transparent;
+  border: none;
+  color: var(--main-color);
+  cursor: pointer;
+  padding: 0.25rem;
+  margin-left: 0.5rem;
+  border-radius: 2px;
+  font-size: 0.9rem;
+  transition: background-color 0.2s;
+}
+
+.copy-btn:hover {
+  background: rgba(255, 215, 0, 0.1);
+}
+
+.install-progress {
+  margin: 1rem 0;
+  padding: 1rem;
+  background: #2b2b2b;
+  border: 1px solid #444;
+  border-radius: 4px;
+}
+
+.progress-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.progress-text {
+  color: var(--main-color);
+  font-weight: bold;
+  font-size: 0.9rem;
+}
+
+.progress-bar-container {
+  width: 100%;
+  height: 8px;
+  background: #444;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: var(--main-color);
+  transition: width 0.3s ease;
+  border-radius: 4px;
+}
+
+.success-message {
+  color: #27ae60;
+  font-size: 0.9rem;
+  margin-top: 1rem;
+  padding: 0.75rem;
+  background: rgba(39, 174, 96, 0.1);
+  border: 1px solid rgba(39, 174, 96, 0.3);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.error-message {
+  color: #e74c3c;
+  font-size: 0.9rem;
+  margin-top: 1rem;
+  padding: 0.75rem;
+  background: rgba(231, 76, 60, 0.1);
+  border: 1px solid rgba(231, 76, 60, 0.3);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.error-help {
+  margin-top: 0.5rem;
+  font-size: 0.85rem;
+  color: var(--gray-color);
+}
+
+.info-message {
+  color: var(--main-color);
+  font-size: 0.85rem;
+  margin-top: 0.25rem;
+  display: block;
+}
+
+.btn-primary {
+  background: var(--main-color);
+  color: #000;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: #e6d700;
 }
 </style>
