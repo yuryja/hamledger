@@ -383,6 +383,17 @@ export default {
           await this.importAdifFile();
         }
 
+        // If CAT control is enabled and Hamlib was installed, restart rigctld
+        if (this.wizardData.enableCat && (this.hamlibStatus.success || this.hamlibStatus.inPath)) {
+          console.log('Restarting rigctld after setup completion...');
+          try {
+            await window.electronAPI.rigctldRestart();
+            console.log('Rigctld restarted successfully');
+          } catch (error) {
+            console.error('Error restarting rigctld:', error);
+          }
+        }
+
         this.$emit('complete');
       } catch (error) {
         console.error('Error saving settings:', error);
