@@ -75,7 +75,9 @@ export default {
         case 5:
           return (
             !this.wizardData.enableCat ||
-            (this.wizardData.rigctldPath.trim() !== '' && !this.validationErrors.rigctldPath)
+            (this.wizardData.rigctldPath.trim() !== '' && 
+             !this.validationErrors.rigctldPath && 
+             (this.hamlibStatus.inPath || this.hamlibStatus.success))
           );
         default:
           return false;
@@ -184,9 +186,12 @@ export default {
         this.hamlibStatus.inPath = result.inPath;
         if (result.inPath) {
           delete this.validationErrors.rigctldPath;
+        } else {
+          this.validationErrors.rigctldPath = 'rigctld not found in PATH';
         }
       } catch (error) {
         console.error('Error checking rigctld in PATH:', error);
+        this.validationErrors.rigctldPath = 'Error checking rigctld availability';
       } finally {
         this.hamlibStatus.isChecking = false;
       }
@@ -326,6 +331,17 @@ export default {
         textArea.select();
         document.execCommand('copy');
         document.body.removeChild(textArea);
+      }
+    },
+    onCatToggle() {
+      if (this.wizardData.enableCat && this.isWindows) {
+        // Automatically check rigctld when CAT is enabled on Windows
+        this.checkRigctldInPath();
+      } else if (!this.wizardData.enableCat) {
+        // Clear validation errors when CAT is disabled
+        delete this.validationErrors.rigctldPath;
+        this.hamlibStatus.inPath = false;
+        this.hamlibStatus.success = false;
       }
     },
     async completeSetup() {
@@ -574,7 +590,7 @@ export default {
 
           <div class="form-group">
             <label class="checkbox-label">
-              <input type="checkbox" v-model="wizardData.enableCat" />
+              <input type="checkbox" v-model="wizardData.enableCat" @change="onCatToggle" />
               Enable CAT Control
             </label>
           </div>
