@@ -324,7 +324,7 @@ export default {
             <div v-if="loadingModels" class="loading-text">Loading rig models...</div>
           </div>
           <div class="form-group">
-            <label for="device">Device (optional):</label>
+            <label for="device">COM port:</label>
             <input
               id="device"
               v-model="connectionForm.device"
