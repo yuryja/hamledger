@@ -39,7 +39,7 @@ export class ConfigHelper {
     }
   }
 
-  public async updateSetting(path: string[], key: string, value: any): Promise<void> {
+  public async updateSetting(path: string[], key: string, value: string | number | boolean | string[]): Promise<void> {
     let current = this.settings;
 
     // Navigate to the correct nested object
@@ -57,7 +57,7 @@ export class ConfigHelper {
     await this.saveSettings(this.settings);
   }
 
-  public getSetting(path: string[], key: string): any {
+  public getSetting(path: string[], key: string): string | number | boolean | string[] | undefined {
     let current = this.settings;
 
     for (const pathPart of path) {
@@ -80,22 +80,38 @@ export class ConfigHelper {
       if (value && typeof value === 'object' && !Array.isArray(value)) {
         return [...acc, ...this.flattenConfig(value, [...path, key])];
       }
+      
+      // Type guard to ensure value is compatible with ConfigField
+      const typedValue = this.ensureValidValue(value);
+      
       return [
         ...acc,
         {
           key,
           path,
-          value,
+          value: typedValue,
           type: Array.isArray(value) ? 'array' : typeof value,
           description: this.getFieldDescription({
             key,
             path,
-            value,
+            value: typedValue,
             type: typeof value,
           }),
         },
       ];
     }, []);
+  }
+
+  private ensureValidValue(value: unknown): string | number | boolean | string[] {
+    if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
+      return value;
+    }
+    if (Array.isArray(value)) {
+      // Ensure all array elements are strings
+      return value.map(item => String(item));
+    }
+    // Fallback for any other type
+    return String(value);
   }
 
   public getFieldDescription(field: ConfigField): string {
@@ -121,7 +137,7 @@ export class ConfigHelper {
     return field.key.charAt(0).toUpperCase() + field.key.slice(1).replace(/([A-Z])/g, ' $1');
   }
 
-  public processConfigValue(field: ConfigField, value: string): any {
+  public processConfigValue(field: ConfigField, value: string): string | number | boolean {
     switch (field.type) {
       case 'number':
         return Number(value);
