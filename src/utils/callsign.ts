@@ -586,10 +586,10 @@ export class CallsignHelper {
    */
   private static getPortableIconUrl(suffix: string): string | null {
     const iconUrls = {
-      P: 'https://img.icons8.com/?size=100&id=25055&format=png&color=000000', // Portable - walking person
-      M: 'https://img.icons8.com/?size=100&id=1548&format=png&color=000000', // Mobile - handheld radio
-      MM: 'https://img.icons8.com/?size=100&id=17856&format=png&color=000000', // Maritime Mobile - ship
-      AM: 'https://img.icons8.com/?size=100&id=2487&format=png&color=000000', // Aeronautical Mobile - airplane
+      P: './src/assets/icons/portable-P.png', // Portable - walking person
+      M: './src/assets/icons/portable-M.png', // Mobile - handheld radio
+      MM: './src/assets/icons/portable-MM.png', // Maritime Mobile - ship
+      AM: './src/assets/icons/portable-AM.png', // Aeronautical Mobile - airplane
     };
 
     return iconUrls[suffix] || null;
