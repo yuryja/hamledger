@@ -4,6 +4,18 @@ import { useQsoStore } from '../../store/qso';
 import { configHelper } from '../../utils/configHelper';
 import type { RigModel } from '../../types/rig';
 
+interface ConnectionForm {
+  host: string;
+  port: number;
+  model: number | undefined;
+  device: string | undefined;
+}
+
+interface GroupedModel {
+  name: string;
+  models: RigModel[];
+}
+
 export default {
   name: 'RigControl',
   data() {
@@ -19,9 +31,9 @@ export default {
       connectionForm: {
         host: 'localhost',
         port: 4532,
-        model: undefined as number | undefined,
-        device: undefined as string | undefined,
-      },
+        model: undefined,
+        device: undefined,
+      } as ConnectionForm,
     };
   },
   async mounted() {
@@ -51,8 +63,8 @@ export default {
     wsjtxStatus() {
       return this.qsoStore.wsjtxStatus;
     },
-    groupedModels() {
-      const grouped = new Map();
+    groupedModels(): GroupedModel[] {
+      const grouped = new Map<string, GroupedModel>();
 
       for (const model of this.rigModels) {
         if (!grouped.has(model.manufacturer)) {
@@ -61,7 +73,7 @@ export default {
             models: [],
           });
         }
-        grouped.get(model.manufacturer).models.push(model);
+        grouped.get(model.manufacturer)!.models.push(model);
       }
 
       // Sort manufacturers and models within each group

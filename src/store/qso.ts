@@ -499,7 +499,7 @@ export const useQsoStore = defineStore('qso', {
         return result;
       } catch (error) {
         console.error('Error starting WSJT-X service:', error);
-        return { success: false, error };
+        return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
       }
     },
 
@@ -512,7 +512,7 @@ export const useQsoStore = defineStore('qso', {
         return result;
       } catch (error) {
         console.error('Error stopping WSJT-X service:', error);
-        return { success: false, error };
+        return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
       }
     },
 

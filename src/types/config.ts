@@ -1,8 +1,7 @@
 export interface ConfigField {
   key: string;
   path: string[];
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  value: any;
+  value: string | number | boolean | string[];
   type: string;
   description?: string;
 }

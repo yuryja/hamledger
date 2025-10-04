@@ -8,6 +8,7 @@ import { Socket } from 'net';
 import { exec, spawn, ChildProcess } from 'child_process';
 import { parseAdif } from '../../utils/adif';
 import { QsoEntry } from '../../types/qso';
+import { WSJTXLoggedQSO } from '../../types/wsjtx';
 import { databaseService } from '../../services/DatabaseService';
 import { createWriteStream } from 'fs';
 import { pipeline } from 'stream';
@@ -1033,8 +1034,7 @@ const userSettingsPath = join(app.getPath('userData'), 'settings.json');
 const defaultSettingsPath = join(app.getAppPath(), 'src/settings.json');
 
 // Load settings helper function
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function loadSettings(): any {
+function loadSettings(): Record<string, unknown> | null {
   try {
     if (fs.existsSync(userSettingsPath)) {
       return JSON.parse(fs.readFileSync(userSettingsPath, 'utf8'));
@@ -1119,13 +1119,13 @@ async function initializeWSJTX(): Promise<void> {
       wsjtxEnabled = true;
       
       // Set up event listeners
-      wsjtxService.on('qso', async (qso: any) => {
+      wsjtxService.on('qso', async (qso: WSJTXLoggedQSO) => {
         if (wsjtxSettings.autoLog) {
           await handleWSJTXQSO(qso);
         }
       });
       
-      wsjtxService.on('decode', (decode: any) => {
+      wsjtxService.on('decode', (decode: unknown) => {
         // Forward decode messages to renderer if needed
         const windows = BrowserWindow.getAllWindows();
         windows.forEach(window => {
@@ -1133,7 +1133,7 @@ async function initializeWSJTX(): Promise<void> {
         });
       });
       
-      wsjtxService.on('error', (error: any) => {
+      wsjtxService.on('error', (error: Error) => {
         console.error('WSJT-X service error:', error);
       });
       
@@ -1147,7 +1147,7 @@ async function initializeWSJTX(): Promise<void> {
 }
 
 // Handle WSJT-X QSO logging
-async function handleWSJTXQSO(wsjtxQSO: any): Promise<void> {
+async function handleWSJTXQSO(wsjtxQSO: WSJTXLoggedQSO): Promise<void> {
   try {
     // Convert WSJT-X QSO to HamLedger format
     const band = getBandFromFrequency(wsjtxQSO.txFrequency);

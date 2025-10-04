@@ -1,9 +1,9 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-// src/electron/preload/preload.ts
 import { contextBridge, ipcRenderer } from 'electron';
+import type { QsoEntry } from '../../types/qso';
+import type { WSJTXDecodeMessage } from '../../types/wsjtx';
 
 contextBridge.exposeInMainWorld('electronAPI', {
-  addQso: (qso: any) => ipcRenderer.invoke('qso:add', qso),
+  addQso: (qso: QsoEntry) => ipcRenderer.invoke('qso:add', qso),
   getAllDocs: () => ipcRenderer.invoke('qso:getAllDocs'),
   importAdif: () => ipcRenderer.invoke('adif:import'),
   selectAdifFile: () => ipcRenderer.invoke('adif:selectFile'),
@@ -19,8 +19,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.on('hamlib:downloadProgress', (_, progress) => callback(progress));
   },
   loadSettings: () => ipcRenderer.invoke('settings:load'),
-  saveSettings: (settings: any) => ipcRenderer.invoke('settings:save', settings),
-  updateQso: (qso: any) => ipcRenderer.invoke('qso:update', qso),
+  saveSettings: (settings: Record<string, unknown>) => ipcRenderer.invoke('settings:save', settings),
+  updateQso: (qso: QsoEntry) => ipcRenderer.invoke('qso:update', qso),
   fetchDxSpots: (params: string) => ipcRenderer.invoke('fetchDxSpots', params),
   fetchPropagationData: () => ipcRenderer.invoke('fetchPropagationData'),
   fetchWeather: (lat: number, lon: number) => ipcRenderer.invoke('fetchWeather', lat, lon),
@@ -37,10 +37,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
   wsjtxStart: (port?: number) => ipcRenderer.invoke('wsjtx:start', port),
   wsjtxStop: () => ipcRenderer.invoke('wsjtx:stop'),
   wsjtxStatus: () => ipcRenderer.invoke('wsjtx:status'),
-  onWSJTXDecode: (callback: (decode: any) => void) => {
+  onWSJTXDecode: (callback: (decode: WSJTXDecodeMessage) => void) => {
     ipcRenderer.on('wsjtx:decode', (_, decode) => callback(decode));
   },
-  onWSJTXQSOLogged: (callback: (qso: any) => void) => {
+  onWSJTXQSOLogged: (callback: (qso: QsoEntry) => void) => {
     ipcRenderer.on('wsjtx:qso-logged', (_, qso) => callback(qso));
   },
 });

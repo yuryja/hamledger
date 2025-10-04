@@ -104,8 +104,7 @@ export default {
     },
     async handleChange(field: ConfigField, event: Event) {
       const target = event.target as HTMLInputElement;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      let value: any;
+      let value: string | number | boolean;
 
       if (target.type === 'checkbox') {
         value = target.checked;
