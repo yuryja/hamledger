@@ -838,7 +838,10 @@ ipcMain.handle('hamlib:downloadAndInstall', async event => {
     sendProgress(90);
 
     // Add firewall exceptions
-    await addFirewallExceptions();
+    const firewallResult = await addFirewallExceptions();
+    if (!firewallResult.success && firewallResult.userCancelled) {
+      console.warn('User cancelled firewall configuration during Hamlib installation');
+    }
     sendProgress(100);
 
     console.log('Hamlib installation completed');
@@ -854,12 +857,12 @@ ipcMain.handle('hamlib:downloadAndInstall', async event => {
 });
 
 // Add Windows Firewall exceptions for HamLedger and rigctld
-async function addFirewallExceptions(): Promise<void> {
+async function addFirewallExceptions(): Promise<{ success: boolean; userCancelled?: boolean; error?: string }> {
   if (process.platform !== 'win32') {
-    return; // Only for Windows
+    return { success: true }; // Only for Windows
   }
 
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     const appPath = process.execPath;
     const appName = 'HamLedger';
     
@@ -903,9 +906,17 @@ async function addFirewallExceptions(): Promise<void> {
     exec(command, { timeout: 30000 }, (error, stdout, stderr) => {
       if (error) {
         console.error('Error configuring firewall:', error);
-        // Don't reject - firewall configuration is optional
+        
+        // Check if user cancelled UAC prompt
+        if (error.message.includes('cancelled') || error.message.includes('1223')) {
+          console.warn('User cancelled firewall configuration');
+          resolve({ success: false, userCancelled: true });
+          return;
+        }
+        
+        // Other errors (no admin rights, etc.)
         console.warn('Firewall configuration failed, but continuing...');
-        resolve();
+        resolve({ success: false, error: error.message });
         return;
       }
 
@@ -914,7 +925,7 @@ async function addFirewallExceptions(): Promise<void> {
       }
 
       console.log('Firewall configuration result:', stdout);
-      resolve();
+      resolve({ success: true });
     });
   });
 }
@@ -1045,8 +1056,8 @@ ipcMain.handle('rigctld:restart', async () => {
 // Add firewall exceptions handler
 ipcMain.handle('firewall:addExceptions', async () => {
   try {
-    await addFirewallExceptions();
-    return { success: true };
+    const result = await addFirewallExceptions();
+    return result;
   } catch (error) {
     console.error('Error adding firewall exceptions:', error);
     return {

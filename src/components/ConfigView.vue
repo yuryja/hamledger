@@ -262,8 +262,15 @@ export default {
           
           // Add firewall exceptions after successful installation
           try {
-            await window.electronAPI.addFirewallExceptions();
-            console.log('Firewall exceptions added successfully');
+            const firewallResult = await window.electronAPI.addFirewallExceptions();
+            if (firewallResult.success) {
+              console.log('Firewall exceptions added successfully');
+            } else if (firewallResult.userCancelled) {
+              console.warn('User cancelled firewall configuration');
+              // Could show a non-blocking notification here
+            } else {
+              console.warn('Failed to add firewall exceptions:', firewallResult.error);
+            }
           } catch (firewallError) {
             console.warn('Failed to add firewall exceptions:', firewallError);
             // Don't fail the installation if firewall configuration fails
@@ -322,8 +329,14 @@ export default {
         // Add firewall exceptions when restarting rigctld on Windows
         if (this.isWindows) {
           try {
-            await window.electronAPI.addFirewallExceptions();
-            console.log('Firewall exceptions added');
+            const firewallResult = await window.electronAPI.addFirewallExceptions();
+            if (firewallResult.success) {
+              console.log('Firewall exceptions added');
+            } else if (firewallResult.userCancelled) {
+              console.warn('User cancelled firewall configuration');
+            } else {
+              console.warn('Failed to add firewall exceptions:', firewallResult.error);
+            }
           } catch (firewallError) {
             console.warn('Failed to add firewall exceptions:', firewallError);
           }
@@ -376,8 +389,14 @@ export default {
         // Add firewall exceptions when enabling CAT control on Windows
         if (actualKey === 'rig' && enabled && this.isWindows) {
           try {
-            await window.electronAPI.addFirewallExceptions();
-            console.log('Firewall exceptions added for CAT control');
+            const firewallResult = await window.electronAPI.addFirewallExceptions();
+            if (firewallResult.success) {
+              console.log('Firewall exceptions added for CAT control');
+            } else if (firewallResult.userCancelled) {
+              console.warn('User cancelled firewall configuration for CAT control');
+            } else {
+              console.warn('Failed to add firewall exceptions:', firewallResult.error);
+            }
           } catch (firewallError) {
             console.warn('Failed to add firewall exceptions:', firewallError);
           }
