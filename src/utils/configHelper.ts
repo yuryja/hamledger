@@ -72,6 +72,8 @@ export class ConfigHelper {
 
   public getIARURegion(): 'IARU1' | 'IARU2' | 'IARU3' {
     const region = this.getSetting(['station'], 'iaruRegion');
+  ##AI! Type 'string | number | true | string[]' is not assignable to type '"IARU1" | "IARU2" | "IARU3"'.
+  Type 'string' is not assignable to type '"IARU1" | "IARU2" | "IARU3"'.ts(2322) 
     return region || 'IARU1';
   }
 
