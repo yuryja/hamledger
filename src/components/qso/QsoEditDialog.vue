@@ -301,7 +301,8 @@ export default {
 }
 
 .cancel-btn,
-.save-btn {
+.save-btn,
+.delete-btn {
   padding: 0.5rem 1rem;
   border: none;
   border-radius: 3px;
