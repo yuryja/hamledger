@@ -14,6 +14,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.on('adif:importProgress', (_, progress) => callback(progress));
   },
   saveAdifFile: (content: string) => ipcRenderer.invoke('adif:saveFile', content),
+  deleteQso: (qsoId: string) => ipcRenderer.invoke('qso:delete', qsoId),
   onHamlibDownloadProgress: (callback: (progress: { progress: number }) => void) => {
     ipcRenderer.on('hamlib:downloadProgress', (_, progress) => callback(progress));
   },

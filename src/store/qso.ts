@@ -246,6 +246,33 @@ export const useQsoStore = defineStore('qso', {
       }
     },
 
+    async deleteQso(qsoId: string): Promise<{ success: boolean; error?: string }> {
+      try {
+        const response = await window.electronAPI.deleteQso(qsoId);
+        
+        if (response.ok) {
+          // Remove from current session if present
+          const sessionIndex = this.currentSession.findIndex(qso => (qso._id || qso.id) === qsoId);
+          if (sessionIndex !== -1) {
+            this.currentSession.splice(sessionIndex, 1);
+          }
+
+          // Remove from all QSOs
+          const allIndex = this.allQsos.findIndex(qso => (qso._id || qso.id) === qsoId);
+          if (allIndex !== -1) {
+            this.allQsos.splice(allIndex, 1);
+          }
+
+          return { success: true };
+        } else {
+          return { success: false, error: response.error || 'Delete failed' };
+        }
+      } catch (error) {
+        console.error('Failed to delete QSO:', error);
+        return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
+      }
+    },
+
     updateCurrentUTCTime() {
       const now = new Date();
       this.currentUTCTime = now.toLocaleTimeString('en-US', {

@@ -211,6 +211,16 @@ ipcMain.handle('qso:update', async (_, qso) => {
   }
 });
 
+// Add QSO delete handler
+ipcMain.handle('qso:delete', async (_, qsoId: string) => {
+  try {
+    return await databaseService.deleteQso(qsoId);
+  } catch (error) {
+    console.error('Failed to delete QSO:', error);
+    throw error;
+  }
+});
+
 // ADIF Import handler
 ipcMain.handle('adif:import', async () => {
   try {

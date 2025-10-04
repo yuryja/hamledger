@@ -63,6 +63,33 @@ export default {
     }
   },
   methods: {
+    async deleteQso() {
+      if (!confirm('Biztosan törölni szeretnéd ezt a QSO-t? Ez a művelet nem vonható vissza.')) {
+        return;
+      }
+
+      try {
+        const qsoId = this.qso._id || this.qso.id;
+        
+        if (!qsoId) {
+          throw new Error('QSO ID hiányzik - nem lehet törölni a QSO-t');
+        }
+
+        const result = await this.qsoStore.deleteQso(qsoId);
+
+        if (result.success) {
+          console.log('QSO sikeresen törölve');
+          this.$emit('qso-deleted', this.qso);
+          this.$emit('close');
+        } else {
+          throw new Error(result.error || 'Törlés sikertelen');
+        }
+      } catch (error) {
+        console.error('QSO törlése sikertelen:', error);
+        alert('Hiba történt a QSO törlése során: ' + (error.message || error));
+      }
+    },
+
     async saveChanges() {
       try {
         // Debug: Check if _id and _rev are present
@@ -190,8 +217,11 @@ export default {
       </div>
 
       <div class="dialog-actions">
-        <button class="cancel-btn" @click="close">Cancel</button>
-        <button class="save-btn" @click="saveChanges">Save Changes</button>
+        <button class="delete-btn" @click="deleteQso">Delete QSO</button>
+        <div class="action-group">
+          <button class="cancel-btn" @click="close">Cancel</button>
+          <button class="save-btn" @click="saveChanges">Save Changes</button>
+        </div>
       </div>
     </div>
   </div>
@@ -259,9 +289,15 @@ export default {
 
 .dialog-actions {
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
+  align-items: center;
   gap: 1rem;
   margin-top: 1.5rem;
+}
+
+.action-group {
+  display: flex;
+  gap: 1rem;
 }
 
 .cancel-btn,
@@ -281,5 +317,14 @@ export default {
 .save-btn {
   background: var(--main-color);
   color: #000;
+}
+
+.delete-btn {
+  background: #e74c3c;
+  color: #fff;
+}
+
+.delete-btn:hover {
+  background: #c0392b;
 }
 </style>
