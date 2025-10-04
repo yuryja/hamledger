@@ -127,6 +127,22 @@ export default {
             value: value,
           };
         }
+
+        // Add firewall exceptions when enabling CAT control on Windows
+        if (field.path[0] === 'rig' && field.key === 'enabled' && value && this.isWindows) {
+          try {
+            const firewallResult = await window.electronAPI.addFirewallExceptions();
+            if (firewallResult.success) {
+              console.log('Firewall exceptions added for CAT control');
+            } else if (firewallResult.userCancelled) {
+              console.warn('User cancelled firewall configuration for CAT control');
+            } else {
+              console.warn('Failed to add firewall exceptions:', firewallResult.error);
+            }
+          } catch (firewallError) {
+            console.warn('Failed to add firewall exceptions:', firewallError);
+          }
+        }
       } catch (error) {
         console.error('Error updating setting:', error);
       }
