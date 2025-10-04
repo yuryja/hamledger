@@ -55,8 +55,8 @@ export const useRigStore = defineStore('rig', {
     isConnected: state => state.connection.connected,
     currentFrequency: state => {
       const freqMHz = state.rigState.frequency / 1000000;
-      // Format to 3 decimal places and remove trailing zeros, but keep at least 1 decimal
-      return freqMHz.toFixed(3).replace(/\.?0+$/, '').replace(/\.$/, '.0');
+      // Format to 6 decimal places for kHz precision, remove trailing zeros but keep at least 3 decimals
+      return freqMHz.toFixed(6).replace(/0+$/, '').replace(/\.$/, '.000');
     },
     currentMode: state => state.rigState.mode,
     currentBand: state => {
@@ -70,7 +70,8 @@ export const useRigStore = defineStore('rig', {
     splitFrequency: state => {
       if (!state.rigState.splitFreq) return undefined;
       const freqMHz = state.rigState.splitFreq / 1000000;
-      return freqMHz.toString().replace(/\.?0+$/, '');
+      // Format to 6 decimal places for kHz precision, remove trailing zeros but keep at least 3 decimals
+      return freqMHz.toFixed(6).replace(/0+$/, '').replace(/\.$/, '.000');
     },
     rigModel: state => state.capabilities?.modelName || 'Unknown',
     selectedMode: state => state.rigState.mode,
