@@ -366,8 +366,7 @@ ipcMain.handle('adif:saveFile', async (_, content: string) => {
 // Propagation Data API handler
 ipcMain.handle('fetchPropagationData', async () => {
   try {
-    const settings = loadSettings();
-    ##AI! Property 'wwv' does not exist on type '{}'.
+    const settings = loadSettings() as any;
     const baseUrl = settings?.apis?.wwv?.baseUrl || 'https://dxheat.com/wwv';
     const url = `${baseUrl}/source/`;
 
