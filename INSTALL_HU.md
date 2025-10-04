@@ -17,10 +17,16 @@
 4. Indítsd el a HamLedger-t a telepítés után
 
 #### 2. Hamlib Telepítése (CAT Vezérléshez)
+A Hamlib egy interfész a Hamledger és az RS232-es port között - az RS-232-es portra küldött parancsokat
+a hamlib a localhost:4532 UDP porton várja. 
 
-Ha szeretnéd használni a CAT vezérlés funkciót (rádió vezérlés), telepítened kell a Hamlib-et:
+##### 2.1.1. A Hamlib automatikus telepítése
+A Hamledger az első indításkor lefutó beállítás varázslóban le tudja tölteni és automatikusan telepíteni tudja a Hamlib-et.
+Ezzel többnyire nincs egyéb teendő, haladj tovább a Hamledger indításával.
 
-##### 2.1. Hamlib Letöltése
+Ha ez valamiért nem sikerül, haladj tovább a kézi telepítéssel.
+
+##### 2.1.2. Hamlib Letöltése
 
 1. Látogass el a [Hamlib hivatalos snapshots oldalára](https://hamlib.sourceforge.net/snapshots/)
 2. Töltsd le a legújabb **stabil Win64** verziót (pl. `hamlib-w64-4.5.5.zip`)
@@ -34,6 +40,7 @@ Ha szeretnéd használni a CAT vezérlés funkciót (rádió vezérlés), telep�
 
 ##### 2.3. Hamlib Hozzáadása a Rendszer PATH-hoz
 
+0. Ha a Hamlib-et automatikusan telepítette a Hamledger, erre a lépésre nincs szükség.
 1. Nyomd meg a `Win + R` billentyűket, írd be: `sysdm.cpl`, majd nyomd meg az Enter-t
 2. Kattints a **Speciális** fülre
 3. Kattints a **Környezeti változók** gombra
