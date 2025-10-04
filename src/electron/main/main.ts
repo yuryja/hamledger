@@ -367,6 +367,7 @@ ipcMain.handle('adif:saveFile', async (_, content: string) => {
 ipcMain.handle('fetchPropagationData', async () => {
   try {
     const settings = loadSettings();
+    ##AI! Property 'wwv' does not exist on type '{}'.
     const baseUrl = settings?.apis?.wwv?.baseUrl || 'https://dxheat.com/wwv';
     const url = `${baseUrl}/source/`;
 
@@ -1186,7 +1187,8 @@ async function handleWSJTXQSO(wsjtxQSO: WSJTXLoggedQSO): Promise<void> {
 }
 
 // WSJT-X IPC handlers
-ipcMain.handle('wsjtx:start', async (_, port: number = 2237) => {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+ipcMain.handle('wsjtx:start', async (_, _port: number = 2237) => {
   try {
     if (!wsjtxService.isRunning()) {
       await wsjtxService.start();
