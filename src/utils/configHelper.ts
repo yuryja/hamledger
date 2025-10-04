@@ -72,9 +72,11 @@ export class ConfigHelper {
 
   public getIARURegion(): 'IARU1' | 'IARU2' | 'IARU3' {
     const region = this.getSetting(['station'], 'iaruRegion');
-  ##AI! Type 'string | number | true | string[]' is not assignable to type '"IARU1" | "IARU2" | "IARU3"'.
-  Type 'string' is not assignable to type '"IARU1" | "IARU2" | "IARU3"'.ts(2322) 
-    return region || 'IARU1';
+    // Type guard to ensure the region is a valid IARU region
+    if (region === 'IARU1' || region === 'IARU2' || region === 'IARU3') {
+      return region;
+    }
+    return 'IARU1';
   }
 
   public flattenConfig(obj: any = this.settings, path: string[] = []): ConfigField[] {
