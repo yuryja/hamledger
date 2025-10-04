@@ -59,6 +59,7 @@ export class WSJTXService extends EventEmitter {
     return this.isListening;
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   private handleMessage(buffer: Buffer, _rinfo: dgram.RemoteInfo): void {
     try {
       // WSJT-X uses a binary protocol, we need to parse it
