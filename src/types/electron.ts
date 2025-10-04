@@ -37,6 +37,11 @@ declare global {
         command: string
       ) => Promise<{ success: boolean; data?: any; error?: string }>;
       rigctldRestart: () => Promise<{ success: boolean; data?: any; error?: string }>;
+      wsjtxStart: (port?: number) => Promise<{ success: boolean; error?: string }>;
+      wsjtxStop: () => Promise<{ success: boolean; error?: string }>;
+      wsjtxStatus: () => Promise<{ success: boolean; data?: { enabled: boolean; running: boolean } }>;
+      onWSJTXDecode: (callback: (decode: any) => void) => void;
+      onWSJTXQSOLogged: (callback: (qso: any) => void) => void;
     };
   }
 }
