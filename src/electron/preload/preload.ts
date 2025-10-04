@@ -31,4 +31,5 @@ contextBridge.exposeInMainWorld('electronAPI', {
   executeCommand: (command: string) => ipcRenderer.invoke('execute:command', command),
   downloadAndInstallHamlib: () => ipcRenderer.invoke('hamlib:downloadAndInstall'),
   checkRigctldInPath: () => ipcRenderer.invoke('hamlib:checkRigctldInPath'),
+  addFirewallExceptions: () => ipcRenderer.invoke('firewall:addExceptions'),
 });

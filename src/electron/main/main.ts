@@ -835,6 +835,10 @@ ipcMain.handle('hamlib:downloadAndInstall', async event => {
 
     // Add bin directory to system PATH
     await addToSystemPath(hamlibBinPath);
+    sendProgress(90);
+
+    // Add firewall exceptions
+    await addFirewallExceptions();
     sendProgress(100);
 
     console.log('Hamlib installation completed');
@@ -848,6 +852,72 @@ ipcMain.handle('hamlib:downloadAndInstall', async event => {
     };
   }
 });
+
+// Add Windows Firewall exceptions for HamLedger and rigctld
+async function addFirewallExceptions(): Promise<void> {
+  if (process.platform !== 'win32') {
+    return; // Only for Windows
+  }
+
+  return new Promise((resolve, reject) => {
+    const appPath = process.execPath;
+    const appName = 'HamLedger';
+    
+    // PowerShell command to add firewall exceptions
+    const psCommand = `
+      try {
+        # Add HamLedger to firewall exceptions
+        $appPath = '${appPath.replace(/\\/g, '\\\\')}'
+        $appName = '${appName}'
+        
+        # Check if rule already exists for HamLedger
+        $existingRule = Get-NetFirewallRule -DisplayName "$appName*" -ErrorAction SilentlyContinue
+        if (-not $existingRule) {
+          New-NetFirewallRule -DisplayName "$appName - Inbound" -Direction Inbound -Program $appPath -Action Allow -Profile Any
+          New-NetFirewallRule -DisplayName "$appName - Outbound" -Direction Outbound -Program $appPath -Action Allow -Profile Any
+          Write-Output "Added firewall rules for $appName"
+        } else {
+          Write-Output "Firewall rules for $appName already exist"
+        }
+        
+        # Add rigctld to firewall exceptions (generic rule for any rigctld.exe)
+        $rigctldRule = Get-NetFirewallRule -DisplayName "rigctld*" -ErrorAction SilentlyContinue
+        if (-not $rigctldRule) {
+          New-NetFirewallRule -DisplayName "rigctld - Inbound" -Direction Inbound -Program "*rigctld.exe" -Action Allow -Profile Any
+          New-NetFirewallRule -DisplayName "rigctld - Outbound" -Direction Outbound -Program "*rigctld.exe" -Action Allow -Profile Any
+          Write-Output "Added firewall rules for rigctld"
+        } else {
+          Write-Output "Firewall rules for rigctld already exist"
+        }
+        
+        Write-Output "Firewall configuration completed successfully"
+      } catch {
+        Write-Error "Failed to configure firewall: $($_.Exception.Message)"
+        exit 1
+      }
+    `;
+
+    // Run PowerShell command with elevated privileges
+    const command = `powershell -Command "Start-Process powershell -ArgumentList '-Command', '${psCommand.replace(/'/g, "''").replace(/"/g, '\\"')}' -Verb RunAs -Wait"`;
+
+    exec(command, { timeout: 30000 }, (error, stdout, stderr) => {
+      if (error) {
+        console.error('Error configuring firewall:', error);
+        // Don't reject - firewall configuration is optional
+        console.warn('Firewall configuration failed, but continuing...');
+        resolve();
+        return;
+      }
+
+      if (stderr) {
+        console.warn('Firewall configuration stderr:', stderr);
+      }
+
+      console.log('Firewall configuration result:', stdout);
+      resolve();
+    });
+  });
+}
 
 // Add directory to user PATH on Windows
 async function addToSystemPath(dirPath: string): Promise<void> {
@@ -965,6 +1035,20 @@ ipcMain.handle('rigctld:restart', async () => {
     return { success: true };
   } catch (error) {
     console.error('Error restarting rigctld:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error',
+    };
+  }
+});
+
+// Add firewall exceptions handler
+ipcMain.handle('firewall:addExceptions', async () => {
+  try {
+    await addFirewallExceptions();
+    return { success: true };
+  } catch (error) {
+    console.error('Error adding firewall exceptions:', error);
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error',

@@ -259,6 +259,15 @@ export default {
           this.hamlibStatus.inPath = true;
           delete this.validationErrors.rigctldPath;
           console.log('Hamlib installed successfully:', result.message);
+          
+          // Add firewall exceptions after successful installation
+          try {
+            await window.electronAPI.addFirewallExceptions();
+            console.log('Firewall exceptions added successfully');
+          } catch (firewallError) {
+            console.warn('Failed to add firewall exceptions:', firewallError);
+            // Don't fail the installation if firewall configuration fails
+          }
         } else {
           this.hamlibStatus.error = result.error || 'Installation failed';
         }
@@ -309,6 +318,16 @@ export default {
       try {
         await window.electronAPI.rigctldRestart();
         console.log('Rigctld restarted successfully');
+        
+        // Add firewall exceptions when restarting rigctld on Windows
+        if (this.isWindows) {
+          try {
+            await window.electronAPI.addFirewallExceptions();
+            console.log('Firewall exceptions added');
+          } catch (firewallError) {
+            console.warn('Failed to add firewall exceptions:', firewallError);
+          }
+        }
       } catch (error) {
         console.error('Error restarting rigctld:', error);
       }
@@ -352,6 +371,16 @@ export default {
             ...this.configFields[fieldIndex],
             value: enabled,
           };
+        }
+        
+        // Add firewall exceptions when enabling CAT control on Windows
+        if (actualKey === 'rig' && enabled && this.isWindows) {
+          try {
+            await window.electronAPI.addFirewallExceptions();
+            console.log('Firewall exceptions added for CAT control');
+          } catch (firewallError) {
+            console.warn('Failed to add firewall exceptions:', firewallError);
+          }
         }
       }
     },
