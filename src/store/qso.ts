@@ -229,6 +229,22 @@ export const useQsoStore = defineStore('qso', {
       }
     },
 
+    async exportAdif(qsos: QsoEntry[]): Promise<{ success: boolean; error?: string }> {
+      try {
+        const adifContent = formatAdif(qsos);
+        const result = await window.electronAPI.saveAdifFile(adifContent);
+        
+        if (result.success) {
+          return { success: true };
+        } else {
+          return { success: false, error: result.error || 'Export failed' };
+        }
+      } catch (error) {
+        console.error('Failed to export ADIF:', error);
+        return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
+      }
+    },
+
     updateCurrentUTCTime() {
       const now = new Date();
       this.currentUTCTime = now.toLocaleTimeString('en-US', {

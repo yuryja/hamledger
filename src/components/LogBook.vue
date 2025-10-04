@@ -33,6 +33,13 @@ export default {
         error: null as string | null,
         success: false,
       },
+      exportStatus: {
+        isExporting: false,
+        error: null as string | null,
+        success: false,
+        exportedCount: 0,
+      },
+      showExportDialog: false,
       isLoadingQsos: false,
       filters: {
         searchText: '',
@@ -253,6 +260,46 @@ export default {
         this.importStatus.isImporting = false;
       }
     },
+
+    handleExportAdif() {
+      // Reset export status
+      this.exportStatus.error = null;
+      this.exportStatus.success = false;
+      this.exportStatus.exportedCount = 0;
+      
+      // Show export dialog
+      this.showExportDialog = true;
+    },
+
+    closeExportDialog() {
+      this.showExportDialog = false;
+    },
+
+    async exportQsos(type: 'all' | 'filtered') {
+      this.exportStatus.isExporting = true;
+      this.exportStatus.error = null;
+      this.exportStatus.success = false;
+      this.showExportDialog = false;
+
+      try {
+        const qsosToExport = type === 'all' ? this.allQsos : this.filteredQsos;
+        this.exportStatus.exportedCount = qsosToExport.length;
+
+        const result = await this.qsoStore.exportAdif(qsosToExport);
+
+        if (result.success) {
+          this.exportStatus.success = true;
+          console.log(`Successfully exported ${qsosToExport.length} QSOs to ADIF file`);
+        } else {
+          this.exportStatus.error = result.error || 'Export failed';
+        }
+      } catch (error) {
+        console.error('Error exporting ADIF:', error);
+        this.exportStatus.error = 'An unexpected error occurred during export';
+      } finally {
+        this.exportStatus.isExporting = false;
+      }
+    },
     closeEditDialog() {
       this.showEditDialog = false;
       this.selectedQso = null;
@@ -294,6 +341,13 @@ export default {
           <span v-else class="loading-text">
             <span class="spinner"></span>
             Importing...
+          </span>
+        </button>
+        <button class="action-btn export-btn" @click="handleExportAdif" :disabled="exportStatus.isExporting">
+          <span v-if="!exportStatus.isExporting">Export ADIF</span>
+          <span v-else class="loading-text">
+            <span class="spinner"></span>
+            Exporting...
           </span>
         </button>
       </div>
@@ -398,6 +452,41 @@ export default {
     <!-- Import Error -->
     <div v-if="importStatus.error && !importStatus.isImporting" class="error-message">
       ❌ Import failed: {{ importStatus.error }}
+    </div>
+
+    <!-- Export Success -->
+    <div v-if="exportStatus.success && !exportStatus.isExporting" class="success-message">
+      ✅ Successfully exported {{ exportStatus.exportedCount }} QSOs to ADIF file!
+    </div>
+
+    <!-- Export Error -->
+    <div v-if="exportStatus.error && !exportStatus.isExporting" class="error-message">
+      ❌ Export failed: {{ exportStatus.error }}
+    </div>
+
+    <!-- Export Dialog -->
+    <div v-if="showExportDialog" class="modal-overlay" @click="closeExportDialog">
+      <div class="export-dialog" @click.stop>
+        <h3>Export ADIF</h3>
+        <p>Choose what to export:</p>
+        <div class="export-options">
+          <button class="export-option-btn" @click="exportQsos('all')">
+            <strong>Full Log</strong>
+            <span>{{ totalCount }} QSOs</span>
+          </button>
+          <button 
+            class="export-option-btn" 
+            @click="exportQsos('filtered')"
+            :disabled="filteredCount === 0"
+          >
+            <strong>Filtered Results</strong>
+            <span>{{ filteredCount }} QSOs</span>
+          </button>
+        </div>
+        <div class="dialog-actions">
+          <button class="cancel-btn" @click="closeExportDialog">Cancel</button>
+        </div>
+      </div>
     </div>
 
     <!-- QSO Loading Overlay -->
@@ -605,6 +694,20 @@ export default {
   font-weight: bold;
 }
 
+.export-btn {
+  background: #3498db;
+  color: #fff;
+}
+
+.export-btn:hover {
+  background: #2980b9;
+}
+
+.export-btn:disabled {
+  background: #7f8c8d;
+  cursor: not-allowed;
+}
+
 .qso-count {
   background: #444;
   border: 1px solid #777;
@@ -756,6 +859,99 @@ export default {
   to {
     transform: rotate(360deg);
   }
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+}
+
+.export-dialog {
+  background: #333;
+  border: 1px solid #555;
+  border-radius: 8px;
+  padding: 2rem;
+  min-width: 400px;
+  max-width: 500px;
+}
+
+.export-dialog h3 {
+  margin: 0 0 1rem 0;
+  color: var(--main-color);
+  font-size: 1.2rem;
+}
+
+.export-dialog p {
+  margin: 0 0 1.5rem 0;
+  color: var(--gray-color);
+}
+
+.export-options {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.export-option-btn {
+  background: #444;
+  border: 1px solid #666;
+  border-radius: 6px;
+  padding: 1rem;
+  color: #fff;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.2s;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.export-option-btn:hover:not(:disabled) {
+  background: #555;
+  border-color: var(--main-color);
+}
+
+.export-option-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.export-option-btn strong {
+  color: var(--main-color);
+  font-size: 1rem;
+}
+
+.export-option-btn span {
+  color: var(--gray-color);
+  font-size: 0.9rem;
+}
+
+.dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+}
+
+.cancel-btn {
+  background: #666;
+  border: none;
+  padding: 0.5rem 1rem;
+  color: #fff;
+  cursor: pointer;
+  border-radius: 3px;
+}
+
+.cancel-btn:hover {
+  background: #777;
 }
 
 .import-progress {
