@@ -255,6 +255,28 @@
           "description": "Maximum number of log files to keep"
         }
       }
+    },
+    "wsjtx": {
+      "type": "object",
+      "description": "WSJT-X integration settings",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "Enable WSJT-X UDP listener and QSO auto-logging"
+        },
+        "port": {
+          "type": "integer",
+          "description": "UDP port for WSJT-X communication (default: 2237)"
+        },
+        "autoLog": {
+          "type": "boolean",
+          "description": "Automatically log QSOs received from WSJT-X"
+        },
+        "logOnlyConfirmed": {
+          "type": "boolean",
+          "description": "Only log confirmed QSOs (not all decodes)"
+        }
+      }
     }
   }
 }

@@ -54,6 +54,7 @@ export default {
         database: 'database',
         ui: 'ui',
         logging: 'logging',
+        'wsjt-x': 'wsjtx',
       };
 
       const actualKey = categoryMap[categoryKey] || categoryKey;
@@ -65,7 +66,7 @@ export default {
     },
     hasCategoryEnabler() {
       const categoryKey = this.selectedCategory.toLowerCase().replace(' ', '');
-      const categoriesWithEnabler = ['catcontrol', 'onlineservices', 'database'];
+      const categoriesWithEnabler = ['catcontrol', 'onlineservices', 'database', 'wsjt-x'];
       return categoriesWithEnabler.includes(categoryKey);
     },
     isRigModelDummy() {
@@ -89,6 +90,7 @@ export default {
         database: 'Database',
         ui: 'UI',
         logging: 'Logging',
+        wsjtx: 'WSJT-X',
       };
       return (
         displayNames[categoryName] || categoryName.charAt(0).toUpperCase() + categoryName.slice(1)
@@ -385,6 +387,7 @@ export default {
         catcontrol: 'rig',
         onlineservices: 'qrz',
         database: 'database',
+        'wsjt-x': 'wsjtx',
       };
 
       const actualKey = categoryMap[categoryKey];

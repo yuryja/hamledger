@@ -13,6 +13,8 @@ import { createWriteStream } from 'fs';
 import { pipeline } from 'stream';
 import { promisify } from 'util';
 import { Extract } from 'unzipper';
+import { wsjtxService } from '../../services/WSJTXService';
+import { getBandFromFrequency } from '../../utils/bands';
 
 interface FetchOptions {
   headers: {
@@ -27,6 +29,9 @@ const isDev = process.env.npm_lifecycle_event === 'app:dev' ? true : false;
 
 // Rigctld process management
 let rigctldProcess: ChildProcess | null = null;
+
+// WSJT-X service management
+let wsjtxEnabled = false;
 
 // Check if a port is in use
 function isPortInUse(port: number, host: string = 'localhost'): Promise<boolean> {
@@ -498,6 +503,9 @@ app.whenReady().then(async () => {
   // Try to start rigctld before creating the window
   await startRigctld();
 
+  // Initialize WSJT-X service
+  await initializeWSJTX();
+
   createWindow();
   app.on('activate', function () {
     // On macOS it's common to re-create a window in the app when the
@@ -512,6 +520,9 @@ app.whenReady().then(async () => {
 app.on('window-all-closed', () => {
   // Stop rigctld when app is closing
   stopRigctld();
+  
+  // Stop WSJT-X service
+  wsjtxService.stop();
 
   if (process.platform !== 'darwin') {
     app.quit();
@@ -521,6 +532,7 @@ app.on('window-all-closed', () => {
 // Handle app quit
 app.on('before-quit', () => {
   stopRigctld();
+  wsjtxService.stop();
 });
 
 // Rigctld connection management
@@ -1095,4 +1107,121 @@ ipcMain.handle('firewall:addExceptions', async () => {
       error: error instanceof Error ? error.message : 'Unknown error',
     };
   }
+});
+
+// WSJT-X initialization
+async function initializeWSJTX(): Promise<void> {
+  try {
+    const settings = loadSettings();
+    const wsjtxSettings = settings?.wsjtx || { enabled: false, port: 2237, autoLog: true };
+    
+    if (wsjtxSettings.enabled) {
+      wsjtxEnabled = true;
+      
+      // Set up event listeners
+      wsjtxService.on('qso', async (qso) => {
+        if (wsjtxSettings.autoLog) {
+          await handleWSJTXQSO(qso);
+        }
+      });
+      
+      wsjtxService.on('decode', (decode) => {
+        // Forward decode messages to renderer if needed
+        const windows = BrowserWindow.getAllWindows();
+        windows.forEach(window => {
+          window.webContents.send('wsjtx:decode', decode);
+        });
+      });
+      
+      wsjtxService.on('error', (error) => {
+        console.error('WSJT-X service error:', error);
+      });
+      
+      // Start the service
+      await wsjtxService.start();
+      console.log('WSJT-X service started');
+    }
+  } catch (error) {
+    console.error('Error initializing WSJT-X service:', error);
+  }
+}
+
+// Handle WSJT-X QSO logging
+async function handleWSJTXQSO(wsjtxQSO: any): Promise<void> {
+  try {
+    // Convert WSJT-X QSO to HamLedger format
+    const band = getBandFromFrequency(wsjtxQSO.txFrequency);
+    
+    const qso: QsoEntry = {
+      callsign: wsjtxQSO.dxCall,
+      datetime: wsjtxQSO.dateTimeOff.toISOString(),
+      band: band ? band.name : 'Unknown',
+      freqRx: wsjtxQSO.txFrequency / 1000000, // Convert Hz to MHz
+      freqTx: wsjtxQSO.txFrequency / 1000000, // Same frequency for digital modes
+      mode: wsjtxQSO.mode,
+      rstr: wsjtxQSO.reportReceived || '---',
+      rstt: wsjtxQSO.reportSent || '---',
+      remark: wsjtxQSO.comments || 'WSJT-X Auto-logged',
+      notes: `Grid: ${wsjtxQSO.dxGrid || 'Unknown'}${wsjtxQSO.name ? `, Name: ${wsjtxQSO.name}` : ''}`,
+      _id: `wsjtx-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+    };
+    
+    // Save to database
+    const result = await databaseService.saveQso(qso);
+    
+    if (result.ok) {
+      console.log('WSJT-X QSO auto-logged:', qso.callsign);
+      
+      // Notify renderer about new QSO
+      const windows = BrowserWindow.getAllWindows();
+      windows.forEach(window => {
+        window.webContents.send('wsjtx:qso-logged', qso);
+      });
+    } else {
+      console.error('Failed to save WSJT-X QSO:', result.error);
+    }
+  } catch (error) {
+    console.error('Error handling WSJT-X QSO:', error);
+  }
+}
+
+// WSJT-X IPC handlers
+ipcMain.handle('wsjtx:start', async (_, port: number = 2237) => {
+  try {
+    if (!wsjtxService.isRunning()) {
+      await wsjtxService.start();
+      wsjtxEnabled = true;
+    }
+    return { success: true };
+  } catch (error) {
+    console.error('Error starting WSJT-X service:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error',
+    };
+  }
+});
+
+ipcMain.handle('wsjtx:stop', async () => {
+  try {
+    wsjtxService.stop();
+    wsjtxEnabled = false;
+    return { success: true };
+  } catch (error) {
+    console.error('Error stopping WSJT-X service:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error',
+    };
+  }
+});
+
+ipcMain.handle('wsjtx:status', async () => {
+  return {
+    success: true,
+    data: {
+      enabled: wsjtxEnabled,
+      running: wsjtxService.isRunning(),
+    },
+  };
 });

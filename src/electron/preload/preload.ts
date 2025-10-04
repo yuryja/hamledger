@@ -34,4 +34,13 @@ contextBridge.exposeInMainWorld('electronAPI', {
   downloadAndInstallHamlib: () => ipcRenderer.invoke('hamlib:downloadAndInstall'),
   checkRigctldInPath: () => ipcRenderer.invoke('hamlib:checkRigctldInPath'),
   addFirewallExceptions: () => ipcRenderer.invoke('firewall:addExceptions'),
+  wsjtxStart: (port?: number) => ipcRenderer.invoke('wsjtx:start', port),
+  wsjtxStop: () => ipcRenderer.invoke('wsjtx:stop'),
+  wsjtxStatus: () => ipcRenderer.invoke('wsjtx:status'),
+  onWSJTXDecode: (callback: (decode: any) => void) => {
+    ipcRenderer.on('wsjtx:decode', (_, decode) => callback(decode));
+  },
+  onWSJTXQSOLogged: (callback: (qso: any) => void) => {
+    ipcRenderer.on('wsjtx:qso-logged', (_, qso) => callback(qso));
+  },
 });

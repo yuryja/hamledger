@@ -1,5 +1,6 @@
 <script lang="ts">
 import { useRigStore } from '../../store/rig';
+import { useQsoStore } from '../../store/qso';
 import { configHelper } from '../../utils/configHelper';
 import type { RigModel } from '../../types/rig';
 
@@ -8,11 +9,13 @@ export default {
   data() {
     return {
       rigStore: useRigStore(),
+      qsoStore: useQsoStore(),
       rigModel: '',
       rigPort: '',
       showConnectionDialog: false,
       rigModels: [] as RigModel[],
       loadingModels: false,
+      wsjtxEnabled: false,
       connectionForm: {
         host: 'localhost',
         port: 4532,
@@ -24,8 +27,9 @@ export default {
   async mounted() {
     await this.loadRigConfig();
     await this.loadRigModels();
-    // Auto-connect if configuration exists
-    if (this.connectionForm.host && this.connectionForm.port) {
+    await this.checkWSJTXSettings();
+    // Auto-connect if configuration exists and WSJT-X is not enabled
+    if (this.connectionForm.host && this.connectionForm.port && !this.wsjtxEnabled) {
       await this.handleConnect();
     }
   },
@@ -41,7 +45,11 @@ export default {
     connectionStatusClass() {
       if (this.rigStore.isLoading) return 'status-connecting';
       if (this.rigStore.isConnected) return 'status-connected';
+      if (this.wsjtxEnabled) return 'status-wsjtx';
       return 'status-disconnected';
+    },
+    wsjtxStatus() {
+      return this.qsoStore.wsjtxStatus;
     },
     groupedModels() {
       const grouped = new Map();
@@ -215,8 +223,60 @@ export default {
         await new Promise(resolve => setTimeout(resolve, 2000));
       }
 
-      // Connect with new settings
-      await this.handleConnect();
+      // Connect with new settings only if WSJT-X is not enabled
+      if (!this.wsjtxEnabled) {
+        await this.handleConnect();
+      }
+    },
+
+    async checkWSJTXSettings() {
+      await configHelper.initSettings();
+      this.wsjtxEnabled = configHelper.getSetting(['wsjtx'], 'enabled') || false;
+    },
+
+    async handOverToWSJTX() {
+      try {
+        // First disconnect from rigctld
+        if (this.rigStore.isConnected) {
+          this.rigStore.stopPolling();
+          await this.rigStore.handleDisconnect();
+        }
+
+        // Enable WSJT-X in settings
+        await configHelper.updateSetting(['wsjtx'], 'enabled', true);
+        this.wsjtxEnabled = true;
+
+        // Start WSJT-X service
+        const wsjtxPort = configHelper.getSetting(['wsjtx'], 'port') || 2237;
+        const result = await this.qsoStore.startWSJTX(wsjtxPort);
+        
+        if (result.success) {
+          console.log('WSJT-X service started, CAT control handed over');
+        } else {
+          console.error('Failed to start WSJT-X service:', result.error);
+        }
+      } catch (error) {
+        console.error('Error handing over to WSJT-X:', error);
+      }
+    },
+
+    async takeBackFromWSJTX() {
+      try {
+        // Stop WSJT-X service
+        await this.qsoStore.stopWSJTX();
+
+        // Disable WSJT-X in settings
+        await configHelper.updateSetting(['wsjtx'], 'enabled', false);
+        this.wsjtxEnabled = false;
+
+        // Reconnect to rigctld
+        await this.handleConnect();
+        if (this.rigStore.isConnected) {
+          this.rigStore.startPolling(2000);
+        }
+      } catch (error) {
+        console.error('Error taking back from WSJT-X:', error);
+      }
     },
   },
 
@@ -237,7 +297,7 @@ export default {
           <span class="port-badge">{{ rigPort }}</span>
         </div>
         <div class="connection-status" :class="connectionStatusClass">
-          {{ connectionStatus }}
+          {{ wsjtxEnabled ? 'WSJT-X Mode' : connectionStatus }}
         </div>
         <div v-if="rigStore.error" class="error-message">
           {{ rigStore.error }}
@@ -245,30 +305,62 @@ export default {
       </div>
 
       <div class="rig-buttons">
+        <!-- WSJT-X Mode buttons -->
         <button
-          v-if="!isConnected"
-          class="connect-btn"
-          @click="handleConnect"
+          v-if="wsjtxEnabled && !wsjtxStatus.running"
+          class="wsjtx-btn"
+          @click="handOverToWSJTX"
           :disabled="rigStore.isLoading"
         >
-          {{ rigStore.isLoading ? 'Connecting...' : 'Connect' }}
+          Start WSJT-X Listener
         </button>
         <button
-          v-if="isConnected"
-          class="reconnect"
-          @click="handleReconnect"
+          v-if="wsjtxEnabled && wsjtxStatus.running"
+          class="wsjtx-active-btn"
+          @click="takeBackFromWSJTX"
           :disabled="rigStore.isLoading"
         >
-          Reconnect
+          Take Back CAT Control
         </button>
+        
+        <!-- Regular CAT Control buttons (only show when WSJT-X is disabled) -->
+        <template v-if="!wsjtxEnabled">
+          <button
+            v-if="!isConnected"
+            class="connect-btn"
+            @click="handleConnect"
+            :disabled="rigStore.isLoading"
+          >
+            {{ rigStore.isLoading ? 'Connecting...' : 'Connect' }}
+          </button>
+          <button
+            v-if="isConnected"
+            class="reconnect"
+            @click="handleReconnect"
+            :disabled="rigStore.isLoading"
+          >
+            Reconnect
+          </button>
+          <button
+            v-if="isConnected"
+            class="stop-btn"
+            @click="handleDisconnect"
+            :disabled="rigStore.isLoading"
+          >
+            Disconnect
+          </button>
+        </template>
+        
+        <!-- Hand over to WSJT-X button (only show when CAT is connected and WSJT-X is available) -->
         <button
-          v-if="isConnected"
-          class="stop-btn"
-          @click="handleDisconnect"
+          v-if="!wsjtxEnabled && isConnected"
+          class="handover-btn"
+          @click="handOverToWSJTX"
           :disabled="rigStore.isLoading"
         >
-          Disconnect
+          Hand over to WSJT-X
         </button>
+        
         <button class="settings-btn" @click="showConnectionSettings">Settings</button>
       </div>
     </div>
@@ -397,6 +489,11 @@ export default {
   color: black;
 }
 
+.status-wsjtx {
+  background: #17a2b8;
+  color: white;
+}
+
 .error-message {
   color: #dc3545;
   font-size: 0.8rem;
@@ -470,6 +567,44 @@ export default {
   cursor: pointer;
   border-radius: 3px;
   font-size: 0.9rem;
+}
+
+/* WSJT-X buttons */
+.handover-btn {
+  background: #17a2b8;
+  border: none;
+  padding: 0.2rem 0.5rem;
+  color: #fff;
+  cursor: pointer;
+  border-radius: 3px;
+  font-size: 0.9rem;
+}
+
+.wsjtx-btn {
+  background: #17a2b8;
+  border: none;
+  padding: 0.2rem 0.5rem;
+  color: #fff;
+  cursor: pointer;
+  border-radius: 3px;
+  font-size: 0.9rem;
+}
+
+.wsjtx-active-btn {
+  background: #6f42c1;
+  border: none;
+  padding: 0.2rem 0.5rem;
+  color: #fff;
+  cursor: pointer;
+  border-radius: 3px;
+  font-size: 0.9rem;
+}
+
+.wsjtx-btn:disabled,
+.wsjtx-active-btn:disabled,
+.handover-btn:disabled {
+  background: #6c757d;
+  cursor: not-allowed;
 }
 
 /* Connection Dialog */

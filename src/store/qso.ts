@@ -10,6 +10,7 @@ import { MaidenheadLocator } from '../utils/maidenhead';
 import { configHelper } from '../utils/configHelper';
 import { calculateDistance } from '../utils/distance';
 import { getBandFromFrequency } from '../utils/bands';
+import { WSJTXDecodeMessage } from '../types/wsjtx';
 import * as countries from 'i18n-iso-countries';
 import en from 'i18n-iso-countries/langs/en.json';
 import '../types/electron';
@@ -22,6 +23,9 @@ export const useQsoStore = defineStore('qso', {
     currentUTCTime: '',
     initialized: false,
     isLoading: false,
+    wsjtxEnabled: false,
+    wsjtxRunning: false,
+    wsjtxDecodes: [] as WSJTXDecodeMessage[],
     stationInfo: {
       baseData: {} as BaseStationData,
       geodata: {} as GeoData,
@@ -51,6 +55,7 @@ export const useQsoStore = defineStore('qso', {
         this.isLoading = true;
         try {
           await this.initializeStore();
+          await this.initializeWSJTX();
         } finally {
           this.isLoading = false;
         }
@@ -453,6 +458,67 @@ export const useQsoStore = defineStore('qso', {
         return error;
       }
     },
+
+    // WSJT-X related actions
+    async initializeWSJTX() {
+      try {
+        // Check WSJT-X status
+        const status = await window.electronAPI.wsjtxStatus();
+        if (status.success) {
+          this.wsjtxEnabled = status.data?.enabled || false;
+          this.wsjtxRunning = status.data?.running || false;
+        }
+
+        // Set up event listeners
+        window.electronAPI.onWSJTXDecode((decode: WSJTXDecodeMessage) => {
+          this.wsjtxDecodes.unshift(decode);
+          // Keep only last 100 decodes
+          if (this.wsjtxDecodes.length > 100) {
+            this.wsjtxDecodes = this.wsjtxDecodes.slice(0, 100);
+          }
+        });
+
+        window.electronAPI.onWSJTXQSOLogged((qso: QsoEntry) => {
+          // Add to current session and all QSOs
+          this.currentSession.push(qso);
+          this.allQsos.push(qso);
+          console.log('WSJT-X QSO auto-logged:', qso.callsign);
+        });
+      } catch (error) {
+        console.error('Error initializing WSJT-X:', error);
+      }
+    },
+
+    async startWSJTX(port: number = 2237) {
+      try {
+        const result = await window.electronAPI.wsjtxStart(port);
+        if (result.success) {
+          this.wsjtxRunning = true;
+          this.wsjtxEnabled = true;
+        }
+        return result;
+      } catch (error) {
+        console.error('Error starting WSJT-X service:', error);
+        return { success: false, error };
+      }
+    },
+
+    async stopWSJTX() {
+      try {
+        const result = await window.electronAPI.wsjtxStop();
+        if (result.success) {
+          this.wsjtxRunning = false;
+        }
+        return result;
+      } catch (error) {
+        console.error('Error stopping WSJT-X service:', error);
+        return { success: false, error };
+      }
+    },
+
+    clearWSJTXDecodes() {
+      this.wsjtxDecodes = [];
+    },
   },
   getters: {
     sessionCount: state => state.currentSession.length,
@@ -460,5 +526,10 @@ export const useQsoStore = defineStore('qso', {
     isCallsignValid: state => {
       return state.qsoForm.callsign ? CallsignHelper.isValidCallsign(state.qsoForm.callsign) : true;
     },
+    recentWSJTXDecodes: state => state.wsjtxDecodes.slice(0, 20),
+    wsjtxStatus: state => ({
+      enabled: state.wsjtxEnabled,
+      running: state.wsjtxRunning,
+    }),
   },
 });

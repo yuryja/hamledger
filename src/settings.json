@@ -73,5 +73,11 @@
     "file": "HamLedger.log",
     "maxSize": 5242880,
     "maxFiles": 5
+  },
+  "wsjtx": {
+    "enabled": false,
+    "port": 2237,
+    "autoLog": true,
+    "logOnlyConfirmed": false
   }
 }
