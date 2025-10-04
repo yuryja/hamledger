@@ -13,6 +13,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   onAdifImportProgress: (callback: (progress: { imported: number }) => void) => {
     ipcRenderer.on('adif:importProgress', (_, progress) => callback(progress));
   },
+  saveAdifFile: (content: string) => ipcRenderer.invoke('adif:saveFile', content),
   onHamlibDownloadProgress: (callback: (progress: { progress: number }) => void) => {
     ipcRenderer.on('hamlib:downloadProgress', (_, progress) => callback(progress));
   },

@@ -327,6 +327,26 @@ ipcMain.handle('adif:importWithProgress', async (event, filePath: string) => {
   }
 });
 
+// ADIF save file handler
+ipcMain.handle('adif:saveFile', async (_, content: string) => {
+  try {
+    const { filePath } = await dialog.showSaveDialog({
+      defaultPath: `hamledger-export-${new Date().toISOString().split('T')[0]}.adi`,
+      filters: [{ name: 'ADIF Files', extensions: ['adi', 'adif'] }],
+    });
+
+    if (!filePath) {
+      return { success: false, error: 'No file selected' };
+    }
+
+    fs.writeFileSync(filePath, content, 'utf8');
+    return { success: true, filePath };
+  } catch (error) {
+    console.error('ADIF save file error:', error);
+    return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
+  }
+});
+
 // Propagation Data API handler
 ipcMain.handle('fetchPropagationData', async () => {
   try {
