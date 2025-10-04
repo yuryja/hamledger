@@ -328,6 +328,7 @@ export default {
       :qso="selectedQso"
       :show="showEditDialog"
       @close="showEditDialog = false"
+      @qso-deleted="showEditDialog = false"
     />
   </main>
 </template>

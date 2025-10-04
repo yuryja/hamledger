@@ -60,6 +60,21 @@ export class DatabaseService {
     }
   }
 
+  public async deleteQso(qsoId: string): Promise<DatabaseResponse> {
+    try {
+      // Get the current document to get the latest _rev
+      const currentDoc = await this.db.get(qsoId);
+      
+      // Delete the document
+      const response = await this.db.remove(currentDoc);
+      await this.backupToJson();
+      return { ok: true, id: response.id };
+    } catch (error) {
+      console.error('Failed to delete QSO:', error);
+      return { ok: false, error };
+    }
+  }
+
   public async getAllQsos(): Promise<QsoEntry[]> {
     try {
       const allDocs = await this.db.allDocs({ include_docs: true });

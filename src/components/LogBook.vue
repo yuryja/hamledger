@@ -308,6 +308,11 @@ export default {
       // Update the selected QSO with the new data
       this.selectedQso = updatedQso;
     },
+    onQsoDeleted() {
+      // Close the dialog and clear selection
+      this.closeEditDialog();
+      // The QSO has already been removed from the store by the deleteQso action
+    },
     clearFilters() {
       this.filters = {
         searchText: '',
@@ -593,6 +598,7 @@ export default {
       :show="showEditDialog"
       @close="closeEditDialog"
       @qso-updated="onQsoUpdated"
+      @qso-deleted="onQsoDeleted"
     />
   </main>
 </template>
