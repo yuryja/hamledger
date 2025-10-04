@@ -59,24 +59,26 @@ export class WSJTXService extends EventEmitter {
     return this.isListening;
   }
 
-  private handleMessage(buffer: Buffer, rinfo: dgram.RemoteInfo): void {
+  private handleMessage(buffer: Buffer, _rinfo: dgram.RemoteInfo): void {
     try {
       // WSJT-X uses a binary protocol, we need to parse it
       const messageType = this.parseMessageType(buffer);
       
       switch (messageType) {
-        case 2: // Decode message
+        case 2: {// Decode message
           const decodeMessage = this.parseDecodeMessage(buffer);
           if (decodeMessage) {
             this.emit('decode', decodeMessage);
           }
           break;
-        case 5: // Logged QSO message
+        }
+        case 5: {// Logged QSO message
           const loggedQSO = this.parseLoggedQSO(buffer);
           if (loggedQSO) {
             this.emit('qso', loggedQSO);
           }
           break;
+        }
         default:
           // Ignore other message types for now
           break;
