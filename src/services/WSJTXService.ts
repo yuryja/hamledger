@@ -181,24 +181,27 @@ export class WSJTXService extends EventEmitter {
       let offset = 12; // Skip magic, schema, and message type
       
       console.log(`Parsing logged QSO, buffer length: ${buffer.length}, starting offset: ${offset}`);
+      console.log('Buffer hex dump:', buffer.toString('hex'));
       
+      // Parse according to WSJT-X NetworkMessage.hpp LoggedADIF structure
       const id = this.readQString(buffer, offset);
-      offset += 4 + id.length * 2;
+      offset += this.getQStringSize(buffer, offset);
       console.log(`Read id: "${id}", new offset: ${offset}`);
       
+      // QDateTime for dateTimeOff (8 bytes)
       const dateTimeOff = this.readQDateTime(buffer, offset);
       offset += 8;
       console.log(`Read dateTimeOff: ${dateTimeOff}, new offset: ${offset}`);
       
       const dxCall = this.readQString(buffer, offset);
-      offset += 4 + dxCall.length * 2;
+      offset += this.getQStringSize(buffer, offset);
       console.log(`Read dxCall: "${dxCall}", new offset: ${offset}`);
       
       const dxGrid = this.readQString(buffer, offset);
-      offset += 4 + dxGrid.length * 2;
+      offset += this.getQStringSize(buffer, offset);
       console.log(`Read dxGrid: "${dxGrid}", new offset: ${offset}`);
       
-      // Check if we have enough bytes for frequency
+      // Frequency as quint64 (8 bytes)
       if (offset + 8 > buffer.length) {
         throw new Error(`Buffer too small to read frequency at offset ${offset}`);
       }
@@ -207,47 +210,48 @@ export class WSJTXService extends EventEmitter {
       console.log(`Read txFrequency: ${txFrequency}, new offset: ${offset}`);
       
       const mode = this.readQString(buffer, offset);
-      offset += 4 + mode.length * 2;
+      offset += this.getQStringSize(buffer, offset);
       console.log(`Read mode: "${mode}", new offset: ${offset}`);
       
       const reportSent = this.readQString(buffer, offset);
-      offset += 4 + reportSent.length * 2;
+      offset += this.getQStringSize(buffer, offset);
       console.log(`Read reportSent: "${reportSent}", new offset: ${offset}`);
       
       const reportReceived = this.readQString(buffer, offset);
-      offset += 4 + reportReceived.length * 2;
+      offset += this.getQStringSize(buffer, offset);
       console.log(`Read reportReceived: "${reportReceived}", new offset: ${offset}`);
       
       const txPower = this.readQString(buffer, offset);
-      offset += 4 + txPower.length * 2;
+      offset += this.getQStringSize(buffer, offset);
       console.log(`Read txPower: "${txPower}", new offset: ${offset}`);
       
       const comments = this.readQString(buffer, offset);
-      offset += 4 + comments.length * 2;
+      offset += this.getQStringSize(buffer, offset);
       console.log(`Read comments: "${comments}", new offset: ${offset}`);
       
       const name = this.readQString(buffer, offset);
-      offset += 4 + name.length * 2;
+      offset += this.getQStringSize(buffer, offset);
       console.log(`Read name: "${name}", new offset: ${offset}`);
       
+      // QDateTime for dateTimeOn (8 bytes)
       const dateTimeOn = this.readQDateTime(buffer, offset);
       offset += 8;
       console.log(`Read dateTimeOn: ${dateTimeOn}, new offset: ${offset}`);
       
       const operatorCall = this.readQString(buffer, offset);
-      offset += 4 + operatorCall.length * 2;
+      offset += this.getQStringSize(buffer, offset);
       console.log(`Read operatorCall: "${operatorCall}", new offset: ${offset}`);
       
       const myCall = this.readQString(buffer, offset);
-      offset += 4 + myCall.length * 2;
+      offset += this.getQStringSize(buffer, offset);
       console.log(`Read myCall: "${myCall}", new offset: ${offset}`);
       
       const myGrid = this.readQString(buffer, offset);
-      offset += 4 + myGrid.length * 2;
+      offset += this.getQStringSize(buffer, offset);
       console.log(`Read myGrid: "${myGrid}", new offset: ${offset}`);
       
       const exchangeSent = this.readQString(buffer, offset);
-      offset += 4 + exchangeSent.length * 2;
+      offset += this.getQStringSize(buffer, offset);
       console.log(`Read exchangeSent: "${exchangeSent}", new offset: ${offset}`);
       
       const exchangeReceived = this.readQString(buffer, offset);
@@ -288,14 +292,31 @@ export class WSJTXService extends EventEmitter {
     const length = buffer.readUInt32BE(offset);
     if (length === 0xFFFFFFFF) return ''; // Null string
     
+    // For empty strings, length is 0
+    if (length === 0) return '';
+    
     // Check if we have enough bytes to read the string data
-    const stringDataEnd = offset + 4 + length * 2;
+    // WSJT-X uses UTF-16BE encoding, so each character is 2 bytes
+    const stringDataEnd = offset + 4 + length;
     if (stringDataEnd > buffer.length) {
       throw new Error(`Buffer too small to read string data at offset ${offset}, need ${stringDataEnd} bytes but have ${buffer.length}`);
     }
     
     const stringBuffer = buffer.subarray(offset + 4, stringDataEnd);
-    return stringBuffer.toString('utf16le');
+    return stringBuffer.toString('utf8'); // Try UTF-8 first
+  }
+
+  private getQStringSize(buffer: Buffer, offset: number): number {
+    if (offset + 4 > buffer.length) {
+      return 4; // Just the length field
+    }
+    
+    const length = buffer.readUInt32BE(offset);
+    if (length === 0xFFFFFFFF || length === 0) {
+      return 4; // Just the length field for null or empty strings
+    }
+    
+    return 4 + length; // Length field + string data
   }
 
   private readQDateTime(buffer: Buffer, offset: number): Date {
@@ -304,9 +325,25 @@ export class WSJTXService extends EventEmitter {
       throw new Error(`Buffer too small to read datetime at offset ${offset}`);
     }
     
-    // Qt QDateTime is stored as milliseconds since epoch
+    // Qt QDateTime is stored as milliseconds since epoch (UTC)
+    // But WSJT-X might use a different epoch or format
     const msecs = buffer.readBigUInt64BE(offset);
-    return new Date(Number(msecs));
+    
+    // Handle special values
+    if (msecs === 0n || msecs === 0xFFFFFFFFFFFFFFFFn) {
+      return new Date(); // Return current time for invalid dates
+    }
+    
+    // Qt uses milliseconds since 1970-01-01T00:00:00 UTC
+    const date = new Date(Number(msecs));
+    
+    // Check if the date is reasonable (between 1990 and 2050)
+    if (date.getFullYear() < 1990 || date.getFullYear() > 2050) {
+      console.warn(`Suspicious date parsed: ${date}, raw value: ${msecs}`);
+      return new Date(); // Return current time for suspicious dates
+    }
+    
+    return date;
   }
 }
 
