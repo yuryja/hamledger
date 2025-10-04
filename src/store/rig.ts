@@ -55,7 +55,8 @@ export const useRigStore = defineStore('rig', {
     isConnected: state => state.connection.connected,
     currentFrequency: state => {
       const freqMHz = state.rigState.frequency / 1000000;
-      return freqMHz.toString().replace(/\.?0+$/, '');
+      // Format to 3 decimal places and remove trailing zeros, but keep at least 1 decimal
+      return freqMHz.toFixed(3).replace(/\.?0+$/, '').replace(/\.$/, '.0');
     },
     currentMode: state => state.rigState.mode,
     currentBand: state => {
