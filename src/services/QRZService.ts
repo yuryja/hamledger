@@ -22,7 +22,7 @@ export class QRZService extends OnlineStationService {
     const params = new URLSearchParams({
       username,
       password,
-      agent: 'hamlogger-1.0',
+      agent: 'HamLedger-1.0',
     });
 
     const response = await fetch(`${this.baseUrl}/?${params}`);

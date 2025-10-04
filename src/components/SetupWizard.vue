@@ -407,7 +407,7 @@ export default {
   <div class="wizard-overlay" @keydown="handleKeydown">
     <div class="wizard-container">
       <div class="wizard-header">
-        <h1>HamLogger Initial Setup</h1>
+        <h1>HamLedger Initial Setup</h1>
         <div class="progress-bar">
           <div
             class="progress-fill"
@@ -610,7 +610,7 @@ export default {
           <div v-if="wizardData.enableCat && isWindows" class="hamlib-section">
             <div class="info-box">
               <p class="info-text">
-                HamLogger can automatically download and install Hamlib for Windows.
+                HamLedger can automatically download and install Hamlib for Windows.
               </p>
             </div>
 

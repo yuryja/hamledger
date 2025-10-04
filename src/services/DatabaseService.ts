@@ -19,7 +19,7 @@ export class DatabaseService {
   private dbPath: string;
 
   constructor() {
-    this.dbPath = join(app.getPath('userData'), 'hamlogger.db');
+    this.dbPath = join(app.getPath('userData'), 'HamLedger.db');
     this.initializeDatabase();
   }
 
@@ -78,7 +78,7 @@ export class DatabaseService {
 
   private async backupToJson(): Promise<void> {
     try {
-      const jsonPath = join(app.getPath('userData'), 'hamlogger.json');
+      const jsonPath = join(app.getPath('userData'), 'HamLedger.json');
       const allDocs = await this.db.allDocs({ include_docs: true });
       const jsonData = allDocs.rows.map(row => row.doc);
       fs.writeFileSync(jsonPath, JSON.stringify(jsonData, null, 2));

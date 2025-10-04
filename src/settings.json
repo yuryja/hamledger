@@ -6,7 +6,13 @@
     "grid": "",
     "timezone": "",
     "iaruRegion": "",
-    "selectedBands": ["80", "40", "20", "15", "10"]
+    "selectedBands": [
+      "80",
+      "40",
+      "20",
+      "15",
+      "10"
+    ]
   },
   "rig": {
     "port": 4532,
@@ -24,7 +30,7 @@
   },
   "apis": {
     "nominatim": {
-      "userAgent": "HamLogger/1.0",
+      "userAgent": "HamLedger/1.0",
       "baseUrl": "https://nominatim.openstreetmap.org",
       "rateLimit": 1000
     },
@@ -42,10 +48,10 @@
     }
   },
   "database": {
-    "path": "hamlogger.db",
+    "path": "HamLedger.db",
     "backup": {
       "enabled": true,
-      "path": "hamlogger.json",
+      "path": "HamLedger.json",
       "interval": 3600
     }
   },
@@ -64,7 +70,7 @@
   },
   "logging": {
     "level": "info",
-    "file": "hamlogger.log",
+    "file": "HamLedger.log",
     "maxSize": 5242880,
     "maxFiles": 5
   }

@@ -343,7 +343,7 @@ ipcMain.handle('fetchPropagationData', async () => {
 
     const fetchOptions: FetchOptions = {
       headers: {
-        'User-Agent': 'HamLogger/1.0',
+        'User-Agent': 'HamLedger/1.0',
         Accept: 'application/json',
       },
       timeout: 30000, // 30 second timeout
@@ -388,7 +388,7 @@ ipcMain.handle('fetchWeather', async (event, lat: number, lon: number) => {
 
     const fetchOptions: FetchOptions = {
       headers: {
-        'User-Agent': 'HamLogger/1.0',
+        'User-Agent': 'HamLedger/1.0',
         Accept: 'application/json',
       },
       timeout: 30000, // 30 second timeout
@@ -433,7 +433,7 @@ ipcMain.handle('fetchDxSpots', async (event, params: string) => {
 
     const fetchOptions: FetchOptions = {
       headers: {
-        'User-Agent': 'HamLogger/1.0',
+        'User-Agent': 'HamLedger/1.0',
         Accept: 'application/json',
       },
       timeout: 30000, // 30 second timeout
