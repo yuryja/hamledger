@@ -436,8 +436,8 @@ export default defineComponent({
                 <span v-else class="status-text not-worked">Not worked</span>
               </div>
               <div class="spot-badges">
-                <span v-if="spot.LOTW" class="badge lotw">L</span>
-                <span v-if="spot.EQSL" class="badge eqsl">E</span>
+                <span v-if="spot.LOTW" class="badge lotw" title="LOTW">L</span>
+                <span v-if="spot.EQSL" class="badge eqsl" title="eQSL">E</span>
               </div>
             </div>
           </div>
