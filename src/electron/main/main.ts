@@ -1119,13 +1119,13 @@ async function initializeWSJTX(): Promise<void> {
       wsjtxEnabled = true;
       
       // Set up event listeners
-      wsjtxService.on('qso', async (qso) => {
+      wsjtxService.on('qso', async (qso: any) => {
         if (wsjtxSettings.autoLog) {
           await handleWSJTXQSO(qso);
         }
       });
       
-      wsjtxService.on('decode', (decode) => {
+      wsjtxService.on('decode', (decode: any) => {
         // Forward decode messages to renderer if needed
         const windows = BrowserWindow.getAllWindows();
         windows.forEach(window => {
@@ -1133,7 +1133,7 @@ async function initializeWSJTX(): Promise<void> {
         });
       });
       
-      wsjtxService.on('error', (error) => {
+      wsjtxService.on('error', (error: any) => {
         console.error('WSJT-X service error:', error);
       });
       
