@@ -105,7 +105,7 @@ export class WSJTXService extends EventEmitter {
       
       console.log(`Parsing decode message, buffer length: ${buffer.length}, starting offset: ${offset}`);
       
-      // Parse fields according to WSJT-X protocol
+      // Parse fields according to WSJT-X protocol v2.6.x Type 2
       const { value: id, newOffset: idOffset } = this.readQStringWithOffset(buffer, offset);
       offset = idOffset;
       
@@ -128,11 +128,11 @@ export class WSJTXService extends EventEmitter {
       const snr = buffer.readInt32BE(offset);
       offset += 4;
       
-      if (offset + 4 > buffer.length) {
+      if (offset + 8 > buffer.length) {
         throw new Error(`Buffer too small to read dt at offset ${offset}`);
       }
-      const dt = buffer.readFloatBE(offset);
-      offset += 4;
+      const dt = buffer.readDoubleBE(offset); // dt is double, not float
+      offset += 8;
       
       if (offset + 4 > buffer.length) {
         throw new Error(`Buffer too small to read df at offset ${offset}`);
@@ -183,98 +183,38 @@ export class WSJTXService extends EventEmitter {
       console.log(`Parsing logged QSO, buffer length: ${buffer.length}, starting offset: ${offset}`);
       console.log('Buffer hex dump:', buffer.toString('hex'));
       
-      // Parse according to WSJT-X NetworkMessage.hpp LoggedADIF structure
+      // Parse according to WSJT-X protocol v2.6.x Type 5
+      // Type 5: QSO Logged contains: id (string) + adif (string)
       const { value: id, newOffset: idOffset } = this.readQStringWithOffset(buffer, offset);
       offset = idOffset;
       console.log(`Read id: "${id}", new offset: ${offset}`);
       
-      // QDateTime for dateTimeOff (8 bytes)
-      const dateTimeOff = this.readQDateTime(buffer, offset);
-      offset += 8;
-      console.log(`Read dateTimeOff: ${dateTimeOff}, new offset: ${offset}`);
+      const { value: adif, newOffset: adifOffset } = this.readQStringWithOffset(buffer, offset);
+      offset = adifOffset;
+      console.log(`Read ADIF: "${adif}", new offset: ${offset}`);
       
-      const { value: dxCall, newOffset: dxCallOffset } = this.readQStringWithOffset(buffer, offset);
-      offset = dxCallOffset;
-      console.log(`Read dxCall: "${dxCall}", new offset: ${offset}`);
-      
-      const { value: dxGrid, newOffset: dxGridOffset } = this.readQStringWithOffset(buffer, offset);
-      offset = dxGridOffset;
-      console.log(`Read dxGrid: "${dxGrid}", new offset: ${offset}`);
-      
-      // Frequency as quint64 (8 bytes)
-      if (offset + 8 > buffer.length) {
-        throw new Error(`Buffer too small to read frequency at offset ${offset}`);
-      }
-      const txFrequency = buffer.readBigUInt64BE(offset);
-      offset += 8;
-      console.log(`Read txFrequency: ${txFrequency}, new offset: ${offset}`);
-      
-      const { value: mode, newOffset: modeOffset } = this.readQStringWithOffset(buffer, offset);
-      offset = modeOffset;
-      console.log(`Read mode: "${mode}", new offset: ${offset}`);
-      
-      const { value: reportSent, newOffset: reportSentOffset } = this.readQStringWithOffset(buffer, offset);
-      offset = reportSentOffset;
-      console.log(`Read reportSent: "${reportSent}", new offset: ${offset}`);
-      
-      const { value: reportReceived, newOffset: reportReceivedOffset } = this.readQStringWithOffset(buffer, offset);
-      offset = reportReceivedOffset;
-      console.log(`Read reportReceived: "${reportReceived}", new offset: ${offset}`);
-      
-      const { value: txPower, newOffset: txPowerOffset } = this.readQStringWithOffset(buffer, offset);
-      offset = txPowerOffset;
-      console.log(`Read txPower: "${txPower}", new offset: ${offset}`);
-      
-      const { value: comments, newOffset: commentsOffset } = this.readQStringWithOffset(buffer, offset);
-      offset = commentsOffset;
-      console.log(`Read comments: "${comments}", new offset: ${offset}`);
-      
-      const { value: name, newOffset: nameOffset } = this.readQStringWithOffset(buffer, offset);
-      offset = nameOffset;
-      console.log(`Read name: "${name}", new offset: ${offset}`);
-      
-      // QDateTime for dateTimeOn (8 bytes)
-      const dateTimeOn = this.readQDateTime(buffer, offset);
-      offset += 8;
-      console.log(`Read dateTimeOn: ${dateTimeOn}, new offset: ${offset}`);
-      
-      const { value: operatorCall, newOffset: operatorCallOffset } = this.readQStringWithOffset(buffer, offset);
-      offset = operatorCallOffset;
-      console.log(`Read operatorCall: "${operatorCall}", new offset: ${offset}`);
-      
-      const { value: myCall, newOffset: myCallOffset } = this.readQStringWithOffset(buffer, offset);
-      offset = myCallOffset;
-      console.log(`Read myCall: "${myCall}", new offset: ${offset}`);
-      
-      const { value: myGrid, newOffset: myGridOffset } = this.readQStringWithOffset(buffer, offset);
-      offset = myGridOffset;
-      console.log(`Read myGrid: "${myGrid}", new offset: ${offset}`);
-      
-      const { value: exchangeSent, newOffset: exchangeSentOffset } = this.readQStringWithOffset(buffer, offset);
-      offset = exchangeSentOffset;
-      console.log(`Read exchangeSent: "${exchangeSent}", new offset: ${offset}`);
-      
-      const { value: exchangeReceived } = this.readQStringWithOffset(buffer, offset);
-      console.log(`Read exchangeReceived: "${exchangeReceived}"`);
+      // Parse ADIF string to extract structured data
+      const parsedAdif = this.parseAdifString(adif);
+      console.log('Parsed ADIF fields:', parsedAdif);
       
       return {
         id,
-        dateTimeOff,
-        dxCall,
-        dxGrid,
-        txFrequency: Number(txFrequency),
-        mode,
-        reportSent,
-        reportReceived,
-        txPower,
-        comments,
-        name,
-        dateTimeOn,
-        operatorCall,
-        myCall,
-        myGrid,
-        exchangeSent,
-        exchangeReceived
+        dateTimeOff: parsedAdif.qso_date_off ? new Date(parsedAdif.qso_date_off + 'T' + (parsedAdif.time_off || '00:00:00') + 'Z') : new Date(),
+        dxCall: parsedAdif.call || '',
+        dxGrid: parsedAdif.gridsquare || '',
+        txFrequency: parsedAdif.freq ? Math.round(parseFloat(parsedAdif.freq) * 1000000) : 0, // Convert MHz to Hz
+        mode: parsedAdif.mode || '',
+        reportSent: parsedAdif.rst_sent || '',
+        reportReceived: parsedAdif.rst_rcvd || '',
+        txPower: parsedAdif.tx_pwr || '',
+        comments: parsedAdif.comment || '',
+        name: parsedAdif.name || '',
+        dateTimeOn: parsedAdif.qso_date ? new Date(parsedAdif.qso_date + 'T' + (parsedAdif.time_on || '00:00:00') + 'Z') : new Date(),
+        operatorCall: parsedAdif.operator || '',
+        myCall: parsedAdif.station_callsign || '',
+        myGrid: parsedAdif.my_gridsquare || '',
+        exchangeSent: parsedAdif.stx_string || '',
+        exchangeReceived: parsedAdif.srx_string || '',
       };
     } catch (error) {
       console.error('Error parsing logged QSO:', error);
@@ -345,6 +285,28 @@ export class WSJTXService extends EventEmitter {
     }
     
     return 4 + length; // Length field + string data
+  }
+
+  private parseAdifString(adifString: string): Record<string, string> {
+    const fields: Record<string, string> = {};
+    
+    // ADIF field regex: <FIELD_NAME:LENGTH:TYPE>VALUE
+    const regex = /<([^:>]+)(?::(\d+)(?::([^>]+))?)?>([^<]*)/gi;
+    let match;
+    
+    while ((match = regex.exec(adifString)) !== null) {
+      const [, fieldName, length, , value] = match;
+      const normalizedFieldName = fieldName.toLowerCase();
+      
+      // Skip EOR (End of Record) markers
+      if (normalizedFieldName === 'eor') {
+        continue;
+      }
+      
+      fields[normalizedFieldName] = value.trim();
+    }
+    
+    return fields;
   }
 
   private readQDateTime(buffer: Buffer, offset: number): Date {

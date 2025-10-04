@@ -30,7 +30,34 @@ export function parseAdif(content: string): AdifRecord[] {
     }
   }
 
+  // Add the last record if it doesn't end with EOR
+  if (Object.keys(currentRecord).length > 0) {
+    records.push(currentRecord);
+  }
+
   return records;
+}
+
+export function parseAdifString(adifString: string): AdifRecord {
+  const fields: AdifRecord = {};
+  
+  // ADIF field regex: <FIELD_NAME:LENGTH:TYPE>VALUE
+  const regex = /<([^:>]+)(?::(\d+)(?::([^>]+))?)?>([^<]*)/gi;
+  let match;
+  
+  while ((match = regex.exec(adifString)) !== null) {
+    const [, fieldName, , , value] = match;
+    const normalizedFieldName = fieldName.toLowerCase();
+    
+    // Skip EOR (End of Record) markers
+    if (normalizedFieldName === 'eor') {
+      continue;
+    }
+    
+    fields[normalizedFieldName] = value.trim();
+  }
+  
+  return fields;
 }
 
 export function formatAdif(qsos: QsoEntry[]): string {
