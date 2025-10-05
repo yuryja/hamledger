@@ -131,8 +131,12 @@ export default {
               <div class="tick minor-tick" :class="{ active: (index * 5 + minorIndex + 1) < activeTicks }">
                 <div 
                   class="tick-box" 
+                  :class="{ 
+                    'tick-box-inactive': (index * 5 + minorIndex + 1) >= activeTicks,
+                    'tick-box-active': (index * 5 + minorIndex + 1) < activeTicks
+                  }"
                   :style="{ 
-                    background: (index * 5 + minorIndex + 1) < activeTicks ? minorTick.color : '#333'
+                    backgroundColor: (index * 5 + minorIndex + 1) < activeTicks ? minorTick.color : 'transparent'
                   }"
                 ></div>
               </div>
@@ -328,10 +332,20 @@ export default {
   width: 10px;
   height: 10px;
   border-radius: 2px;
-  background: #333;
+  border: 1px solid #666;
   margin-top: auto;
   margin-right: 1px;
-  transition: background-color 0.2s ease;
+  transition: all 0.2s ease;
+}
+
+.tick-box-inactive {
+  opacity: 0.5;
+  background-color: transparent !important;
+}
+
+.tick-box-active {
+  opacity: 1;
+  border-color: transparent;
 }
 
 
