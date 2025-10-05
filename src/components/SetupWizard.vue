@@ -1526,6 +1526,10 @@ export default {
   align-items: center;
 }
 
+.dialout-section {
+  margin: 1rem 0;
+}
+
 .qrz-section {
   margin-top: 1rem;
 }

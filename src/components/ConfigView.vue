@@ -19,6 +19,16 @@ export default {
         isChecking: false,
         inPath: false,
       },
+      dialoutStatus: {
+        isChecking: false,
+        inGroup: false,
+        error: null as string | null,
+      },
+      rigctldStatus: {
+        isChecking: false,
+        found: false,
+        error: null as string | null,
+      },
       isValidating: false,
       validationErrors: {} as { [key: string]: string },
       isWindows: navigator.platform.toLowerCase().includes('win'),
@@ -256,6 +266,48 @@ export default {
         this.validationErrors.rigctldPath = 'Error checking rigctld availability';
       } finally {
         this.hamlibStatus.isChecking = false;
+      }
+    },
+    async checkDialoutGroup() {
+      if (!this.isLinux) return;
+
+      this.dialoutStatus.isChecking = true;
+      this.dialoutStatus.error = null;
+      
+      try {
+        const result = await window.electronAPI.executeCommand('groups');
+        if (result.success && result.data) {
+          const groups = result.data.trim().split(/\s+/);
+          this.dialoutStatus.inGroup = groups.includes('dialout');
+        } else {
+          this.dialoutStatus.error = 'Failed to check user groups';
+        }
+      } catch (error) {
+        console.error('Error checking dialout group:', error);
+        this.dialoutStatus.error = 'Error checking dialout group membership';
+      } finally {
+        this.dialoutStatus.isChecking = false;
+      }
+    },
+    async checkRigctldAvailability() {
+      if (!this.isLinux) return;
+
+      this.rigctldStatus.isChecking = true;
+      this.rigctldStatus.error = null;
+      
+      try {
+        const result = await window.electronAPI.executeCommand('which rigctld');
+        if (result.success && result.data && result.data.trim()) {
+          this.rigctldStatus.found = true;
+        } else {
+          this.rigctldStatus.found = false;
+        }
+      } catch (error) {
+        console.error('Error checking rigctld availability:', error);
+        this.rigctldStatus.error = 'Error checking rigctld availability';
+        this.rigctldStatus.found = false;
+      } finally {
+        this.rigctldStatus.isChecking = false;
       }
     },
     async downloadAndInstallHamlib() {
@@ -630,22 +682,23 @@ export default {
                   </button>
                 </div>
 
-                <!-- Linux Warning -->
-                <div v-if="isLinux" class="warning-box">
+                <!-- Linux Hamlib Warning -->
+                <div v-if="isLinux && !rigctldStatus.found && !rigctldStatus.isChecking" class="warning-box">
                   <div class="warning-icon">⚠️</div>
                   <div class="warning-content">
                     <p class="warning-title">Linux Users</p>
                     <p class="warning-text">
-                      On Linux, you must install Hamlib first before enabling CAT control.
+                      On Linux, you must install Hamlib first before enabling CAT control. (You may need
+                      sudo rights)
                     </p>
                     <div class="command-section">
                       <p class="command-label">For Ubuntu/Debian:</p>
                       <div class="command-box">
-                        <code class="command-text">apt install libhamlib-utils</code>
+                        <code class="command-text">sudo apt install libhamlib-utils</code>
                         <button
                           type="button"
                           class="copy-btn"
-                          @click="copyToClipboard('apt install libhamlib-utils')"
+                          @click="copyToClipboard('sudo apt install libhamlib-utils')"
                           title="Copy to clipboard"
                         >
                           📋
@@ -655,17 +708,110 @@ export default {
                     <div class="command-section">
                       <p class="command-label">For RPM based distributions:</p>
                       <div class="command-box">
-                        <code class="command-text">rpm install libhamlib-utils</code>
+                        <code class="command-text">sudo dnf install hamlib</code>
                         <button
                           type="button"
                           class="copy-btn"
-                          @click="copyToClipboard('rpm install libhamlib-utils')"
+                          @click="copyToClipboard('sudo dnf install hamlib')"
                           title="Copy to clipboard"
                         >
                           📋
                         </button>
                       </div>
                     </div>
+                  </div>
+                </div>
+
+                <!-- Linux Dialout Group Check -->
+                <div v-if="isLinux" class="dialout-section">
+                  <div v-if="!dialoutStatus.inGroup && !dialoutStatus.isChecking" class="dialout-controls">
+                    <button
+                      type="button"
+                      @click="checkDialoutGroup"
+                      :disabled="dialoutStatus.isChecking"
+                      class="btn btn-small"
+                    >
+                      <span v-if="!dialoutStatus.isChecking">Check dialout group</span>
+                      <span v-else class="loading-text">
+                        <span class="spinner"></span>
+                        Checking...
+                      </span>
+                    </button>
+
+                    <button
+                      type="button"
+                      @click="checkRigctldAvailability"
+                      :disabled="rigctldStatus.isChecking"
+                      class="btn btn-small"
+                    >
+                      <span v-if="!rigctldStatus.isChecking">Check rigctld</span>
+                      <span v-else class="loading-text">
+                        <span class="spinner"></span>
+                        Checking...
+                      </span>
+                    </button>
+                  </div>
+
+                  <!-- Dialout Group Success -->
+                  <div v-if="dialoutStatus.inGroup" class="success-message">
+                    ✅ User is in dialout group - serial port access available!
+                  </div>
+
+                  <!-- rigctld Found Success -->
+                  <div v-if="rigctldStatus.found" class="success-message">
+                    ✅ rigctld is available and ready to use!
+                  </div>
+
+                  <!-- Dialout Group Warning -->
+                  <div v-if="dialoutStatus.isChecking === false && !dialoutStatus.inGroup && !dialoutStatus.error" class="warning-box">
+                    <div class="warning-icon">⚠️</div>
+                    <div class="warning-content">
+                      <p class="warning-title">Serial Port Access Required</p>
+                      <p class="warning-text">
+                        Your user needs to be in the 'dialout' group to access serial ports for CAT control.
+                      </p>
+                      <div class="command-section">
+                        <p class="command-label">Add user to dialout group:</p>
+                        <div class="command-box">
+                          <code class="command-text">sudo usermod -a -G dialout $USER</code>
+                          <button
+                            type="button"
+                            class="copy-btn"
+                            @click="copyToClipboard('sudo usermod -a -G dialout $USER')"
+                            title="Copy to clipboard"
+                          >
+                            📋
+                          </button>
+                        </div>
+                      </div>
+                      <div class="command-section">
+                        <p class="command-label">Then reload groups (or logout/login):</p>
+                        <div class="command-box">
+                          <code class="command-text">newgrp dialout</code>
+                          <button
+                            type="button"
+                            class="copy-btn"
+                            @click="copyToClipboard('newgrp dialout')"
+                            title="Copy to clipboard"
+                          >
+                            📋
+                          </button>
+                        </div>
+                      </div>
+                      <p class="warning-text">
+                        <strong>Note:</strong> After running these commands, you may need to restart HamLedger.
+                      </p>
+                    </div>
+                  </div>
+
+                  <!-- Dialout Group Error -->
+                  <div v-if="dialoutStatus.error" class="error-message">
+                    ❌ Error checking dialout group: {{ dialoutStatus.error }}
+                  </div>
+
+                  <!-- rigctld Error -->
+                  <div v-if="rigctldStatus.error" class="error-message">
+                    ❌ Error checking rigctld: {{ rigctldStatus.error }}
                   </div>
                 </div>
 
