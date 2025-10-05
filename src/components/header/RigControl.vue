@@ -348,7 +348,29 @@ export default {
           </button>
         </template>
         
-        <button class="settings-btn" @click="showConnectionSettings">Settings</button>
+        <!-- WSJT-X Mode buttons (only show when WSJT-X is enabled) -->
+        <template v-if="wsjtxEnabled">
+          <button
+            v-if="!wsjtxStatus.running"
+            class="wsjtx-btn"
+            @click="handOverToWSJTX"
+            :disabled="rigStore.isLoading"
+          >
+            Start WSJT-X Listener
+          </button>
+          <button
+            v-if="wsjtxStatus.running"
+            class="wsjtx-active-btn"
+            @click="takeBackFromWSJTX"
+            :disabled="rigStore.isLoading"
+          >
+            Take Back CAT Control
+          </button>
+        </template>
+        
+        <button class="settings-btn" @click="showConnectionSettings">
+          {{ wsjtxEnabled ? 'WSJT-X Settings' : 'Settings' }}
+        </button>
         
         <!-- Hand over to WSJT-X button (only show when CAT is connected and WSJT-X is enabled in settings) -->
         <button
@@ -359,29 +381,6 @@ export default {
         >
           Hand over to WSJT-X
         </button>
-      </div>
-
-      <!-- WSJT-X Mode buttons in separate zone -->
-      <div v-if="wsjtxAllowed" class="wsjtx-control-zone">
-        <div class="zone-title">WSJT-X Control</div>
-        <div class="wsjtx-buttons">
-          <button
-            v-if="wsjtxEnabled && !wsjtxStatus.running"
-            class="wsjtx-btn"
-            @click="handOverToWSJTX"
-            :disabled="rigStore.isLoading"
-          >
-            Start WSJT-X Listener
-          </button>
-          <button
-            v-if="wsjtxEnabled && wsjtxStatus.running"
-            class="wsjtx-active-btn"
-            @click="takeBackFromWSJTX"
-            :disabled="rigStore.isLoading"
-          >
-            Take Back CAT Control
-          </button>
-        </div>
       </div>
     </div>
 
@@ -589,30 +588,6 @@ export default {
   font-size: 0.9rem;
 }
 
-/* WSJT-X Control Zone */
-.wsjtx-control-zone {
-  margin-top: 1rem;
-  padding: 0.5rem;
-  border: 1px solid #555;
-  border-radius: 4px;
-  background: rgba(23, 162, 184, 0.1);
-}
-
-.zone-title {
-  font-size: 0.8rem;
-  font-weight: bold;
-  color: #17a2b8;
-  margin-bottom: 0.5rem;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.wsjtx-buttons {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-}
 
 /* WSJT-X buttons */
 .handover-btn {
