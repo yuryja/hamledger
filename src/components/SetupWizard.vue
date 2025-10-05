@@ -107,6 +107,22 @@ export default {
     isLastStep() {
       return this.currentStep === this.totalSteps;
     },
+    locatorValidationClass() {
+      const locator = this.wizardData.locator.trim();
+      
+      // If empty, no special styling (neutral)
+      if (!locator) {
+        return '';
+      }
+      
+      // If valid, green background
+      if (MaidenheadLocator.isValidLocatorFormat(locator)) {
+        return 'valid';
+      }
+      
+      // If invalid, red background
+      return 'invalid';
+    },
   },
   methods: {
     nextStep() {
@@ -621,7 +637,11 @@ export default {
               type="text"
               placeholder="e.g. JN97"
               @blur="validateLocator"
-              :class="{ error: validationErrors.locator }"
+              :class="{ 
+                error: validationErrors.locator,
+                valid: locatorValidationClass === 'valid',
+                invalid: locatorValidationClass === 'invalid'
+              }"
             />
             <span v-if="validationErrors.locator" class="error-message">
               {{ validationErrors.locator }}
@@ -1188,6 +1208,16 @@ export default {
 }
 
 .form-group input.error {
+  border-color: #e74c3c;
+}
+
+.form-group input.valid {
+  background-color: rgba(39, 174, 96, 0.2);
+  border-color: #27ae60;
+}
+
+.form-group input.invalid {
+  background-color: rgba(231, 76, 60, 0.2);
   border-color: #e74c3c;
 }
 
