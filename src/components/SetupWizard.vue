@@ -10,6 +10,9 @@ interface WizardData {
   iaruRegion: 'IARU1' | 'IARU2' | 'IARU3';
   selectedBands: string[];
   importAdif: boolean;
+  enableQrz: boolean;
+  qrzUsername: string;
+  qrzPassword: string;
   enableCat: boolean;
   rigctldPath: string;
 }
@@ -20,7 +23,7 @@ export default {
   data() {
     return {
       currentStep: 1,
-      totalSteps: 5,
+      totalSteps: 6,
       wizardData: {
         callsign: '',
         qth: '',
@@ -28,6 +31,9 @@ export default {
         iaruRegion: 'IARU1',
         selectedBands: ['80', '40', '20', '15', '10'], // Default HF bands
         importAdif: false,
+        enableQrz: false,
+        qrzUsername: '',
+        qrzPassword: '',
         enableCat: false,
         rigctldPath: 'rigctld',
       } as WizardData,
@@ -83,6 +89,11 @@ export default {
         case 4:
           return !this.importStatus.isImporting; // Disable if import is running
         case 5:
+          return (
+            !this.wizardData.enableQrz ||
+            (this.wizardData.qrzUsername.trim() !== '' && this.wizardData.qrzPassword.trim() !== '')
+          );
+        case 6:
           return (
             !this.wizardData.enableCat ||
             (this.wizardData.rigctldPath.trim() !== '' && 
@@ -146,6 +157,31 @@ export default {
       delete this.validationErrors.locator;
       this.wizardData.locator = locator;
       return true;
+    },
+    validateQrzCredentials() {
+      if (!this.wizardData.enableQrz) {
+        delete this.validationErrors.qrzUsername;
+        delete this.validationErrors.qrzPassword;
+        return true;
+      }
+
+      let isValid = true;
+
+      if (!this.wizardData.qrzUsername.trim()) {
+        this.validationErrors.qrzUsername = 'QRZ username is required';
+        isValid = false;
+      } else {
+        delete this.validationErrors.qrzUsername;
+      }
+
+      if (!this.wizardData.qrzPassword.trim()) {
+        this.validationErrors.qrzPassword = 'QRZ password is required';
+        isValid = false;
+      } else {
+        delete this.validationErrors.qrzPassword;
+      }
+
+      return isValid;
     },
     async testRigctldPath() {
       if (!this.wizardData.enableCat) {
@@ -433,9 +469,10 @@ export default {
       // Validate all fields
       const isCallsignValid = this.validateCallsign();
       const isLocatorValid = this.validateLocator();
+      const isQrzValid = this.validateQrzCredentials();
       const isRigctldValid = await this.testRigctldPath();
 
-      if (!isCallsignValid || !isLocatorValid || !isRigctldValid) {
+      if (!isCallsignValid || !isLocatorValid || !isQrzValid || !isRigctldValid) {
         return;
       }
 
@@ -449,6 +486,12 @@ export default {
           grid: this.wizardData.locator,
           iaruRegion: this.wizardData.iaruRegion,
           selectedBands: [...this.wizardData.selectedBands],
+        },
+        qrz: {
+          ...defaultSettings.qrz,
+          enabled: this.wizardData.enableQrz,
+          username: this.wizardData.enableQrz ? this.wizardData.qrzUsername : '',
+          password: this.wizardData.enableQrz ? this.wizardData.qrzPassword : '',
         },
         rig: {
           ...defaultSettings.rig,
@@ -693,8 +736,75 @@ export default {
           </div>
         </div>
 
-        <!-- Step 5: CAT Control -->
+        <!-- Step 5: QRZ.com Configuration -->
         <div v-if="currentStep === 5" class="wizard-step">
+          <h2>QRZ.com Configuration</h2>
+          <p class="step-description">
+            Configure QRZ.com API access for enhanced callsign lookups and station information.
+            This is optional and can be configured later.
+          </p>
+
+          <div class="form-group">
+            <label class="checkbox-label">
+              <input type="checkbox" v-model="wizardData.enableQrz" />
+              Enable QRZ.com API
+            </label>
+          </div>
+
+          <div v-if="wizardData.enableQrz" class="qrz-section">
+            <div class="info-box">
+              <p class="info-text">
+                QRZ.com API provides detailed station information, QSL information, and enhanced
+                callsign lookups. You need a QRZ.com account to use this feature.
+              </p>
+              <p class="info-text">
+                <strong>Note:</strong> Your credentials are stored locally and only used for API authentication.
+              </p>
+            </div>
+
+            <div class="form-group">
+              <label for="qrzUsername">QRZ.com Username *</label>
+              <input
+                id="qrzUsername"
+                v-model="wizardData.qrzUsername"
+                type="text"
+                placeholder="Your QRZ.com username"
+                @blur="validateQrzCredentials"
+                :class="{ error: validationErrors.qrzUsername }"
+              />
+              <span v-if="validationErrors.qrzUsername" class="error-message">
+                {{ validationErrors.qrzUsername }}
+              </span>
+            </div>
+
+            <div class="form-group">
+              <label for="qrzPassword">QRZ.com Password *</label>
+              <input
+                id="qrzPassword"
+                v-model="wizardData.qrzPassword"
+                type="password"
+                placeholder="Your QRZ.com password"
+                @blur="validateQrzCredentials"
+                :class="{ error: validationErrors.qrzPassword }"
+              />
+              <span v-if="validationErrors.qrzPassword" class="error-message">
+                {{ validationErrors.qrzPassword }}
+              </span>
+            </div>
+
+            <div class="info-box">
+              <p class="info-text">
+                Don't have a QRZ.com account? You can create one at:
+                <a href="https://www.qrz.com/signup" target="_blank" class="warning-link">
+                  www.qrz.com/signup
+                </a>
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 6: CAT Control -->
+        <div v-if="currentStep === 6" class="wizard-step">
           <h2>CAT Control Setup</h2>
           <p class="step-description">
             Configure computer-aided transceiver control if you have a compatible radio.
@@ -1407,5 +1517,9 @@ export default {
   gap: 1rem;
   margin: 1rem 0;
   align-items: center;
+}
+
+.qrz-section {
+  margin-top: 1rem;
 }
 </style>
