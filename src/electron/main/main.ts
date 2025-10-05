@@ -1174,15 +1174,16 @@ async function handleWSJTXQSO(wsjtxQSO: WSJTXLoggedQSO): Promise<void> {
     
     console.log('Converted QSO for saving:', qso);
     
-    // Save to database
+    // Use the same addQso handler that the renderer uses
+    // This ensures the QSO is saved and the renderer is notified properly
     const result = await databaseService.saveQso(qso);
     
     if (result.ok) {
       console.log('WSJT-X QSO saved to database:', qso.callsign);
       
-      // Notify renderer about new QSO
+      // Notify all renderer windows about new QSO using the same event as addQso
       const windows = BrowserWindow.getAllWindows();
-      console.log(`Notifying ${windows.length} windows about new QSO`);
+      console.log(`Notifying ${windows.length} windows about new WSJT-X QSO`);
       windows.forEach(window => {
         console.log('Sending wsjtx:qso-logged event to renderer');
         window.webContents.send('wsjtx:qso-logged', qso);
