@@ -78,6 +78,8 @@ export class WSJTXService extends EventEmitter {
           const loggedQSO = this.parseLoggedQSO(buffer);
           if (loggedQSO) {
             this.emit('qso', loggedQSO);
+            // Automatically add QSO to the log
+            this.addQSOToLog(loggedQSO);
           }
           break;
         }
@@ -429,6 +431,75 @@ export class WSJTXService extends EventEmitter {
     console.log(`Parsed QDateTime: ${date}`);
     
     return { date, newOffset };
+  }
+
+  private async addQSOToLog(wsjtxQSO: WSJTXLoggedQSO): Promise<void> {
+    try {
+      // Convert WSJT-X QSO format to QsoEntry format
+      const qsoEntry = {
+        _id: new Date().toISOString(),
+        callsign: wsjtxQSO.dxCall,
+        band: this.getBandFromFrequency(wsjtxQSO.txFrequency),
+        freqRx: wsjtxQSO.txFrequency / 1000000, // Convert Hz to MHz
+        freqTx: wsjtxQSO.txFrequency / 1000000, // Same frequency for digital modes
+        mode: wsjtxQSO.mode,
+        datetime: wsjtxQSO.dateTimeOn.toISOString(),
+        rstr: wsjtxQSO.reportReceived || '59',
+        rstt: wsjtxQSO.reportSent || '59',
+        remark: wsjtxQSO.comments || '--',
+        notes: wsjtxQSO.name ? `Name: ${wsjtxQSO.name}` : '--',
+      };
+
+      // Add grid square to notes if available
+      if (wsjtxQSO.dxGrid) {
+        qsoEntry.notes = qsoEntry.notes === '--' 
+          ? `Grid: ${wsjtxQSO.dxGrid}` 
+          : `${qsoEntry.notes}, Grid: ${wsjtxQSO.dxGrid}`;
+      }
+
+      console.log('Adding WSJT-X QSO to log:', qsoEntry);
+
+      // Send to main process to save
+      const response = await (window as any).electronAPI.addQso(qsoEntry);
+      
+      if (response.ok) {
+        console.log('WSJT-X QSO successfully added to log:', wsjtxQSO.dxCall);
+      } else {
+        console.error('Failed to add WSJT-X QSO to log:', response.error);
+      }
+    } catch (error) {
+      console.error('Error adding WSJT-X QSO to log:', error);
+    }
+  }
+
+  private getBandFromFrequency(frequencyHz: number): string {
+    // Convert Hz to MHz for band calculation
+    const frequencyMHz = frequencyHz / 1000000;
+    
+    // Amateur radio band ranges in MHz
+    const bands = [
+      { name: '160m', min: 1.8, max: 2.0 },
+      { name: '80m', min: 3.5, max: 4.0 },
+      { name: '60m', min: 5.3, max: 5.4 },
+      { name: '40m', min: 7.0, max: 7.3 },
+      { name: '30m', min: 10.1, max: 10.15 },
+      { name: '20m', min: 14.0, max: 14.35 },
+      { name: '17m', min: 18.068, max: 18.168 },
+      { name: '15m', min: 21.0, max: 21.45 },
+      { name: '12m', min: 24.89, max: 24.99 },
+      { name: '10m', min: 28.0, max: 29.7 },
+      { name: '6m', min: 50.0, max: 54.0 },
+      { name: '2m', min: 144.0, max: 148.0 },
+      { name: '70cm', min: 420.0, max: 450.0 },
+    ];
+
+    for (const band of bands) {
+      if (frequencyMHz >= band.min && frequencyMHz <= band.max) {
+        return band.name;
+      }
+    }
+
+    return 'Unknown';
   }
 }
 
