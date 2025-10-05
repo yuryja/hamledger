@@ -305,6 +305,34 @@ export class RigctldService {
     }
   }
 
+  public async getLevel(levelType: string): Promise<RigctldResponse> {
+    try {
+      const command = `l ${levelType}`;
+      console.log('RIG GET:', command);
+      const response = await window.electronAPI.rigctldCommand(command);
+      console.log('RIG GET RESPONSE:', response);
+      return response;
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      };
+    }
+  }
+
+  public async getStrength(): Promise<RigctldResponse> {
+    try {
+      console.log('RIG GET: l STRENGTH (get signal strength)');
+      const response = await window.electronAPI.rigctldCommand('l STRENGTH');
+      console.log('RIG GET RESPONSE:', response);
+      return response;
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      };
+    }
+  }
 
   public async sendCommand(command: string): Promise<RigctldResponse> {
     try {

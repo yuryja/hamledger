@@ -53,6 +53,7 @@ export interface RigState {
   splitMode?: string;
   rit: number;
   xit: number;
+  signalStrength?: number; // Hamlib STRENGTH value (0-255)
 }
 
 export interface RigctldConnection {

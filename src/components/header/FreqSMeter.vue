@@ -19,6 +19,17 @@ export default {
     majorTicks(): MajorTick[] {
       return this.smeterHelper.getMajorTicks();
     },
+    signalStrength(): number {
+      return this.rigStore.rigState.signalStrength || 0; // Default to 0 (no signal)
+    },
+    activeTicks(): number {
+      const manufacturer = this.rigStore.capabilities?.mfgName || 'generic';
+      return this.smeterHelper.getActiveTicks(this.signalStrength, manufacturer);
+    },
+    smeterInfo() {
+      const manufacturer = this.rigStore.capabilities?.mfgName || 'generic';
+      return this.smeterHelper.strengthToSMeter(this.signalStrength, manufacturer);
+    },
     frequency: {
       get() {
         return this.rigStore.currentFrequency;
@@ -108,17 +119,22 @@ export default {
       <div class="s-meter">
         <div class="s-meter-inner">
           <template v-for="(majorTick, index) in majorTicks" :key="'major-' + index">
-            <div class="tick major-tick">
+            <div class="tick major-tick" :class="{ active: (index * 5) < activeTicks }">
               <div class="tick-label">{{ majorTick.label }}</div>
-              <div class="tick-line"></div>
+              <div class="tick-line" :style="{ background: (index * 5) < activeTicks ? majorTick.color : '#333' }"></div>
             </div>
 
             <template
               v-for="(minorTick, minorIndex) in smeterHelper.generateMinorTicks(index)"
               :key="'minor-' + index + '-' + minorIndex"
             >
-              <div class="tick minor-tick">
-                <div class="tick-box" :style="{ background: minorTick.color }"></div>
+              <div class="tick minor-tick" :class="{ active: (index * 5 + minorIndex + 1) < activeTicks }">
+                <div 
+                  class="tick-box" 
+                  :style="{ 
+                    background: (index * 5 + minorIndex + 1) < activeTicks ? minorTick.color : '#333'
+                  }"
+                ></div>
               </div>
             </template>
           </template>
