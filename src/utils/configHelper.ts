@@ -63,22 +63,13 @@ export class ConfigHelper {
 
     for (const pathPart of path) {
       if (!current[pathPart]) {
-        // Provide default values for wsjtx settings if they don't exist
-        if (path.join('.') === 'wsjtx') {
-          const wsjtxDefaults = {
-            enabled: false,
-            port: 2237,
-            autoLog: true,
-            logOnlyConfirmed: false
-          };
-          return wsjtxDefaults[key as keyof typeof wsjtxDefaults];
-        }
-        return undefined;
+        // Generate default value from schema if path doesn't exist
+        return this.getDefaultFromSchema(path, key);
       }
       current = current[pathPart];
     }
 
-    return current[key];
+    return current[key] !== undefined ? current[key] : this.getDefaultFromSchema(path, key);
   }
 
   public getIARURegion(): IARURegion {
@@ -174,6 +165,60 @@ export class ConfigHelper {
       name,
       fields,
     }));
+  }
+
+  private getDefaultFromSchema(path: string[], key: string): string | number | boolean | string[] | undefined {
+    let current = this.schema;
+
+    // Navigate to the correct schema section
+    if (current.properties) {
+      for (const pathPart of path) {
+        if (current.properties && current.properties[pathPart]) {
+          current = current.properties[pathPart];
+        } else {
+          return undefined;
+        }
+      }
+
+      // Get the property definition
+      if (current.properties && current.properties[key]) {
+        const property = current.properties[key];
+        return this.getDefaultValueFromProperty(property);
+      }
+    }
+
+    return undefined;
+  }
+
+  private getDefaultValueFromProperty(property: any): string | number | boolean | string[] | undefined {
+    // If there's an explicit default value, use it
+    if (property.default !== undefined) {
+      return property.default;
+    }
+
+    // Generate sensible defaults based on type
+    switch (property.type) {
+      case 'boolean':
+        return false;
+      case 'integer':
+      case 'number':
+        // Use common default ports or 0
+        if (property.description?.toLowerCase().includes('port')) {
+          if (property.description.includes('rigctld')) return 4532;
+          if (property.description.includes('wsjt-x')) return 2237;
+        }
+        return 0;
+      case 'string':
+        // Return empty string for most cases
+        if (property.enum && property.enum.length > 0) {
+          return property.enum[0]; // First enum value as default
+        }
+        return '';
+      case 'array':
+        return [];
+      default:
+        return undefined;
+    }
   }
 }
 
