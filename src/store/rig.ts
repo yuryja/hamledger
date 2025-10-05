@@ -280,12 +280,6 @@ export const useRigStore = defineStore('rig', {
           this.rigState.xit = parseInt(xitResponse.data[0]) || 0;
         }
 
-        // Get Signal Strength (S-meter)
-        const strengthResponse = await rigctldService.getStrength();
-        if (strengthResponse.success && strengthResponse.data) {
-          // Store the raw Hamlib STRENGTH value (0-255)
-          this.rigState.signalStrength = parseInt(strengthResponse.data[0]) || 0;
-        }
 
         this.lastUpdate = new Date();
       } catch (error) {
