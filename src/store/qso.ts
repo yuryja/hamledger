@@ -482,7 +482,7 @@ export const useQsoStore = defineStore('qso', {
           // Add to current session and all QSOs
           this.currentSession.push(qso);
           this.allQsos.push(qso);
-          console.log('WSJT-X QSO auto-logged:', qso.callsign);
+          console.log('WSJT-X QSO auto-logged to store:', qso.callsign);
         });
       } catch (error) {
         console.error('Error initializing WSJT-X:', error);

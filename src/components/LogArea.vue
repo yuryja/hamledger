@@ -28,6 +28,7 @@ export default {
       return this.qsoStore.totalCount;
     },
     filteredCurrentSession() {
+      // Create a reactive copy to ensure Vue detects changes
       let filtered = [...this.currentSession];
 
       // Text search with wildcard/regex support
