@@ -23,7 +23,8 @@ export class MaidenheadLocator {
     }
 
     // Check format: AA00[AA][00]...
-    const locatorRegex = /^[A-R]{2}[0-9]{2}([A-X]{2}[0-9]{2})*$/;
+    ##AI! case-insensitive
+    const locatorRegex = /(?i)^[A-R]{2}[0-9]{2}([A-X]{2}([0-9]{2}([A-X]{2})?)?)?$/;
     return locatorRegex.test(trimmed);
   }
 
