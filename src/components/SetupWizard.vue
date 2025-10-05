@@ -53,6 +53,11 @@ export default {
         inGroup: false,
         error: null as string | null,
       },
+      rigctldStatus: {
+        isChecking: false,
+        found: false,
+        error: null as string | null,
+      },
       availableBands: BAND_RANGES.filter(band =>
         ['160', '80', '60', '40', '30', '20', '17', '15', '12', '10', '6', '2', '70'].includes(
           band.shortName
@@ -228,6 +233,27 @@ export default {
         this.dialoutStatus.isChecking = false;
       }
     },
+    async checkRigctldAvailability() {
+      if (!this.isLinux) return;
+
+      this.rigctldStatus.isChecking = true;
+      this.rigctldStatus.error = null;
+      
+      try {
+        const result = await window.electronAPI.executeCommand('which rigctld');
+        if (result.success && result.data && result.data.trim()) {
+          this.rigctldStatus.found = true;
+        } else {
+          this.rigctldStatus.found = false;
+        }
+      } catch (error) {
+        console.error('Error checking rigctld availability:', error);
+        this.rigctldStatus.error = 'Error checking rigctld availability';
+        this.rigctldStatus.found = false;
+      } finally {
+        this.rigctldStatus.isChecking = false;
+      }
+    },
     async downloadAndInstallHamlib() {
       this.hamlibStatus.isInstalling = true;
       this.hamlibStatus.error = null;
@@ -388,6 +414,8 @@ export default {
       } else if (this.wizardData.enableCat && this.isLinux) {
         // Check dialout group membership on Linux
         this.checkDialoutGroup();
+        // Check rigctld availability on Linux
+        this.checkRigctldAvailability();
         // Also test rigctld path on Linux
         this.testRigctldPath();
       } else if (!this.wizardData.enableCat) {
@@ -397,6 +425,8 @@ export default {
         this.hamlibStatus.success = false;
         this.dialoutStatus.inGroup = false;
         this.dialoutStatus.error = null;
+        this.rigctldStatus.found = false;
+        this.rigctldStatus.error = null;
       }
     },
     async completeSetup() {
@@ -752,7 +782,7 @@ export default {
           </div>
 
           <!-- Linux Hamlib Warning -->
-          <div v-if="wizardData.enableCat && isLinux" class="warning-box">
+          <div v-if="wizardData.enableCat && isLinux && !rigctldStatus.found && !rigctldStatus.isChecking" class="warning-box">
             <div class="warning-icon">⚠️</div>
             <div class="warning-content">
               <p class="warning-title">Linux Users</p>
