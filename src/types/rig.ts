@@ -64,7 +64,7 @@ export interface RigctldConnection {
 
 export interface RigctldResponse {
   success: boolean;
-  data?: string[] | string | null;
+  data?: string[] | string | null | any;
   error?: string;
 }
 

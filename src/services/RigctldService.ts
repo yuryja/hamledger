@@ -36,10 +36,6 @@ export class RigctldService {
       if (response.success) {
         this.connection.connected = true;
       }
-##AI! Type '{ success: boolean; data?: RigConnectionData | undefined; error?: string | undefined; }' is not assignable to type 'RigctldResponse'.
-Types of property 'data' are incompatible.
-  Type 'RigConnectionData | undefined' is not assignable to type 'string | string[] | null | undefined'.
-    Type 'RigConnectionData' is not assignable to type 'string | string[] | null | undefined'.ts(2322)
       return response;
     } catch (error) {
       return {
