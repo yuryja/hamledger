@@ -823,7 +823,7 @@ export default {
 
           <!-- Linux Dialout Group Check -->
           <div v-if="wizardData.enableCat && isLinux" class="dialout-section">
-            <div class="dialout-controls">
+            <div v-if="!dialoutStatus.inGroup && !dialoutStatus.isChecking" class="dialout-controls">
               <button
                 type="button"
                 @click="checkDialoutGroup"
@@ -844,7 +844,7 @@ export default {
             </div>
 
             <!-- Dialout Group Warning -->
-            <div v-if="!dialoutStatus.inGroup && !dialoutStatus.isChecking && !dialoutStatus.error" class="warning-box">
+            <div v-if="dialoutStatus.isChecking === false && !dialoutStatus.inGroup && !dialoutStatus.error" class="warning-box">
               <div class="warning-icon">⚠️</div>
               <div class="warning-content">
                 <p class="warning-title">Serial Port Access Required</p>
