@@ -6,6 +6,37 @@ export class MaidenheadLocator {
   private static readonly FIELD_SIZE_LAT = 10; // degrees (180°/18)
 
   /**
+   * Validates if a grid locator string has the correct format
+   * @param locator - The grid locator string to validate
+   * @returns true if the format is valid, false otherwise
+   */
+  public static isValidLocatorFormat(locator: string): boolean {
+    if (!locator || typeof locator !== 'string') {
+      return false;
+    }
+
+    const trimmed = locator.trim().toUpperCase();
+    
+    // Must be even length and at least 4 characters
+    if (trimmed.length < 4 || trimmed.length % 2 !== 0) {
+      return false;
+    }
+
+    // Check format: AA00[AA][00]...
+    const locatorRegex = /^[A-R]{2}[0-9]{2}([A-X]{2}[0-9]{2})*$/;
+    return locatorRegex.test(trimmed);
+  }
+
+  /**
+   * Normalizes a grid locator string (trims and converts to uppercase)
+   * @param locator - The grid locator string to normalize
+   * @returns The normalized locator string
+   */
+  public static normalizeLocator(locator: string): string {
+    return locator.trim().toUpperCase();
+  }
+
+  /**
    * Converts a Maidenhead grid locator (e.g., "FN31pr") to latitude/longitude.
    * The returned coordinates represent the center of the grid square.
    *
@@ -15,10 +46,10 @@ export class MaidenheadLocator {
    */
   public static gridToLatLon(grid: string): { lat: number; lon: number } {
     // Normalize the input
-    grid = grid.trim().toUpperCase();
+    grid = MaidenheadLocator.normalizeLocator(grid);
 
-    if (!MaidenheadLocator.isValidGridFormat(grid)) {
-      throw new Error('Grid locator must be an even-length string (e.g., 2, 4, 6, … characters).');
+    if (!MaidenheadLocator.isValidLocatorFormat(grid)) {
+      throw new Error('Invalid grid locator format (e.g., JN97)');
     }
 
     // Start at the southwest corner of the world
@@ -78,9 +109,6 @@ export class MaidenheadLocator {
     };
   }
 
-  private static isValidGridFormat(grid: string): boolean {
-    return grid.length >= 2 && grid.length % 2 === 0;
-  }
 
   private static processField(
     lonChar: string,

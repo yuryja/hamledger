@@ -1,6 +1,7 @@
 <script lang="ts">
 import { CallsignHelper } from '../utils/callsign';
 import { BAND_RANGES } from '../utils/bands';
+import { MaidenheadLocator } from '../utils/maidenhead';
 import defaultSettings from '../settings.json';
 
 interface WizardData {
@@ -145,17 +146,23 @@ export default {
       return true;
     },
     validateLocator() {
-      const locator = this.wizardData.locator.trim().toUpperCase();
-      if (locator && locator.length >= 4) {
-        const locatorRegex = /^[A-R]{2}[0-9]{2}([A-X]{2})?([0-9]{2})?$/;
-        if (!locatorRegex.test(locator)) {
-          this.validationErrors.locator = 'Invalid locator format (e.g. JN97)';
-          return false;
-        }
+      const locator = this.wizardData.locator.trim();
+      
+      // Empty locator is allowed (optional field)
+      if (!locator) {
+        delete this.validationErrors.locator;
+        this.wizardData.locator = '';
+        return true;
+      }
+
+      // Validate format using maidenhead utility
+      if (!MaidenheadLocator.isValidLocatorFormat(locator)) {
+        this.validationErrors.locator = 'Invalid locator format (e.g. JN97)';
+        return false;
       }
 
       delete this.validationErrors.locator;
-      this.wizardData.locator = locator;
+      this.wizardData.locator = MaidenheadLocator.normalizeLocator(locator);
       return true;
     },
     validateQrzCredentials() {
