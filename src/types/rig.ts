@@ -53,6 +53,7 @@ export interface RigState {
   splitMode?: string;
   rit: number;
   xit: number;
+  signalStrength?: number; // S-meter value in dB
 }
 
 export interface RigctldConnection {

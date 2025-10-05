@@ -29,6 +29,7 @@ export const useRigStore = defineStore('rig', {
       splitMode: undefined,
       rit: 0,
       xit: 0,
+      signalStrength: undefined,
     } as RigState,
 
     // UI state
@@ -277,6 +278,12 @@ export const useRigStore = defineStore('rig', {
         const xitResponse = await rigctldService.getXit();
         if (xitResponse.success && xitResponse.data) {
           this.rigState.xit = parseInt(xitResponse.data[0]) || 0;
+        }
+
+        // Get Signal Strength (S-meter)
+        const strengthResponse = await rigctldService.getStrength();
+        if (strengthResponse.success && strengthResponse.data) {
+          this.rigState.signalStrength = parseFloat(strengthResponse.data[0]) || 0;
         }
 
         this.lastUpdate = new Date();

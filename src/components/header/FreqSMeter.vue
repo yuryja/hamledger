@@ -19,6 +19,15 @@ export default {
     majorTicks(): MajorTick[] {
       return this.smeterHelper.getMajorTicks();
     },
+    signalStrength(): number {
+      return this.rigStore.rigState.signalStrength || -120; // Default to very weak signal
+    },
+    activeTicks(): number {
+      return this.smeterHelper.getActiveTicks(this.signalStrength);
+    },
+    smeterInfo() {
+      return this.smeterHelper.dbToSMeter(this.signalStrength);
+    },
     frequency: {
       get() {
         return this.rigStore.currentFrequency;
@@ -108,20 +117,30 @@ export default {
       <div class="s-meter">
         <div class="s-meter-inner">
           <template v-for="(majorTick, index) in majorTicks" :key="'major-' + index">
-            <div class="tick major-tick">
+            <div class="tick major-tick" :class="{ active: (index * 5) < activeTicks }">
               <div class="tick-label">{{ majorTick.label }}</div>
-              <div class="tick-line"></div>
+              <div class="tick-line" :style="{ background: (index * 5) < activeTicks ? majorTick.color : '#333' }"></div>
             </div>
 
             <template
               v-for="(minorTick, minorIndex) in smeterHelper.generateMinorTicks(index)"
               :key="'minor-' + index + '-' + minorIndex"
             >
-              <div class="tick minor-tick">
-                <div class="tick-box" :style="{ background: minorTick.color }"></div>
+              <div class="tick minor-tick" :class="{ active: (index * 5 + minorIndex + 1) < activeTicks }">
+                <div 
+                  class="tick-box" 
+                  :style="{ 
+                    background: (index * 5 + minorIndex + 1) < activeTicks ? minorTick.color : '#333'
+                  }"
+                ></div>
               </div>
             </template>
           </template>
+        </div>
+        <div class="s-meter-value">
+          <span v-if="!smeterInfo.isOverS9">S{{ smeterInfo.sUnit }}</span>
+          <span v-else>S9+{{ smeterInfo.overS9Value }}</span>
+          <span class="db-value">({{ signalStrength.toFixed(1) }} dB)</span>
         </div>
       </div>
 
@@ -312,8 +331,26 @@ export default {
   width: 10px;
   height: 10px;
   border-radius: 2px;
-  background: gray;
+  background: #333;
   margin-top: auto;
   margin-right: 1px;
+  transition: background-color 0.2s ease;
+}
+
+.tick.active .tick-box {
+  box-shadow: 0 0 3px rgba(255, 255, 255, 0.5);
+}
+
+.s-meter-value {
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+  color: var(--main-color);
+  text-align: center;
+}
+
+.db-value {
+  font-size: 0.8rem;
+  color: #999;
+  margin-left: 0.5rem;
 }
 </style>
