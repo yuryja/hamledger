@@ -284,8 +284,7 @@ export class ConfigHelper {
     const result = this.deepClone(defaults);
 
     for (const key in existing) {
-      ##AI! Do not access Object.prototype method 'hasOwnProperty' from target object.
-      if (existing.hasOwnProperty(key)) {
+      if (Object.prototype.hasOwnProperty.call(existing, key)) {
         if (existing[key] && typeof existing[key] === 'object' && !Array.isArray(existing[key])) {
           // Recursively merge nested objects
           result[key] = this.deepMerge(result[key] || {}, existing[key]);
