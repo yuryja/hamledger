@@ -198,6 +198,8 @@ export class WSJTXService extends EventEmitter {
       if (offset + 8 > buffer.length) {
         throw new Error(`Buffer too small to read dateTimeOff at offset ${offset}`);
       }
+      console.log(`Reading dateTimeOff at offset ${offset}, buffer remaining: ${buffer.length - offset}`);
+      console.log(`DateTimeOff bytes: ${buffer.subarray(offset, offset + 8).toString('hex')}`);
       const dateTimeOff = this.readQDateTime(buffer, offset);
       offset += 8;
       console.log(`Read dateTimeOff: ${dateTimeOff}, new offset: ${offset}`);
@@ -246,6 +248,8 @@ export class WSJTXService extends EventEmitter {
       if (offset + 8 > buffer.length) {
         throw new Error(`Buffer too small to read dateTimeOn at offset ${offset}`);
       }
+      console.log(`Reading dateTimeOn at offset ${offset}, buffer remaining: ${buffer.length - offset}`);
+      console.log(`DateTimeOn bytes: ${buffer.subarray(offset, offset + 8).toString('hex')}`);
       const dateTimeOn = this.readQDateTime(buffer, offset);
       offset += 8;
       console.log(`Read dateTimeOn: ${dateTimeOn}, new offset: ${offset}`);
@@ -372,21 +376,41 @@ export class WSJTXService extends EventEmitter {
       throw new Error(`Buffer too small to read datetime at offset ${offset}`);
     }
     
-    // Qt QDateTime is stored as milliseconds since epoch (UTC)
-    // But WSJT-X might use a different epoch or format
-    const msecs = buffer.readBigUInt64BE(offset);
+    // Qt QDateTime is stored as milliseconds since Qt epoch (1970-01-01T00:00:00 UTC)
+    // But it's stored as a 64-bit value with special encoding
+    // First 4 bytes: Julian day number since Qt epoch
+    // Second 4 bytes: milliseconds since midnight
+    
+    const julianDay = buffer.readUInt32BE(offset);
+    const msecsSinceMidnight = buffer.readUInt32BE(offset + 4);
+    
+    console.log(`QDateTime raw: julianDay=${julianDay}, msecs=${msecsSinceMidnight}`);
     
     // Handle special values
-    if (msecs === 0n || msecs === 0xFFFFFFFFFFFFFFFFn) {
+    if (julianDay === 0 || julianDay === 0xFFFFFFFF) {
+      console.log('Invalid QDateTime detected, using current time');
       return new Date(); // Return current time for invalid dates
     }
     
-    // Qt uses milliseconds since 1970-01-01T00:00:00 UTC
-    const date = new Date(Number(msecs));
+    // Convert Julian day to JavaScript Date
+    // Qt Julian day 2440588 = 1970-01-01 (Unix epoch)
+    const qtEpochJulianDay = 2440588;
+    const daysSinceUnixEpoch = julianDay - qtEpochJulianDay;
+    
+    // Create date from days since Unix epoch
+    const date = new Date(1970, 0, 1); // January 1, 1970
+    date.setUTCDate(date.getUTCDate() + daysSinceUnixEpoch);
+    
+    // Add milliseconds since midnight
+    if (msecsSinceMidnight < 86400000) { // Valid milliseconds in a day
+      date.setUTCMilliseconds(msecsSinceMidnight);
+    }
+    
+    console.log(`Parsed QDateTime: ${date}`);
     
     // Check if the date is reasonable (between 1990 and 2050)
     if (date.getFullYear() < 1990 || date.getFullYear() > 2050) {
-      console.warn(`Suspicious date parsed: ${date}, raw value: ${msecs}`);
+      console.warn(`Suspicious date parsed: ${date}, julianDay=${julianDay}, msecs=${msecsSinceMidnight}`);
       return new Date(); // Return current time for suspicious dates
     }
     
