@@ -136,7 +136,8 @@ export default {
                     'tick-box-active': (index * 5 + minorIndex + 1) < activeTicks
                   }"
                   :style="{ 
-                    backgroundColor: (index * 5 + minorIndex + 1) < activeTicks ? minorTick.color : 'transparent'
+                    backgroundColor: (index * 5 + minorIndex + 1) < activeTicks ? minorTick.color : 'transparent',
+                    borderColor: minorTick.color
                   }"
                 ></div>
               </div>
@@ -332,7 +333,7 @@ export default {
   width: 10px;
   height: 10px;
   border-radius: 2px;
-  border: 1px solid #666;
+  border: 1px solid;
   margin-top: auto;
   margin-right: 1px;
   transition: all 0.2s ease;
