@@ -1153,7 +1153,7 @@ async function initializeWSJTX(): Promise<void> {
 // Handle WSJT-X QSO logging
 async function handleWSJTXQSO(wsjtxQSO: WSJTXLoggedQSO): Promise<void> {
   try {
-    console.log('Processing WSJT-X QSO:', wsjtxQSO);
+    console.log('🎯 Processing WSJT-X QSO in main process:', wsjtxQSO);
     
     // Convert WSJT-X QSO to HamLedger format
     const band = getBandFromFrequency(wsjtxQSO.txFrequency);
@@ -1171,13 +1171,18 @@ async function handleWSJTXQSO(wsjtxQSO: WSJTXLoggedQSO): Promise<void> {
       notes: `Grid: ${wsjtxQSO.dxGrid || 'Unknown'}${wsjtxQSO.name ? `, Name: ${wsjtxQSO.name}` : ''}`,
     };
     
+    console.log('📤 Sending WSJT-X QSO to renderer:', qso);
+    
     // Send to renderer to add QSO using store's addQso method
     const windows = BrowserWindow.getAllWindows();
-    windows.forEach(window => {
+    console.log(`📡 Broadcasting to ${windows.length} windows`);
+    
+    windows.forEach((window, index) => {
+      console.log(`📨 Sending wsjtx:add-qso to window ${index + 1}`);
       window.webContents.send('wsjtx:add-qso', qso);
     });
   } catch (error) {
-    console.error('Error handling WSJT-X QSO:', error);
+    console.error('💥 Error handling WSJT-X QSO:', error);
   }
 }
 
