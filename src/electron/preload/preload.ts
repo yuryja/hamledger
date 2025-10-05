@@ -43,4 +43,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   onWSJTXQSOLogged: (callback: (qso: QsoEntry) => void) => {
     ipcRenderer.on('wsjtx:qso-logged', (_, qso) => callback(qso));
   },
+  onWSJTXAddQSO: (callback: (qso: QsoEntry) => void) => {
+    ipcRenderer.on('wsjtx:add-qso', (_, qso) => callback(qso));
+  },
 });
