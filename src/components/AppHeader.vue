@@ -48,6 +48,7 @@ export default {
   background: #333;
   padding: 1rem;
   border-radius: 5px;
+  border: 1px solid var(--border-color);
   gap: 1rem;
 }
 

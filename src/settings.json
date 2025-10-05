@@ -6,13 +6,7 @@
     "grid": "",
     "timezone": "",
     "iaruRegion": "",
-    "selectedBands": [
-      "80",
-      "40",
-      "20",
-      "15",
-      "10"
-    ]
+    "selectedBands": ["80", "40", "20", "15", "10"]
   },
   "rig": {
     "port": 4532,
@@ -73,11 +67,5 @@
     "file": "HamLedger.log",
     "maxSize": 5242880,
     "maxFiles": 5
-  },
-  "wsjtx": {
-    "enabled": false,
-    "port": 2237,
-    "autoLog": true,
-    "logOnlyConfirmed": false
   }
 }

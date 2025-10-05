@@ -42,7 +42,11 @@ export class ConfigHelper {
     }
   }
 
-  public async updateSetting(path: string[], key: string, value: string | number | boolean | string[]): Promise<void> {
+  public async updateSetting(
+    path: string[],
+    key: string,
+    value: string | number | boolean | string[]
+  ): Promise<void> {
     let current = this.settings;
 
     // Navigate to the correct nested object
@@ -76,7 +80,7 @@ export class ConfigHelper {
 
   public getIARURegion(): IARURegion {
     const region = this.getSetting(['station'], 'iaruRegion') as IARURegion;
-    return region || 'IARU1' as IARURegion;
+    return region || ('IARU1' as IARURegion);
   }
 
   public flattenConfig(obj: any = this.settings, path: string[] = []): ConfigField[] {
@@ -84,10 +88,10 @@ export class ConfigHelper {
       if (value && typeof value === 'object' && !Array.isArray(value)) {
         return [...acc, ...this.flattenConfig(value, [...path, key])];
       }
-      
+
       // Type guard to ensure value is compatible with ConfigField
       const typedValue = this.ensureValidValue(value);
-      
+
       return [
         ...acc,
         {
@@ -169,7 +173,10 @@ export class ConfigHelper {
     }));
   }
 
-  private getDefaultFromSchema(path: string[], key: string): string | number | boolean | string[] | undefined {
+  private getDefaultFromSchema(
+    path: string[],
+    key: string
+  ): string | number | boolean | string[] | undefined {
     let current = this.schema;
 
     // Navigate to the correct schema section
@@ -192,7 +199,9 @@ export class ConfigHelper {
     return undefined;
   }
 
-  private getDefaultValueFromProperty(property: any): string | number | boolean | string[] | undefined {
+  private getDefaultValueFromProperty(
+    property: any
+  ): string | number | boolean | string[] | undefined {
     // If there's an explicit default value, use it
     if (property.default !== undefined) {
       return property.default;
@@ -231,14 +240,14 @@ export class ConfigHelper {
 
     // Generate default settings structure from schema
     const defaultSettings = this.generateDefaultSettingsFromSchema();
-    
+
     // Merge defaults with existing settings
     const mergedSettings = this.deepMerge(defaultSettings, migratedSettings);
-    
+
     // Check if there are any changes
     if (JSON.stringify(this.settings) !== JSON.stringify(mergedSettings)) {
       console.log('Settings migration: Adding new default values from schema');
-      
+
       // Save the migrated settings
       await this.saveSettings(mergedSettings);
       console.log('Settings migration completed successfully');
@@ -264,7 +273,7 @@ export class ConfigHelper {
 
     for (const [key, property] of Object.entries(schemaObj.properties)) {
       const prop = property as any;
-      
+
       if (prop.type === 'object' && prop.properties) {
         // Recursively handle nested objects
         defaults[key] = this.generateDefaultsFromSchemaObject(prop);
@@ -305,18 +314,18 @@ export class ConfigHelper {
     if (obj === null || typeof obj !== 'object') {
       return obj;
     }
-    
+
     if (Array.isArray(obj)) {
       return obj.map(item => this.deepClone(item));
     }
-    
+
     const cloned: any = {};
     for (const key in obj) {
       if (Object.prototype.hasOwnProperty.call(obj, key)) {
         cloned[key] = this.deepClone(obj[key]);
       }
     }
-    
+
     return cloned;
   }
 }

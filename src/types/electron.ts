@@ -49,7 +49,9 @@ declare global {
   interface Window {
     electronAPI: {
       addQso: (qso: QsoEntry) => Promise<DatabaseResponse>;
-      getAllDocs: () => Promise<{ rows: Array<{ doc: QsoEntry; id: string; value: { rev: string } }> }>;
+      getAllDocs: () => Promise<{
+        rows: Array<{ doc: QsoEntry; id: string; value: { rev: string } }>;
+      }>;
       importAdif: () => Promise<{ imported: boolean; count?: number; error?: string }>;
       selectAdifFile: () => Promise<{ success: boolean; filePath?: string; error?: string }>;
       parseAdifFile: (
@@ -59,13 +61,21 @@ declare global {
         filePath: string
       ) => Promise<{ success: boolean; count?: number; error?: string }>;
       onAdifImportProgress: (callback: (progress: { imported: number }) => void) => void;
-      saveAdifFile: (content: string) => Promise<{ success: boolean; filePath?: string; error?: string }>;
+      saveAdifFile: (
+        content: string
+      ) => Promise<{ success: boolean; filePath?: string; error?: string }>;
       loadSettings: () => Promise<Record<string, unknown> | null>;
       saveSettings: (settings: Record<string, unknown>) => Promise<void>;
       updateQso: (qso: QsoEntry) => Promise<UpdateResponse>;
       deleteQso: (qsoId: string) => Promise<DatabaseResponse>;
-      fetchDxSpots: (params: string) => Promise<{ success: boolean; data?: DxSpotData; error?: string }>;
-      fetchPropagationData: () => Promise<{ success: boolean; data?: PropagationData; error?: string }>;
+      fetchDxSpots: (
+        params: string
+      ) => Promise<{ success: boolean; data?: DxSpotData; error?: string }>;
+      fetchPropagationData: () => Promise<{
+        success: boolean;
+        data?: PropagationData;
+        error?: string;
+      }>;
       fetchWeather: (
         lat: number,
         lon: number
@@ -76,7 +86,11 @@ declare global {
         model?: number,
         device?: string
       ) => Promise<{ success: boolean; data?: RigConnectionData; error?: string }>;
-      rigctldDisconnect: () => Promise<{ success: boolean; data?: RigConnectionData; error?: string }>;
+      rigctldDisconnect: () => Promise<{
+        success: boolean;
+        data?: RigConnectionData;
+        error?: string;
+      }>;
       rigctldCommand: (
         command: string
       ) => Promise<{ success: boolean; data?: string[] | string | null; error?: string }>;
@@ -85,9 +99,18 @@ declare global {
         command: string
       ) => Promise<{ success: boolean; data?: string; error?: string }>;
       rigctldRestart: () => Promise<{ success: boolean; error?: string }>;
-      downloadAndInstallHamlib: () => Promise<{ success: boolean; message?: string; path?: string; error?: string }>;
+      downloadAndInstallHamlib: () => Promise<{
+        success: boolean;
+        message?: string;
+        path?: string;
+        error?: string;
+      }>;
       checkRigctldInPath: () => Promise<{ success: boolean; inPath: boolean; path?: string }>;
-      addFirewallExceptions: () => Promise<{ success: boolean; userCancelled?: boolean; error?: string }>;
+      addFirewallExceptions: () => Promise<{
+        success: boolean;
+        userCancelled?: boolean;
+        error?: string;
+      }>;
       onHamlibDownloadProgress: (callback: (progress: { progress: number }) => void) => void;
       wsjtxStart: (port?: number) => Promise<{ success: boolean; error?: string }>;
       wsjtxStop: () => Promise<{ success: boolean; error?: string }>;

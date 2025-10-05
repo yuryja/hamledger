@@ -239,7 +239,7 @@ export const useQsoStore = defineStore('qso', {
       try {
         const adifContent = formatAdif(qsos);
         const result = await window.electronAPI.saveAdifFile(adifContent);
-        
+
         if (result.success) {
           return { success: true };
         } else {
@@ -254,7 +254,7 @@ export const useQsoStore = defineStore('qso', {
     async deleteQso(qsoId: string): Promise<{ success: boolean; error?: string }> {
       try {
         const response = await window.electronAPI.deleteQso(qsoId);
-        
+
         if (response.ok) {
           // Remove from current session if present
           const sessionIndex = this.currentSession.findIndex(qso => (qso._id || qso.id) === qsoId);
@@ -481,7 +481,7 @@ export const useQsoStore = defineStore('qso', {
 
         // Listen for WSJT-X QSO add requests
         console.log('🔧 Setting up WSJT-X event listeners...');
-        
+
         // Check if the API exists
         if (window.electronAPI && window.electronAPI.onWSJTXAddQSO) {
           console.log('✅ onWSJTXAddQSO API found, setting up listener');
@@ -534,8 +534,11 @@ export const useQsoStore = defineStore('qso', {
     async addWSJTXQso(qso: QsoEntry) {
       try {
         console.log('🚀 Adding WSJT-X QSO to store:', qso);
-        console.log('📋 Store state before adding - currentSession length:', this.currentSession.length);
-        
+        console.log(
+          '📋 Store state before adding - currentSession length:',
+          this.currentSession.length
+        );
+
         // Create QSO entry with proper ID and current timestamp
         const wsjtxQso: QsoEntry = {
           ...qso,
@@ -557,13 +560,12 @@ export const useQsoStore = defineStore('qso', {
           console.log('✅ WSJT-X QSO successfully added to store and database:', wsjtxQso.callsign);
           console.log('📊 Current session count after adding:', this.currentSession.length);
           console.log('📊 All QSOs count after adding:', this.allQsos.length);
-          
+
           // Force reactivity update
           this.$patch({
             currentSession: [...this.currentSession],
-            allQsos: [...this.allQsos]
+            allQsos: [...this.allQsos],
           });
-          
         } else {
           console.error('❌ Failed to save WSJT-X QSO to database:', response.error);
         }

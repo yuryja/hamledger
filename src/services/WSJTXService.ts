@@ -1,7 +1,6 @@
 import dgram from 'dgram';
 import { EventEmitter } from 'events';
 import { WSJTXDecodeMessage, WSJTXLoggedQSO } from '../types/wsjtx';
-import { parseAdifString } from '../utils/adif';
 
 export class WSJTXService extends EventEmitter {
   private server: dgram.Socket | null = null;
@@ -22,7 +21,7 @@ export class WSJTXService extends EventEmitter {
 
       this.server = dgram.createSocket('udp4');
 
-      this.server.on('error', (err) => {
+      this.server.on('error', err => {
         console.error('WSJT-X UDP server error:', err);
         this.emit('error', err);
         reject(err);
@@ -65,16 +64,18 @@ export class WSJTXService extends EventEmitter {
     try {
       // WSJT-X uses a binary protocol, we need to parse it
       const messageType = this.parseMessageType(buffer);
-      
+
       switch (messageType) {
-        case 2: {// Decode message
+        case 2: {
+          // Decode message
           const decodeMessage = this.parseDecodeMessage(buffer);
           if (decodeMessage) {
             this.emit('decode', decodeMessage);
           }
           break;
         }
-        case 5: {// Logged QSO message
+        case 5: {
+          // Logged QSO message
           const loggedQSO = this.parseLoggedQSO(buffer);
           if (loggedQSO) {
             console.log('🚀 Emitting QSO event from WSJTXService:', loggedQSO.dxCall);
@@ -94,71 +95,76 @@ export class WSJTXService extends EventEmitter {
   private parseMessageType(buffer: Buffer): number {
     // WSJT-X messages start with magic number (0xADBCCBDA) followed by schema version and message type
     if (buffer.length < 12) return -1;
-    
+
     const magic = buffer.readUInt32BE(0);
-    if (magic !== 0xADBCCBDA) return -1;
-    
+    if (magic !== 0xadbccbda) return -1;
+
     return buffer.readUInt32BE(8);
   }
 
   private parseDecodeMessage(buffer: Buffer): WSJTXDecodeMessage | null {
     try {
       let offset = 12; // Skip magic, schema, and message type
-      
-      console.log(`Parsing decode message, buffer length: ${buffer.length}, starting offset: ${offset}`);
-      
+
+      console.log(
+        `Parsing decode message, buffer length: ${buffer.length}, starting offset: ${offset}`
+      );
+
       // Parse fields according to WSJT-X protocol v2.6.x Type 2
       const { value: id, newOffset: idOffset } = this.readQStringWithOffset(buffer, offset);
       offset = idOffset;
-      
+
       // Check bounds for remaining fields
       if (offset + 1 > buffer.length) {
         throw new Error(`Buffer too small to read isNew at offset ${offset}`);
       }
       const isNew = buffer.readUInt8(offset) !== 0;
       offset += 1;
-      
+
       if (offset + 4 > buffer.length) {
         throw new Error(`Buffer too small to read timeMs at offset ${offset}`);
       }
       const timeMs = buffer.readUInt32BE(offset);
       offset += 4;
-      
+
       if (offset + 4 > buffer.length) {
         throw new Error(`Buffer too small to read snr at offset ${offset}`);
       }
       const snr = buffer.readInt32BE(offset);
       offset += 4;
-      
+
       if (offset + 8 > buffer.length) {
         throw new Error(`Buffer too small to read dt at offset ${offset}`);
       }
       const dt = buffer.readDoubleBE(offset); // dt is double, not float
       offset += 8;
-      
+
       if (offset + 4 > buffer.length) {
         throw new Error(`Buffer too small to read df at offset ${offset}`);
       }
       const df = buffer.readUInt32BE(offset);
       offset += 4;
-      
+
       const { value: mode, newOffset: modeOffset } = this.readQStringWithOffset(buffer, offset);
       offset = modeOffset;
-      
-      const { value: message, newOffset: messageOffset } = this.readQStringWithOffset(buffer, offset);
+
+      const { value: message, newOffset: messageOffset } = this.readQStringWithOffset(
+        buffer,
+        offset
+      );
       offset = messageOffset;
-      
+
       if (offset + 1 > buffer.length) {
         throw new Error(`Buffer too small to read lowConfidence at offset ${offset}`);
       }
       const lowConfidence = buffer.readUInt8(offset) !== 0;
       offset += 1;
-      
+
       if (offset + 1 > buffer.length) {
         throw new Error(`Buffer too small to read offAir at offset ${offset}`);
       }
       const offAir = buffer.readUInt8(offset) !== 0;
-      
+
       return {
         id,
         isNew,
@@ -169,7 +175,7 @@ export class WSJTXService extends EventEmitter {
         mode,
         message,
         lowConfidence,
-        offAir
+        offAir,
       };
     } catch (error) {
       console.error('Error parsing decode message:', error);
@@ -181,30 +187,35 @@ export class WSJTXService extends EventEmitter {
   private parseLoggedQSO(buffer: Buffer): WSJTXLoggedQSO | null {
     try {
       let offset = 12; // Skip magic, schema, and message type
-      
-      console.log(`Parsing logged QSO, buffer length: ${buffer.length}, starting offset: ${offset}`);
+
+      console.log(
+        `Parsing logged QSO, buffer length: ${buffer.length}, starting offset: ${offset}`
+      );
       console.log('Buffer hex dump:', buffer.toString('hex'));
-      
+
       // Parse according to WSJT-X protocol v2.6.x Type 5 (based on Python QSOLoggedPacket)
-      // Fields: id, datetime_off, call, grid, frequency, mode, report_sent, report_recv, 
+      // Fields: id, datetime_off, call, grid, frequency, mode, report_sent, report_recv,
       //         tx_power, comments, name, datetime_on, op_call, my_call, my_grid, exchange_sent, exchange_recv
-      
+
       const { value: id, newOffset: idOffset } = this.readQStringWithOffset(buffer, offset);
       offset = idOffset;
       console.log(`Read id: "${id}", new offset: ${offset}`);
-      
-      const { date: dateTimeOff, newOffset: dateTimeOffOffset } = this.readQDateTime(buffer, offset);
+
+      const { date: dateTimeOff, newOffset: dateTimeOffOffset } = this.readQDateTime(
+        buffer,
+        offset
+      );
       offset = dateTimeOffOffset;
       console.log(`Read dateTimeOff: ${dateTimeOff}, new offset: ${offset}`);
-      
+
       const { value: dxCall, newOffset: dxCallOffset } = this.readQStringWithOffset(buffer, offset);
       offset = dxCallOffset;
       console.log(`Read dxCall: "${dxCall}", new offset: ${offset}`);
-      
+
       const { value: dxGrid, newOffset: dxGridOffset } = this.readQStringWithOffset(buffer, offset);
       offset = dxGridOffset;
       console.log(`Read dxGrid: "${dxGrid}", new offset: ${offset}`);
-      
+
       // Read frequency (64-bit integer)
       if (offset + 8 > buffer.length) {
         throw new Error(`Buffer too small to read frequency at offset ${offset}`);
@@ -212,55 +223,74 @@ export class WSJTXService extends EventEmitter {
       const txFrequency = Number(buffer.readBigInt64BE(offset));
       offset += 8;
       console.log(`Read txFrequency: ${txFrequency}, new offset: ${offset}`);
-      
+
       const { value: mode, newOffset: modeOffset } = this.readQStringWithOffset(buffer, offset);
       offset = modeOffset;
       console.log(`Read mode: "${mode}", new offset: ${offset}`);
-      
-      const { value: reportSent, newOffset: reportSentOffset } = this.readQStringWithOffset(buffer, offset);
+
+      const { value: reportSent, newOffset: reportSentOffset } = this.readQStringWithOffset(
+        buffer,
+        offset
+      );
       offset = reportSentOffset;
       console.log(`Read reportSent: "${reportSent}", new offset: ${offset}`);
-      
-      const { value: reportReceived, newOffset: reportReceivedOffset } = this.readQStringWithOffset(buffer, offset);
+
+      const { value: reportReceived, newOffset: reportReceivedOffset } = this.readQStringWithOffset(
+        buffer,
+        offset
+      );
       offset = reportReceivedOffset;
       console.log(`Read reportReceived: "${reportReceived}", new offset: ${offset}`);
-      
-      const { value: txPower, newOffset: txPowerOffset } = this.readQStringWithOffset(buffer, offset);
+
+      const { value: txPower, newOffset: txPowerOffset } = this.readQStringWithOffset(
+        buffer,
+        offset
+      );
       offset = txPowerOffset;
       console.log(`Read txPower: "${txPower}", new offset: ${offset}`);
-      
-      const { value: comments, newOffset: commentsOffset } = this.readQStringWithOffset(buffer, offset);
+
+      const { value: comments, newOffset: commentsOffset } = this.readQStringWithOffset(
+        buffer,
+        offset
+      );
       offset = commentsOffset;
       console.log(`Read comments: "${comments}", new offset: ${offset}`);
-      
+
       const { value: name, newOffset: nameOffset } = this.readQStringWithOffset(buffer, offset);
       offset = nameOffset;
       console.log(`Read name: "${name}", new offset: ${offset}`);
-      
+
       const { date: dateTimeOn, newOffset: dateTimeOnOffset } = this.readQDateTime(buffer, offset);
       offset = dateTimeOnOffset;
       console.log(`Read dateTimeOn: ${dateTimeOn}, new offset: ${offset}`);
-      
-      const { value: operatorCall, newOffset: operatorCallOffset } = this.readQStringWithOffset(buffer, offset);
+
+      const { value: operatorCall, newOffset: operatorCallOffset } = this.readQStringWithOffset(
+        buffer,
+        offset
+      );
       offset = operatorCallOffset;
       console.log(`Read operatorCall: "${operatorCall}", new offset: ${offset}`);
-      
+
       const { value: myCall, newOffset: myCallOffset } = this.readQStringWithOffset(buffer, offset);
       offset = myCallOffset;
       console.log(`Read myCall: "${myCall}", new offset: ${offset}`);
-      
+
       const { value: myGrid, newOffset: myGridOffset } = this.readQStringWithOffset(buffer, offset);
       offset = myGridOffset;
       console.log(`Read myGrid: "${myGrid}", new offset: ${offset}`);
-      
-      const { value: exchangeSent, newOffset: exchangeSentOffset } = this.readQStringWithOffset(buffer, offset);
+
+      const { value: exchangeSent, newOffset: exchangeSentOffset } = this.readQStringWithOffset(
+        buffer,
+        offset
+      );
       offset = exchangeSentOffset;
       console.log(`Read exchangeSent: "${exchangeSent}", new offset: ${offset}`);
-      
-      const { value: exchangeReceived, newOffset: exchangeReceivedOffset } = this.readQStringWithOffset(buffer, offset);
+
+      const { value: exchangeReceived, newOffset: exchangeReceivedOffset } =
+        this.readQStringWithOffset(buffer, offset);
       offset = exchangeReceivedOffset;
       console.log(`Read exchangeReceived: "${exchangeReceived}", new offset: ${offset}`);
-      
+
       return {
         id,
         dateTimeOff,
@@ -292,54 +322,61 @@ export class WSJTXService extends EventEmitter {
     if (offset + 4 > buffer.length) {
       throw new Error(`Buffer too small to read string length at offset ${offset}`);
     }
-    
+
     const length = buffer.readUInt32BE(offset);
-    if (length === 0xFFFFFFFF) return ''; // Null string
-    
+    if (length === 0xffffffff) return ''; // Null string
+
     // For empty strings, length is 0
     if (length === 0) return '';
-    
+
     // Check if we have enough bytes to read the string data
     // WSJT-X uses UTF-16BE encoding, so each character is 2 bytes
     const stringDataEnd = offset + 4 + length;
     if (stringDataEnd > buffer.length) {
-      throw new Error(`Buffer too small to read string data at offset ${offset}, need ${stringDataEnd} bytes but have ${buffer.length}`);
+      throw new Error(
+        `Buffer too small to read string data at offset ${offset}, need ${stringDataEnd} bytes but have ${buffer.length}`
+      );
     }
-    
+
     const stringBuffer = buffer.subarray(offset + 4, stringDataEnd);
     return stringBuffer.toString('utf8'); // Try UTF-8 first
   }
 
-  private readQStringWithOffset(buffer: Buffer, offset: number): { value: string; newOffset: number } {
+  private readQStringWithOffset(
+    buffer: Buffer,
+    offset: number
+  ): { value: string; newOffset: number } {
     // Check if we have enough bytes to read the length
     if (offset + 4 > buffer.length) {
       throw new Error(`Buffer too small to read string length at offset ${offset}`);
     }
-    
+
     const length = buffer.readUInt32BE(offset);
     console.log(`Reading string at offset ${offset}, length: ${length}`);
-    
-    if (length === 0xFFFFFFFF) {
+
+    if (length === 0xffffffff) {
       console.log('Null string detected');
       return { value: '', newOffset: offset + 4 }; // Null string
     }
-    
+
     // For empty strings, length is 0
     if (length === 0) {
       console.log('Empty string detected');
       return { value: '', newOffset: offset + 4 };
     }
-    
+
     // Check if we have enough bytes to read the string data
     const stringDataEnd = offset + 4 + length;
     if (stringDataEnd > buffer.length) {
-      throw new Error(`Buffer too small to read string data at offset ${offset}, need ${stringDataEnd} bytes but have ${buffer.length}`);
+      throw new Error(
+        `Buffer too small to read string data at offset ${offset}, need ${stringDataEnd} bytes but have ${buffer.length}`
+      );
     }
-    
+
     const stringBuffer = buffer.subarray(offset + 4, stringDataEnd);
     const value = stringBuffer.toString('utf8');
     console.log(`Read string: "${value}"`);
-    
+
     return { value, newOffset: stringDataEnd };
   }
 
@@ -347,35 +384,34 @@ export class WSJTXService extends EventEmitter {
     if (offset + 4 > buffer.length) {
       return 4; // Just the length field
     }
-    
+
     const length = buffer.readUInt32BE(offset);
-    if (length === 0xFFFFFFFF || length === 0) {
+    if (length === 0xffffffff || length === 0) {
       return 4; // Just the length field for null or empty strings
     }
-    
+
     return 4 + length; // Length field + string data
   }
-
 
   private readQDateTime(buffer: Buffer, offset: number): { date: Date; newOffset: number } {
     // Check if we have enough bytes to read the datetime (8 bytes for Julian day + 4 bytes for milliseconds + 1 byte for spec)
     if (offset + 13 > buffer.length) {
       throw new Error(`Buffer too small to read datetime at offset ${offset}`);
     }
-    
+
     // Qt QDateTime format based on Python decoder:
     // - 8 bytes: Julian day number (64-bit)
-    // - 4 bytes: milliseconds since midnight  
+    // - 4 bytes: milliseconds since midnight
     // - 1 byte: time spec
     // - 4 bytes: offset (if spec == 2)
-    
+
     const julianDay = Number(buffer.readBigInt64BE(offset));
     const msecsSinceMidnight = buffer.readUInt32BE(offset + 8);
     const spec = buffer.readUInt8(offset + 12);
-    
+
     let newOffset = offset + 13; // Base offset after spec
     let timezoneOffset = 0;
-    
+
     if (spec === 2) {
       if (offset + 17 > buffer.length) {
         throw new Error(`Buffer too small to read timezone offset at offset ${offset + 13}`);
@@ -383,55 +419,59 @@ export class WSJTXService extends EventEmitter {
       timezoneOffset = buffer.readInt32BE(offset + 13);
       newOffset = offset + 17;
     }
-    
-    console.log(`QDateTime raw: julianDay=${julianDay}, msecs=${msecsSinceMidnight}, spec=${spec}, tzOffset=${timezoneOffset}`);
-    
+
+    console.log(
+      `QDateTime raw: julianDay=${julianDay}, msecs=${msecsSinceMidnight}, spec=${spec}, tzOffset=${timezoneOffset}`
+    );
+
     // Handle special values
     if (julianDay === 0 || julianDay === -1) {
       console.log('Invalid QDateTime detected, using current time');
       return { date: new Date(), newOffset };
     }
-    
+
     // Convert Julian day to JavaScript Date using Meeus algorithm (from Python code)
     const jdNum = julianDay + 0.5;
     const Z = Math.floor(jdNum);
     const F = jdNum - Z;
-    
+
     let A: number;
-    if (Z < 2299161) { // Julian calendar
+    if (Z < 2299161) {
+      // Julian calendar
       A = Z;
-    } else { // Gregorian calendar
+    } else {
+      // Gregorian calendar
       const alpha = Math.floor((Z - 1867216.25) / 36524.25);
       A = Z + 1 + alpha - Math.floor(alpha / 4.0);
     }
-    
+
     const B = A + 1524;
     const C = Math.floor((B - 122.1) / 365.25);
     const D = Math.floor(365.25 * C);
     const E = Math.floor((B - D) / 30.6001);
-    
+
     const day = Math.floor(B - D - Math.floor(30.6001 * E) + F);
     const month = E < 14 ? E - 1 : E - 13;
     const year = month > 2 ? C - 4716 : C - 4715;
-    
+
     // Create the date
     const date = new Date(year, month - 1, day); // month is 0-based in JS
-    
+
     // Add milliseconds since midnight
-    if (msecsSinceMidnight < 86400000) { // Valid milliseconds in a day
+    if (msecsSinceMidnight < 86400000) {
+      // Valid milliseconds in a day
       const hours = Math.floor(msecsSinceMidnight / 3600000);
       const minutes = Math.floor((msecsSinceMidnight % 3600000) / 60000);
       const seconds = Math.floor((msecsSinceMidnight % 60000) / 1000);
       const milliseconds = msecsSinceMidnight % 1000;
-      
+
       date.setUTCHours(hours, minutes, seconds, milliseconds);
     }
-    
+
     console.log(`Parsed QDateTime: ${date}`);
-    
+
     return { date, newOffset };
   }
-
 }
 
 export const wsjtxService = new WSJTXService();

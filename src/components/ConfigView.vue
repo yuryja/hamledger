@@ -89,7 +89,7 @@ export default {
   async mounted() {
     await configHelper.initSettings();
     this.configFields = configHelper.flattenConfig();
-    
+
     // Automatically check system requirements when component mounts
     if (this.isLinux) {
       await this.checkDialoutGroup();
@@ -287,7 +287,7 @@ export default {
 
       this.dialoutStatus.isChecking = true;
       this.dialoutStatus.error = null;
-      
+
       try {
         const result = await window.electronAPI.executeCommand('groups');
         if (result.success && result.data) {
@@ -308,7 +308,7 @@ export default {
 
       this.rigctldStatus.isChecking = true;
       this.rigctldStatus.error = null;
-      
+
       try {
         const result = await window.electronAPI.executeCommand('which rigctld');
         if (result.success && result.data && result.data.trim()) {
@@ -342,7 +342,7 @@ export default {
           this.hamlibStatus.inPath = true;
           delete this.validationErrors.rigctldPath;
           console.log('Hamlib installed successfully:', result.message);
-          
+
           // Add firewall exceptions after successful installation
           try {
             const firewallResult = await window.electronAPI.addFirewallExceptions();
@@ -373,12 +373,18 @@ export default {
       try {
         let result;
         const rigctldPath = field.value.trim();
-        
+
         if (this.isWindows) {
           // Check if it's an absolute path (contains : or starts with \ or /)
-          if (rigctldPath.includes(':') || rigctldPath.startsWith('\\') || rigctldPath.startsWith('/')) {
+          if (
+            rigctldPath.includes(':') ||
+            rigctldPath.startsWith('\\') ||
+            rigctldPath.startsWith('/')
+          ) {
             // For absolute paths, check if the file exists directly
-            result = await window.electronAPI.executeCommand(`if exist "${rigctldPath}" echo "exists"`);
+            result = await window.electronAPI.executeCommand(
+              `if exist "${rigctldPath}" echo "exists"`
+            );
           } else {
             // For relative paths or commands in PATH, use where
             result = await window.electronAPI.executeCommand(`where ${rigctldPath}`);
@@ -408,7 +414,7 @@ export default {
       try {
         await window.electronAPI.rigctldRestart();
         console.log('Rigctld restarted successfully');
-        
+
         // Add firewall exceptions when restarting rigctld on Windows
         if (this.isWindows) {
           try {
@@ -469,7 +475,7 @@ export default {
             value: enabled,
           };
         }
-        
+
         // Check system requirements when enabling CAT control
         if (actualKey === 'rig' && enabled) {
           if (this.isWindows) {
@@ -663,7 +669,7 @@ export default {
                   @blur="testRigctldPath(field)"
                   :class="{ error: validationErrors[getFieldId(field)] }"
                 />
-                
+
                 <!-- Windows Hamlib Controls -->
                 <div v-if="isWindows" class="hamlib-controls">
                   <button
@@ -693,23 +699,27 @@ export default {
                     </span>
                   </button>
 
-                  <button
-                    type="button"
-                    @click="restartRigctld"
-                    class="btn btn-small"
-                  >
+                  <button type="button" @click="restartRigctld" class="btn btn-small">
                     Restart rigctld
                   </button>
                 </div>
 
                 <!-- Linux Hamlib Warning -->
-                <div v-if="isLinux && !rigctldStatus.found && !rigctldStatus.isChecking && rigctldStatus.error === null" class="warning-box">
+                <div
+                  v-if="
+                    isLinux &&
+                    !rigctldStatus.found &&
+                    !rigctldStatus.isChecking &&
+                    rigctldStatus.error === null
+                  "
+                  class="warning-box"
+                >
                   <div class="warning-icon">⚠️</div>
                   <div class="warning-content">
                     <p class="warning-title">Linux Users</p>
                     <p class="warning-text">
-                      On Linux, you must install Hamlib first before enabling CAT control. (You may need
-                      sudo rights)
+                      On Linux, you must install Hamlib first before enabling CAT control. (You may
+                      need sudo rights)
                     </p>
                     <div class="command-section">
                       <p class="command-label">For Ubuntu/Debian:</p>
@@ -744,7 +754,10 @@ export default {
 
                 <!-- Linux Dialout Group Check -->
                 <div v-if="isLinux" class="dialout-section">
-                  <div v-if="!dialoutStatus.inGroup && !dialoutStatus.isChecking" class="dialout-controls">
+                  <div
+                    v-if="!dialoutStatus.inGroup && !dialoutStatus.isChecking"
+                    class="dialout-controls"
+                  >
                     <button
                       type="button"
                       @click="checkDialoutGroup"
@@ -783,12 +796,20 @@ export default {
                   </div>
 
                   <!-- Dialout Group Warning -->
-                  <div v-if="dialoutStatus.isChecking === false && !dialoutStatus.inGroup && !dialoutStatus.error" class="warning-box">
+                  <div
+                    v-if="
+                      dialoutStatus.isChecking === false &&
+                      !dialoutStatus.inGroup &&
+                      !dialoutStatus.error
+                    "
+                    class="warning-box"
+                  >
                     <div class="warning-icon">⚠️</div>
                     <div class="warning-content">
                       <p class="warning-title">Serial Port Access Required</p>
                       <p class="warning-text">
-                        Your user needs to be in the 'dialout' group to access serial ports for CAT control.
+                        Your user needs to be in the 'dialout' group to access serial ports for CAT
+                        control.
                       </p>
                       <div class="command-section">
                         <p class="command-label">Add user to dialout group:</p>
@@ -819,7 +840,8 @@ export default {
                         </div>
                       </div>
                       <p class="warning-text">
-                        <strong>Note:</strong> After running these commands, you may need to restart HamLedger.
+                        <strong>Note:</strong> After running these commands, you may need to restart
+                        HamLedger.
                       </p>
                     </div>
                   </div>

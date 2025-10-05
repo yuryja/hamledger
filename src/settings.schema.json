@@ -262,19 +262,23 @@
       "properties": {
         "enabled": {
           "type": "boolean",
-          "description": "Enable WSJT-X UDP listener and QSO auto-logging"
+          "description": "Enable WSJT-X UDP listener and QSO auto-logging",
+          "default": false
         },
         "port": {
           "type": "integer",
-          "description": "UDP port for WSJT-X communication (default: 2237)"
+          "description": "UDP port for WSJT-X communication (default: 2237)",
+          "default": 2237
         },
         "autoLog": {
           "type": "boolean",
-          "description": "Automatically log QSOs received from WSJT-X"
+          "description": "Automatically log QSOs received from WSJT-X",
+          "default": true
         },
         "logOnlyConfirmed": {
           "type": "boolean",
-          "description": "Only log confirmed QSOs (not all decodes)"
+          "description": "Only log confirmed QSOs (not all decodes)",
+          "default": true
         }
       }
     }

@@ -64,13 +64,13 @@ export default {
   },
   methods: {
     async deleteQso() {
-      if (!confirm('Biztosan törölni szeretnéd ezt a QSO-t? Ez a művelet nem vonható vissza.')) {
+      if (!confirm('Are you sure you want to delete this QSO? This is non-reversible!')) {
         return;
       }
 
       try {
         const qsoId = this.qso._id || this.qso.id;
-        
+
         if (!qsoId) {
           throw new Error('QSO ID hiányzik - nem lehet törölni a QSO-t');
         }

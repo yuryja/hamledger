@@ -16,7 +16,7 @@ export class MaidenheadLocator {
     }
 
     const trimmed = locator.trim().toUpperCase();
-    
+
     // Must be even length and at least 4 characters
     if (trimmed.length < 4 || trimmed.length % 2 !== 0) {
       return false;
@@ -108,7 +108,6 @@ export class MaidenheadLocator {
       lon: lon + lonSize / 2,
     };
   }
-
 
   private static processField(
     lonChar: string,

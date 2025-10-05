@@ -38,22 +38,25 @@ export class SMeterHelper {
    * Convert Hamlib STRENGTH (0-255) to S-meter units
    * Uses manufacturer-specific formulas for accurate conversion
    */
-  public strengthToSMeter(strength: number, manufacturer: string = 'generic'): { sUnit: number; isOverS9: boolean; overS9Value: number } {
+  public strengthToSMeter(
+    strength: number,
+    manufacturer: string = 'generic'
+  ): { sUnit: number; isOverS9: boolean; overS9Value: number } {
     // Clamp strength to valid range
     strength = Math.max(0, Math.min(255, strength));
-    
+
     let sUnit = 0;
     let overS9dB = 0;
-    
+
     const mfg = manufacturer.toLowerCase();
-    
+
     if (mfg.includes('yaesu')) {
       // Yaesu formula
       if (strength <= 95) {
         sUnit = Math.round(strength / 10);
       } else {
         sUnit = 9;
-        overS9dB = Math.round((strength - 95) * 60 / (255 - 95));
+        overS9dB = Math.round(((strength - 95) * 60) / (255 - 95));
       }
     } else if (mfg.includes('icom')) {
       // Icom formula
@@ -61,7 +64,7 @@ export class SMeterHelper {
         sUnit = Math.round(strength / 20);
       } else {
         sUnit = 9;
-        overS9dB = Math.round((strength - 190) * 60 / (255 - 190));
+        overS9dB = Math.round(((strength - 190) * 60) / (255 - 190));
       }
     } else if (mfg.includes('kenwood')) {
       // Kenwood formula
@@ -69,7 +72,7 @@ export class SMeterHelper {
         sUnit = Math.round(strength / 18);
       } else {
         sUnit = 9;
-        overS9dB = Math.round((strength - 160) * 60 / (255 - 160));
+        overS9dB = Math.round(((strength - 160) * 60) / (255 - 160));
       }
     } else {
       // Generic formula (similar to Yaesu)
@@ -77,18 +80,18 @@ export class SMeterHelper {
         sUnit = Math.round(strength / 10);
       } else {
         sUnit = 9;
-        overS9dB = Math.round((strength - 95) * 60 / (255 - 95));
+        overS9dB = Math.round(((strength - 95) * 60) / (255 - 95));
       }
     }
-    
+
     // Ensure sUnit is within valid range
     sUnit = Math.max(0, Math.min(9, sUnit));
     overS9dB = Math.max(0, Math.min(60, overS9dB));
-    
+
     return {
       sUnit,
       isOverS9: sUnit === 9 && overS9dB > 0,
-      overS9Value: overS9dB
+      overS9Value: overS9dB,
     };
   }
 
@@ -97,7 +100,7 @@ export class SMeterHelper {
    */
   public getActiveTicks(strength: number, manufacturer: string = 'generic'): number {
     const { sUnit, isOverS9, overS9Value } = this.strengthToSMeter(strength, manufacturer);
-    
+
     if (!isOverS9) {
       // Each S-unit has 5 ticks (1 major + 4 minor)
       // S1 = 5 ticks, S2 = 10 ticks, etc.
@@ -109,7 +112,6 @@ export class SMeterHelper {
       return s9Ticks + overS9Ticks;
     }
   }
-
 }
 
 export const smeterHelper = new SMeterHelper();

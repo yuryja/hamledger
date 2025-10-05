@@ -524,7 +524,7 @@ app.whenReady().then(async () => {
 app.on('window-all-closed', () => {
   // Stop rigctld when app is closing
   stopRigctld();
-  
+
   // Stop WSJT-X service
   wsjtxService.stop();
 
@@ -822,7 +822,7 @@ ipcMain.handle('hamlib:downloadAndInstall', async event => {
     sendProgress(60);
 
     const tempExtractDir = join(userDataPath, 'hamlib_temp');
-    
+
     await new Promise<void>((resolve, reject) => {
       fs.createReadStream(zipPath)
         .pipe(Extract({ path: tempExtractDir }))
@@ -853,12 +853,12 @@ ipcMain.handle('hamlib:downloadAndInstall', async event => {
       if (!fs.existsSync(dest)) {
         fs.mkdirSync(dest, { recursive: true });
       }
-      
+
       const items = fs.readdirSync(src);
       for (const item of items) {
         const srcPath = join(src, item);
         const destPath = join(dest, item);
-        
+
         if (fs.statSync(srcPath).isDirectory()) {
           moveContents(srcPath, destPath);
         } else {
@@ -903,15 +903,19 @@ ipcMain.handle('hamlib:downloadAndInstall', async event => {
 });
 
 // Add Windows Firewall exceptions for HamLedger and rigctld
-async function addFirewallExceptions(): Promise<{ success: boolean; userCancelled?: boolean; error?: string }> {
+async function addFirewallExceptions(): Promise<{
+  success: boolean;
+  userCancelled?: boolean;
+  error?: string;
+}> {
   if (process.platform !== 'win32') {
     return { success: true }; // Only for Windows
   }
 
-  return new Promise((resolve) => {
+  return new Promise(resolve => {
     const appPath = process.execPath;
     const appName = 'HamLedger';
-    
+
     // PowerShell command to add firewall exceptions
     const psCommand = `
       try {
@@ -952,14 +956,14 @@ async function addFirewallExceptions(): Promise<{ success: boolean; userCancelle
     exec(command, { timeout: 30000 }, (error, stdout, stderr) => {
       if (error) {
         console.error('Error configuring firewall:', error);
-        
+
         // Check if user cancelled UAC prompt
         if (error.message.includes('cancelled') || error.message.includes('1223')) {
           console.warn('User cancelled firewall configuration');
           resolve({ success: false, userCancelled: true });
           return;
         }
-        
+
         // Other errors (no admin rights, etc.)
         console.warn('Firewall configuration failed, but continuing...');
         resolve({ success: false, error: error.message });
@@ -981,7 +985,7 @@ async function addToSystemPath(dirPath: string): Promise<void> {
   return new Promise((resolve, reject) => {
     // Ensure we're adding the bin directory specifically
     const binPath = dirPath.endsWith('bin') ? dirPath : join(dirPath, 'bin');
-    
+
     // Use PowerShell to add to user PATH (no elevation needed)
     const psCommand = `
       try {
@@ -1116,17 +1120,17 @@ ipcMain.handle('firewall:addExceptions', async () => {
 async function initializeWSJTX(): Promise<void> {
   try {
     console.log('🔧 Initializing WSJT-X service...');
-    
+
     // Always set up event listeners regardless of settings
     wsjtxService.on('qso', async (qso: WSJTXLoggedQSO) => {
       console.log('🎯 WSJT-X QSO event received in main process:', qso.dxCall);
-      
+
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const settings = loadSettings() as any;
       const wsjtxSettings = settings?.wsjtx || { enabled: false, port: 2237, autoLog: true };
-      
+
       console.log('📋 WSJT-X settings:', wsjtxSettings);
-      
+
       // Always handle QSO logging for now (can be made configurable later)
       if (wsjtxSettings.autoLog !== false) {
         console.log('✅ Processing WSJT-X QSO (auto-log enabled or default)');
@@ -1135,7 +1139,7 @@ async function initializeWSJTX(): Promise<void> {
         console.log('⚠️ WSJT-X auto-log is explicitly disabled, skipping QSO handling');
       }
     });
-    
+
     wsjtxService.on('decode', (decode: unknown) => {
       // Forward decode messages to renderer if needed
       const windows = BrowserWindow.getAllWindows();
@@ -1143,15 +1147,15 @@ async function initializeWSJTX(): Promise<void> {
         window.webContents.send('wsjtx:decode', decode);
       });
     });
-    
+
     wsjtxService.on('error', (error: Error) => {
       console.error('WSJT-X service error:', error);
     });
-    
+
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const settings = loadSettings() as any;
     const wsjtxSettings = settings?.wsjtx || { enabled: false, port: 2237, autoLog: true };
-    
+
     if (wsjtxSettings.enabled) {
       wsjtxEnabled = true;
       // Start the service
@@ -1169,10 +1173,10 @@ async function initializeWSJTX(): Promise<void> {
 async function handleWSJTXQSO(wsjtxQSO: WSJTXLoggedQSO): Promise<void> {
   try {
     console.log('🎯 Processing WSJT-X QSO in main process:', wsjtxQSO);
-    
+
     // Convert WSJT-X QSO to HamLedger format
     const band = getBandFromFrequency(wsjtxQSO.txFrequency);
-    
+
     const qso: QsoEntry = {
       callsign: wsjtxQSO.dxCall.toUpperCase(),
       datetime: wsjtxQSO.dateTimeOn.toISOString(),
@@ -1185,20 +1189,20 @@ async function handleWSJTXQSO(wsjtxQSO: WSJTXLoggedQSO): Promise<void> {
       remark: wsjtxQSO.comments || 'WSJT-X Auto-logged',
       notes: `Grid: ${wsjtxQSO.dxGrid || 'Unknown'}${wsjtxQSO.name ? `, Name: ${wsjtxQSO.name}` : ''}`,
     };
-    
+
     console.log('📤 Sending WSJT-X QSO to renderer:', qso);
-    
+
     // Send to renderer to add QSO using store's addQso method
     const windows = BrowserWindow.getAllWindows();
     console.log(`📡 Broadcasting to ${windows.length} windows`);
-    
+
     windows.forEach((window, index) => {
       console.log(`📨 Sending wsjtx:add-qso to window ${index + 1}`);
       console.log(`📋 QSO data being sent:`, JSON.stringify(qso, null, 2));
-      
+
       // Send the event
       window.webContents.send('wsjtx:add-qso', qso);
-      
+
       // Verify the window is ready
       if (window.webContents.isLoading()) {
         console.warn(`⚠️ Window ${index + 1} is still loading, event may be lost`);

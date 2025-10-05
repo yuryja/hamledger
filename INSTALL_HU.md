@@ -17,10 +17,12 @@
 4. Indítsd el a HamLedger-t a telepítés után
 
 #### 2. Hamlib Telepítése (CAT Vezérléshez)
+
 A Hamlib egy interfész a Hamledger és az RS232-es port között - az RS-232-es portra küldött parancsokat
-a hamlib a localhost:4532 UDP porton várja. 
+a hamlib a localhost:4532 UDP porton várja.
 
 ##### 2.1.1. A Hamlib automatikus telepítése
+
 A Hamledger az első indításkor lefutó beállítás varázslóban le tudja tölteni és automatikusan telepíteni tudja a Hamlib-et.
 Ezzel többnyire nincs egyéb teendő, haladj tovább a Hamledger indításával.
 

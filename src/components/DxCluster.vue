@@ -833,7 +833,7 @@ export default defineComponent({
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  padding: 0;
+  padding: 0.5rem;
   margin-bottom: 0.5rem;
   background: var(--bg-lighter);
   border-radius: var(--border-radius);

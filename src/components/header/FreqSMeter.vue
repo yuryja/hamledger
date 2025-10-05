@@ -122,25 +122,32 @@ export default {
       <div v-if="showSMeter" class="s-meter">
         <div class="s-meter-inner">
           <template v-for="(majorTick, index) in majorTicks" :key="'major-' + index">
-            <div class="tick major-tick" :class="{ active: (index * 5) < activeTicks }">
+            <div class="tick major-tick" :class="{ active: index * 5 < activeTicks }">
               <div class="tick-label">{{ majorTick.label }}</div>
-              <div class="tick-line" :style="{ background: (index * 5) < activeTicks ? majorTick.color : '#333' }"></div>
+              <div
+                class="tick-line"
+                :style="{ background: index * 5 < activeTicks ? majorTick.color : '#333' }"
+              ></div>
             </div>
 
             <template
               v-for="(minorTick, minorIndex) in smeterHelper.generateMinorTicks(index)"
               :key="'minor-' + index + '-' + minorIndex"
             >
-              <div class="tick minor-tick" :class="{ active: (index * 5 + minorIndex + 1) < activeTicks }">
-                <div 
-                  class="tick-box" 
-                  :class="{ 
-                    'tick-box-inactive': (index * 5 + minorIndex + 1) >= activeTicks,
-                    'tick-box-active': (index * 5 + minorIndex + 1) < activeTicks
+              <div
+                class="tick minor-tick"
+                :class="{ active: index * 5 + minorIndex + 1 < activeTicks }"
+              >
+                <div
+                  class="tick-box"
+                  :class="{
+                    'tick-box-inactive': index * 5 + minorIndex + 1 >= activeTicks,
+                    'tick-box-active': index * 5 + minorIndex + 1 < activeTicks,
                   }"
-                  :style="{ 
-                    backgroundColor: (index * 5 + minorIndex + 1) < activeTicks ? minorTick.color : 'transparent',
-                    borderColor: minorTick.color
+                  :style="{
+                    backgroundColor:
+                      index * 5 + minorIndex + 1 < activeTicks ? minorTick.color : 'transparent',
+                    borderColor: minorTick.color,
                   }"
                 ></div>
               </div>
@@ -351,6 +358,4 @@ export default {
   opacity: 1;
   border-color: transparent;
 }
-
-
 </style>

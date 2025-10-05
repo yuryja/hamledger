@@ -36,7 +36,7 @@ export default {
 </script>
 
 <template>
-  <section class="remote-station-section">
+  <section class="section-box">
     <h2 class="section-title">Remote Station</h2>
     <div v-if="isValid && callsign" class="remote-station-boxes">
       <!-- Station details with integrated location -->
@@ -96,18 +96,6 @@ export default {
 </template>
 
 <style scoped>
-/* Right: Remote Station side-by-side boxes */
-.remote-station-section {
-  flex: 1;
-  background: #333;
-  padding: 1rem;
-  border-radius: 5px;
-  display: flex;
-  flex-direction: column;
-  /* Title above the row of boxes */
-  gap: 0.5rem;
-}
-
 /* The row of boxes side by side */
 .remote-station-boxes {
   display: flex;

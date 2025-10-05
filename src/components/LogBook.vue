@@ -266,7 +266,7 @@ export default {
       this.exportStatus.error = null;
       this.exportStatus.success = false;
       this.exportStatus.exportedCount = 0;
-      
+
       // Show export dialog
       this.showExportDialog = true;
     },
@@ -348,7 +348,11 @@ export default {
             Importing...
           </span>
         </button>
-        <button class="action-btn export-btn" @click="handleExportAdif" :disabled="exportStatus.isExporting">
+        <button
+          class="action-btn export-btn"
+          @click="handleExportAdif"
+          :disabled="exportStatus.isExporting"
+        >
           <span v-if="!exportStatus.isExporting">Export ADIF</span>
           <span v-else class="loading-text">
             <span class="spinner"></span>
@@ -479,8 +483,8 @@ export default {
             <strong>Full Log</strong>
             <span>{{ totalCount }} QSOs</span>
           </button>
-          <button 
-            class="export-option-btn" 
+          <button
+            class="export-option-btn"
             @click="exportQsos('filtered')"
             :disabled="filteredCount === 0"
           >
@@ -698,6 +702,7 @@ export default {
   cursor: pointer;
   border-radius: 3px;
   font-weight: bold;
+  margin: 0.1rem;
 }
 
 .export-btn {

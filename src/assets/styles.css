@@ -70,6 +70,18 @@ body {
   margin-bottom: var(--spacing-sm);
 }
 
+.section-box {
+  flex: 1;
+  background: #333;
+  padding: 1rem;
+  border-radius: 5px;
+  border: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  /* Title above the row of boxes */
+  gap: 0.5rem;
+}
+
 button:hover,
 input:hover {
   filter: brightness(110%);

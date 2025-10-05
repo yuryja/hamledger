@@ -151,7 +151,7 @@ export default {
 </script>
 
 <template>
-  <main class="log-container">
+  <main class="section-box">
     <div class="log-header">
       <div class="header-left">
         <h2 class="section-title">Log Area</h2>
@@ -335,16 +335,6 @@ export default {
 </template>
 
 <style scoped>
-.log-container {
-  background: #333;
-  border-radius: 5px;
-  padding: 1rem;
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-  height: 100%;
-}
-
 .log-header {
   display: flex;
   align-items: flex-start;

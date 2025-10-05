@@ -93,7 +93,7 @@ export default {
       return result;
     },
     wsjtxAllowed(): boolean {
-      return configHelper.getSetting(['wsjtx'], 'enabled') || false;
+      return (configHelper.getSetting(['wsjtx'], 'enabled') as boolean) || false;
     },
   },
   methods: {
@@ -234,15 +234,20 @@ export default {
       this.wsjtxForm.enabled = configHelper.getSetting(['wsjtx'], 'enabled') || false;
       this.wsjtxForm.port = configHelper.getSetting(['wsjtx'], 'port') || 2237;
       this.wsjtxForm.autoLog = configHelper.getSetting(['wsjtx'], 'autoLog') || false;
-      this.wsjtxForm.logOnlyConfirmed = configHelper.getSetting(['wsjtx'], 'logOnlyConfirmed') || false;
+      this.wsjtxForm.logOnlyConfirmed =
+        configHelper.getSetting(['wsjtx'], 'logOnlyConfirmed') || false;
     },
 
     async saveWSJTXSettings() {
       await configHelper.updateSetting(['wsjtx'], 'enabled', this.wsjtxForm.enabled);
       await configHelper.updateSetting(['wsjtx'], 'port', this.wsjtxForm.port);
       await configHelper.updateSetting(['wsjtx'], 'autoLog', this.wsjtxForm.autoLog);
-      await configHelper.updateSetting(['wsjtx'], 'logOnlyConfirmed', this.wsjtxForm.logOnlyConfirmed);
-      
+      await configHelper.updateSetting(
+        ['wsjtx'],
+        'logOnlyConfirmed',
+        this.wsjtxForm.logOnlyConfirmed
+      );
+
       this.closeWSJTXDialog();
     },
 
@@ -297,7 +302,6 @@ export default {
       this.wsjtxEnabled = false;
     },
 
-
     async handOverToWSJTX() {
       try {
         // First disconnect from rigctld
@@ -312,7 +316,7 @@ export default {
         // Start WSJT-X service
         const wsjtxPort = configHelper.getSetting(['wsjtx'], 'port') || 2237;
         const result = await this.qsoStore.startWSJTX(wsjtxPort);
-        
+
         if (result.success) {
           console.log('WSJT-X service started, CAT control handed over');
         } else {
@@ -394,7 +398,7 @@ export default {
             Disconnect
           </button>
         </template>
-        
+
         <!-- WSJT-X Mode buttons (only show when WSJT-X is enabled) -->
         <template v-if="wsjtxEnabled">
           <button
@@ -414,7 +418,7 @@ export default {
             Take Back CAT Control
           </button>
         </template>
-        
+
         <button class="settings-btn" @click="showConnectionSettings">
           {{ wsjtxEnabled ? 'WSJT-X Settings' : 'Settings' }}
         </button>
@@ -422,11 +426,7 @@ export default {
 
       <!-- Hand over to WSJT-X button in separate row -->
       <div v-if="!wsjtxEnabled && isConnected && wsjtxAllowed" class="handover-section">
-        <button
-          class="handover-btn"
-          @click="handOverToWSJTX"
-          :disabled="rigStore.isLoading"
-        >
+        <button class="handover-btn" @click="handOverToWSJTX" :disabled="rigStore.isLoading">
           Hand over to WSJT-X
         </button>
       </div>
@@ -500,20 +500,13 @@ export default {
     </div>
 
     <!-- WSJT-X Settings Dialog -->
-    <div
-      v-if="showWSJTXDialog"
-      class="connection-dialog-overlay"
-      @click="closeWSJTXDialog"
-    >
+    <div v-if="showWSJTXDialog" class="connection-dialog-overlay" @click="closeWSJTXDialog">
       <div class="connection-dialog" @click.stop>
         <h3>WSJT-X Settings</h3>
         <form @submit.prevent="saveWSJTXSettings">
           <div class="form-group">
             <label>
-              <input
-                v-model="wsjtxForm.enabled"
-                type="checkbox"
-              />
+              <input v-model="wsjtxForm.enabled" type="checkbox" />
               Enable WSJT-X Integration
             </label>
           </div>
@@ -529,19 +522,13 @@ export default {
           </div>
           <div class="form-group">
             <label>
-              <input
-                v-model="wsjtxForm.autoLog"
-                type="checkbox"
-              />
+              <input v-model="wsjtxForm.autoLog" type="checkbox" />
               Automatically log QSOs from WSJT-X
             </label>
           </div>
           <div class="form-group">
             <label>
-              <input
-                v-model="wsjtxForm.logOnlyConfirmed"
-                type="checkbox"
-              />
+              <input v-model="wsjtxForm.logOnlyConfirmed" type="checkbox" />
               Log only confirmed QSOs (not all decodes)
             </label>
           </div>
@@ -554,20 +541,14 @@ export default {
     </div>
 
     <!-- Take Back CAT Control Confirmation Dialog -->
-    <div
-      v-if="showTakeBackDialog"
-      class="connection-dialog-overlay"
-      @click="closeTakeBackDialog"
-    >
+    <div v-if="showTakeBackDialog" class="connection-dialog-overlay" @click="closeTakeBackDialog">
       <div class="connection-dialog" @click.stop>
         <h3>⚠️ CAT Control Warning</h3>
         <div class="warning-content">
           <p>
             Please make sure you've closed WSJT-X or you've disabled WSJT-X's built-in CAT control!
           </p>
-          <p>
-            Leaving it on would cause undesired side effects!
-          </p>
+          <p>Leaving it on would cause undesired side effects!</p>
         </div>
         <div class="dialog-buttons">
           <button type="button" @click="closeTakeBackDialog">Cancel</button>
@@ -721,7 +702,6 @@ export default {
   font-size: 0.9rem;
 }
 
-
 /* WSJT-X buttons */
 .handover-btn {
   background: #17a2b8;
@@ -816,7 +796,7 @@ export default {
   border-color: #007bff;
 }
 
-.form-group label input[type="checkbox"] {
+.form-group label input[type='checkbox'] {
   width: auto;
   margin-right: 0.5rem;
 }

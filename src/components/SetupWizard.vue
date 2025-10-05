@@ -97,8 +97,7 @@ export default {
         case 6:
           return (
             !this.wizardData.enableCat ||
-            (this.wizardData.rigctldPath.trim() !== '' && 
-             !this.validationErrors.rigctldPath)
+            (this.wizardData.rigctldPath.trim() !== '' && !this.validationErrors.rigctldPath)
           );
         default:
           return false;
@@ -109,17 +108,17 @@ export default {
     },
     locatorValidationClass() {
       const locator = this.wizardData.locator.trim();
-      
+
       // If empty, no special styling (neutral)
       if (!locator) {
         return '';
       }
-      
+
       // If valid, green background
       if (MaidenheadLocator.isValidLocatorFormat(locator)) {
         return 'valid';
       }
-      
+
       // If invalid, red background
       return 'invalid';
     },
@@ -163,7 +162,7 @@ export default {
     },
     validateLocator() {
       const locator = this.wizardData.locator.trim();
-      
+
       // Empty locator is allowed (optional field)
       if (!locator) {
         delete this.validationErrors.locator;
@@ -215,19 +214,25 @@ export default {
       this.isValidating = true;
       try {
         const rigctldPath = this.wizardData.rigctldPath.trim();
-        
+
         if (!rigctldPath) {
           this.validationErrors.rigctldPath = 'rigctld path is required';
           return false;
         }
-        
+
         let result;
-        
+
         if (this.isWindows) {
           // Check if it's an absolute path (contains : or starts with \ or /)
-          if (rigctldPath.includes(':') || rigctldPath.startsWith('\\') || rigctldPath.startsWith('/')) {
+          if (
+            rigctldPath.includes(':') ||
+            rigctldPath.startsWith('\\') ||
+            rigctldPath.startsWith('/')
+          ) {
             // For absolute paths, check if the file exists directly
-            result = await window.electronAPI.executeCommand(`if exist "${rigctldPath}" echo "exists"`);
+            result = await window.electronAPI.executeCommand(
+              `if exist "${rigctldPath}" echo "exists"`
+            );
           } else {
             // For relative paths or commands in PATH, use where
             result = await window.electronAPI.executeCommand(`where ${rigctldPath}`);
@@ -276,7 +281,7 @@ export default {
 
       this.dialoutStatus.isChecking = true;
       this.dialoutStatus.error = null;
-      
+
       try {
         const result = await window.electronAPI.executeCommand('groups');
         if (result.success && result.data) {
@@ -297,7 +302,7 @@ export default {
 
       this.rigctldStatus.isChecking = true;
       this.rigctldStatus.error = null;
-      
+
       try {
         const result = await window.electronAPI.executeCommand('which rigctld');
         if (result.success && result.data && result.data.trim()) {
@@ -331,7 +336,7 @@ export default {
           this.hamlibStatus.inPath = true;
           delete this.validationErrors.rigctldPath;
           console.log('Hamlib installed successfully:', result.message);
-          
+
           // Add firewall exceptions after successful installation
           try {
             const firewallResult = await window.electronAPI.addFirewallExceptions();
@@ -540,7 +545,7 @@ export default {
           try {
             await window.electronAPI.rigctldRestart();
             console.log('Rigctld restarted successfully');
-            
+
             // Add firewall exceptions when enabling CAT control
             if (this.isWindows) {
               try {
@@ -637,10 +642,10 @@ export default {
               type="text"
               placeholder="e.g. JN97"
               @blur="validateLocator"
-              :class="{ 
+              :class="{
                 error: validationErrors.locator,
                 valid: locatorValidationClass === 'valid',
-                invalid: locatorValidationClass === 'invalid'
+                invalid: locatorValidationClass === 'invalid',
               }"
             />
             <span v-if="validationErrors.locator" class="error-message">
@@ -767,8 +772,8 @@ export default {
         <div v-if="currentStep === 5" class="wizard-step">
           <h2>QRZ.com Configuration</h2>
           <p class="step-description">
-            Configure QRZ.com API access for enhanced callsign lookups and station information.
-            This is optional and can be configured later.
+            Configure QRZ.com API access for enhanced callsign lookups and station information. This
+            is optional and can be configured later.
           </p>
 
           <div class="form-group">
@@ -785,7 +790,8 @@ export default {
                 callsign lookups. You need a QRZ.com account to use this feature.
               </p>
               <p class="info-text">
-                <strong>Note:</strong> Your credentials are stored locally and only used for API authentication.
+                <strong>Note:</strong> Your credentials are stored locally and only used for API
+                authentication.
               </p>
             </div>
 
@@ -923,21 +929,35 @@ export default {
               <div class="warning-content">
                 <p class="warning-title">Windows Security Notice</p>
                 <p class="info-text">
-                  <strong>Core Isolation (Memory Integrity)</strong> is a Windows security feature that may interfere with Hamlib's operation.
-                  If you experience strange CAT behavior or complete non-functionality, you may need to disable this feature.
+                  <strong>Core Isolation (Memory Integrity)</strong> is a Windows security feature
+                  that may interfere with Hamlib's operation. If you experience strange CAT behavior
+                  or complete non-functionality, you may need to disable this feature.
                 </p>
                 <p class="info-text">
-                  To check/disable: Windows Security → Device Security → Core Isolation Details → Memory Integrity (turn off)
+                  To check/disable: Windows Security → Device Security → Core Isolation Details →
+                  Memory Integrity (turn off)
                 </p>
                 <p class="info-text">
-                  <em>Note: Disabling this feature may reduce system security. Only disable if necessary for CAT control.</em>
+                  <em
+                    >Note: Disabling this feature may reduce system security. Only disable if
+                    necessary for CAT control.</em
+                  >
                 </p>
               </div>
             </div>
           </div>
 
           <!-- Linux Hamlib Warning -->
-          <div v-if="wizardData.enableCat && isLinux && !rigctldStatus.found && !rigctldStatus.isChecking && rigctldStatus.error === null" class="warning-box">
+          <div
+            v-if="
+              wizardData.enableCat &&
+              isLinux &&
+              !rigctldStatus.found &&
+              !rigctldStatus.isChecking &&
+              rigctldStatus.error === null
+            "
+            class="warning-box"
+          >
             <div class="warning-icon">⚠️</div>
             <div class="warning-content">
               <p class="warning-title">Linux Users</p>
@@ -978,7 +998,10 @@ export default {
 
           <!-- Linux Dialout Group Check -->
           <div v-if="wizardData.enableCat && isLinux" class="dialout-section">
-            <div v-if="!dialoutStatus.inGroup && !dialoutStatus.isChecking" class="dialout-controls">
+            <div
+              v-if="!dialoutStatus.inGroup && !dialoutStatus.isChecking"
+              class="dialout-controls"
+            >
               <button
                 type="button"
                 @click="checkDialoutGroup"
@@ -999,12 +1022,18 @@ export default {
             </div>
 
             <!-- Dialout Group Warning -->
-            <div v-if="dialoutStatus.isChecking === false && !dialoutStatus.inGroup && !dialoutStatus.error" class="warning-box">
+            <div
+              v-if="
+                dialoutStatus.isChecking === false && !dialoutStatus.inGroup && !dialoutStatus.error
+              "
+              class="warning-box"
+            >
               <div class="warning-icon">⚠️</div>
               <div class="warning-content">
                 <p class="warning-title">Serial Port Access Required</p>
                 <p class="warning-text">
-                  Your user needs to be in the 'dialout' group to access serial ports for CAT control.
+                  Your user needs to be in the 'dialout' group to access serial ports for CAT
+                  control.
                 </p>
                 <div class="command-section">
                   <p class="command-label">Add user to dialout group:</p>
@@ -1035,7 +1064,8 @@ export default {
                   </div>
                 </div>
                 <p class="warning-text">
-                  <strong>Note:</strong> After running these commands, you may need to restart HamLedger.
+                  <strong>Note:</strong> After running these commands, you may need to restart
+                  HamLedger.
                 </p>
               </div>
             </div>

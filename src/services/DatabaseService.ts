@@ -64,7 +64,7 @@ export class DatabaseService {
     try {
       // Get the current document to get the latest _rev
       const currentDoc = await this.db.get(qsoId);
-      
+
       // Delete the document
       const response = await this.db.remove(currentDoc);
       await this.backupToJson();

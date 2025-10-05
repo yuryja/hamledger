@@ -19,7 +19,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.on('hamlib:downloadProgress', (_, progress) => callback(progress));
   },
   loadSettings: () => ipcRenderer.invoke('settings:load'),
-  saveSettings: (settings: Record<string, unknown>) => ipcRenderer.invoke('settings:save', settings),
+  saveSettings: (settings: Record<string, unknown>) =>
+    ipcRenderer.invoke('settings:save', settings),
   updateQso: (qso: QsoEntry) => ipcRenderer.invoke('qso:update', qso),
   fetchDxSpots: (params: string) => ipcRenderer.invoke('fetchDxSpots', params),
   fetchPropagationData: () => ipcRenderer.invoke('fetchPropagationData'),
