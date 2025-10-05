@@ -199,6 +199,7 @@ export default {
   flex-direction: column;
   /* so the title is above the content */
   gap: 0.5rem;
+  border: 1px solid var(--border-color);
 }
 
 .qso-input-content {
