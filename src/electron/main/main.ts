@@ -366,6 +366,7 @@ ipcMain.handle('adif:saveFile', async (_, content: string) => {
 // Propagation Data API handler
 ipcMain.handle('fetchPropagationData', async () => {
   try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const settings = loadSettings() as any;
     const baseUrl = settings?.apis?.wwv?.baseUrl || 'https://dxheat.com/wwv';
     const url = `${baseUrl}/source/`;
@@ -411,7 +412,8 @@ ipcMain.handle('fetchPropagationData', async () => {
 // Weather API handler
 ipcMain.handle('fetchWeather', async (event, lat: number, lon: number) => {
   try {
-    const settings = loadSettings();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const settings = loadSettings() as any;
     const baseUrl = settings?.apis?.openMeteo?.baseUrl || 'https://api.open-meteo.com/v1';
     const url = `${baseUrl}/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`;
 
@@ -456,7 +458,8 @@ ipcMain.handle('fetchWeather', async (event, lat: number, lon: number) => {
 // DX Spots API handler
 ipcMain.handle('fetchDxSpots', async (event, params: string) => {
   try {
-    const settings = loadSettings();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const settings = loadSettings() as any;
     const baseUrl = settings?.apis?.dxheat?.baseUrl || 'https://dxheat.com';
     const url = `${baseUrl}/source/spots/?${params}`;
 
@@ -1112,7 +1115,8 @@ ipcMain.handle('firewall:addExceptions', async () => {
 // WSJT-X initialization
 async function initializeWSJTX(): Promise<void> {
   try {
-    const settings = loadSettings();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const settings = loadSettings() as any;
     const wsjtxSettings = settings?.wsjtx || { enabled: false, port: 2237, autoLog: true };
     
     if (wsjtxSettings.enabled) {
