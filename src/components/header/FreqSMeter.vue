@@ -20,13 +20,15 @@ export default {
       return this.smeterHelper.getMajorTicks();
     },
     signalStrength(): number {
-      return this.rigStore.rigState.signalStrength || -120; // Default to very weak signal
+      return this.rigStore.rigState.signalStrength || 0; // Default to 0 (no signal)
     },
     activeTicks(): number {
-      return this.smeterHelper.getActiveTicks(this.signalStrength);
+      const manufacturer = this.rigStore.capabilities?.mfgName || 'generic';
+      return this.smeterHelper.getActiveTicks(this.signalStrength, manufacturer);
     },
     smeterInfo() {
-      return this.smeterHelper.dbToSMeter(this.signalStrength);
+      const manufacturer = this.rigStore.capabilities?.mfgName || 'generic';
+      return this.smeterHelper.strengthToSMeter(this.signalStrength, manufacturer);
     },
     frequency: {
       get() {
@@ -139,8 +141,8 @@ export default {
         </div>
         <div class="s-meter-value">
           <span v-if="!smeterInfo.isOverS9">S{{ smeterInfo.sUnit }}</span>
-          <span v-else>S9+{{ smeterInfo.overS9Value }}</span>
-          <span class="db-value">({{ signalStrength.toFixed(1) }} dB)</span>
+          <span v-else>S9+{{ smeterInfo.overS9Value }}dB</span>
+          <span class="raw-value">({{ signalStrength }}/255)</span>
         </div>
       </div>
 
@@ -348,7 +350,7 @@ export default {
   text-align: center;
 }
 
-.db-value {
+.raw-value {
   font-size: 0.8rem;
   color: #999;
   margin-left: 0.5rem;

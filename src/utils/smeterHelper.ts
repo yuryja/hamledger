@@ -36,35 +36,68 @@ export class SMeterHelper {
   }
 
   /**
-   * Convert signal strength in dB to S-meter units
-   * S9 = -73 dBm, each S-unit = 6 dB
-   * Above S9: +10dB, +20dB, +30dB etc.
+   * Convert Hamlib STRENGTH (0-255) to S-meter units
+   * Uses manufacturer-specific formulas for accurate conversion
    */
-  public dbToSMeter(strengthDb: number): { sUnit: number; isOverS9: boolean; overS9Value: number } {
-    // Assuming strengthDb is relative to S9 (-73 dBm reference)
-    // Positive values are stronger signals
-    const s9Reference = -73; // dBm
-    const sUnitStep = 6; // dB per S-unit
+  public strengthToSMeter(strength: number, manufacturer: string = 'generic'): { sUnit: number; isOverS9: boolean; overS9Value: number } {
+    // Clamp strength to valid range
+    strength = Math.max(0, Math.min(255, strength));
     
-    // Calculate relative to S9
-    const relativeToS9 = strengthDb - s9Reference;
+    let sUnit = 0;
+    let overS9dB = 0;
     
-    if (relativeToS9 <= -48) { // Below S1 (-73 - 48 = -121 dBm)
-      return { sUnit: 0, isOverS9: false, overS9Value: 0 };
-    } else if (relativeToS9 <= 0) { // S1 to S9
-      const sUnit = Math.max(1, Math.min(9, Math.floor((relativeToS9 + 48) / sUnitStep) + 1));
-      return { sUnit, isOverS9: false, overS9Value: 0 };
-    } else { // Above S9
-      const overS9 = Math.min(60, Math.floor(relativeToS9 / 10) * 10); // Round to nearest 10dB
-      return { sUnit: 9, isOverS9: true, overS9Value: overS9 };
+    const mfg = manufacturer.toLowerCase();
+    
+    if (mfg.includes('yaesu')) {
+      // Yaesu formula
+      if (strength <= 95) {
+        sUnit = Math.round(strength / 10);
+      } else {
+        sUnit = 9;
+        overS9dB = Math.round((strength - 95) * 60 / (255 - 95));
+      }
+    } else if (mfg.includes('icom')) {
+      // Icom formula
+      if (strength <= 190) {
+        sUnit = Math.round(strength / 20);
+      } else {
+        sUnit = 9;
+        overS9dB = Math.round((strength - 190) * 60 / (255 - 190));
+      }
+    } else if (mfg.includes('kenwood')) {
+      // Kenwood formula
+      if (strength <= 160) {
+        sUnit = Math.round(strength / 18);
+      } else {
+        sUnit = 9;
+        overS9dB = Math.round((strength - 160) * 60 / (255 - 160));
+      }
+    } else {
+      // Generic formula (similar to Yaesu)
+      if (strength <= 95) {
+        sUnit = Math.round(strength / 10);
+      } else {
+        sUnit = 9;
+        overS9dB = Math.round((strength - 95) * 60 / (255 - 95));
+      }
     }
+    
+    // Ensure sUnit is within valid range
+    sUnit = Math.max(0, Math.min(9, sUnit));
+    overS9dB = Math.max(0, Math.min(60, overS9dB));
+    
+    return {
+      sUnit,
+      isOverS9: sUnit === 9 && overS9dB > 0,
+      overS9Value: overS9dB
+    };
   }
 
   /**
-   * Get the active tick count based on signal strength
+   * Get the active tick count based on Hamlib STRENGTH value
    */
-  public getActiveTicks(strengthDb: number): number {
-    const { sUnit, isOverS9, overS9Value } = this.dbToSMeter(strengthDb);
+  public getActiveTicks(strength: number, manufacturer: string = 'generic'): number {
+    const { sUnit, isOverS9, overS9Value } = this.strengthToSMeter(strength, manufacturer);
     
     if (!isOverS9) {
       // Each S-unit has 5 ticks (1 major + 4 minor)
@@ -72,7 +105,7 @@ export class SMeterHelper {
     } else {
       // S9 + over S9 ticks
       const s9Ticks = 9 * 5; // 45 ticks for S1-S9
-      const overS9Ticks = Math.min(3, Math.floor(overS9Value / 10)) * 5; // +10, +20, +30
+      const overS9Ticks = Math.min(3, Math.floor(overS9Value / 20)) * 5; // +20, +40, +60
       return s9Ticks + overS9Ticks;
     }
   }
