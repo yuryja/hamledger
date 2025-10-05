@@ -1169,12 +1169,11 @@ async function handleWSJTXQSO(wsjtxQSO: WSJTXLoggedQSO): Promise<void> {
       rstt: wsjtxQSO.reportSent || '---',
       remark: wsjtxQSO.comments || 'WSJT-X Auto-logged',
       notes: `Grid: ${wsjtxQSO.dxGrid || 'Unknown'}${wsjtxQSO.name ? `, Name: ${wsjtxQSO.name}` : ''}`,
-      _id: `wsjtx-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
     };
     
-    console.log('Converted QSO for saving:', qso);
+    console.log('Converted QSO for store addQso:', qso);
     
-    // Notify renderer to add QSO using store's addQso method
+    // Send to renderer to add QSO using store's addQso method (no database save needed here)
     const windows = BrowserWindow.getAllWindows();
     console.log(`Notifying ${windows.length} windows to add WSJT-X QSO via store addQso`);
     windows.forEach(window => {

@@ -491,7 +491,11 @@ export const useQsoStore = defineStore('qso', {
         // Listen for WSJT-X QSO add requests to use store's addQso method
         window.electronAPI.onWSJTXAddQSO?.((qso: QsoEntry) => {
           console.log('Received WSJT-X QSO for store addQso:', qso);
-          // Set the QSO form with WSJT-X data and call addQso
+          
+          // Temporarily save current form state
+          const originalForm = { ...this.qsoForm };
+          
+          // Set the QSO form with WSJT-X data
           this.qsoForm.callsign = qso.callsign;
           this.qsoForm.band = qso.band;
           this.qsoForm.mode = qso.mode;
@@ -500,8 +504,16 @@ export const useQsoStore = defineStore('qso', {
           this.qsoForm.remark = qso.remark;
           this.qsoForm.notes = qso.notes;
           
-          // Call the store's addQso method
-          this.addQso();
+          // Call the store's addQso method (this will save to database automatically)
+          this.addQso().then(() => {
+            console.log('WSJT-X QSO successfully added via store addQso:', qso.callsign);
+            // Restore original form state after successful save
+            this.qsoForm = originalForm;
+          }).catch((error) => {
+            console.error('Failed to add WSJT-X QSO via store addQso:', error);
+            // Restore original form state on error too
+            this.qsoForm = originalForm;
+          });
         });
       } catch (error) {
         console.error('Error initializing WSJT-X:', error);
