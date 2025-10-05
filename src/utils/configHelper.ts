@@ -312,8 +312,7 @@ export class ConfigHelper {
     
     const cloned: any = {};
     for (const key in obj) {
-      ##AI! Do not access Object.prototype method 'hasOwnProperty' from target object.
-      if (obj.hasOwnProperty(key)) {
+      if (Object.prototype.hasOwnProperty.call(obj, key)) {
         cloned[key] = this.deepClone(obj[key]);
       }
     }
