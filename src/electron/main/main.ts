@@ -1115,41 +1115,49 @@ ipcMain.handle('firewall:addExceptions', async () => {
 // WSJT-X initialization
 async function initializeWSJTX(): Promise<void> {
   try {
+    console.log('🔧 Initializing WSJT-X service...');
+    
+    // Always set up event listeners regardless of settings
+    wsjtxService.on('qso', async (qso: WSJTXLoggedQSO) => {
+      console.log('🎯 WSJT-X QSO event received in main process:', qso.dxCall);
+      
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const settings = loadSettings() as any;
+      const wsjtxSettings = settings?.wsjtx || { enabled: false, port: 2237, autoLog: true };
+      
+      if (wsjtxSettings.autoLog) {
+        await handleWSJTXQSO(qso);
+      } else {
+        console.log('⚠️ WSJT-X auto-log is disabled, skipping QSO handling');
+      }
+    });
+    
+    wsjtxService.on('decode', (decode: unknown) => {
+      // Forward decode messages to renderer if needed
+      const windows = BrowserWindow.getAllWindows();
+      windows.forEach(window => {
+        window.webContents.send('wsjtx:decode', decode);
+      });
+    });
+    
+    wsjtxService.on('error', (error: Error) => {
+      console.error('WSJT-X service error:', error);
+    });
+    
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const settings = loadSettings() as any;
     const wsjtxSettings = settings?.wsjtx || { enabled: false, port: 2237, autoLog: true };
     
     if (wsjtxSettings.enabled) {
       wsjtxEnabled = true;
-      
-      // Set up event listeners
-      wsjtxService.on('qso', async (qso: WSJTXLoggedQSO) => {
-        console.log('🎯 WSJT-X QSO event received in main process:', qso.dxCall);
-        if (wsjtxSettings.autoLog) {
-          await handleWSJTXQSO(qso);
-        } else {
-          console.log('⚠️ WSJT-X auto-log is disabled, skipping QSO handling');
-        }
-      });
-      
-      wsjtxService.on('decode', (decode: unknown) => {
-        // Forward decode messages to renderer if needed
-        const windows = BrowserWindow.getAllWindows();
-        windows.forEach(window => {
-          window.webContents.send('wsjtx:decode', decode);
-        });
-      });
-      
-      wsjtxService.on('error', (error: Error) => {
-        console.error('WSJT-X service error:', error);
-      });
-      
       // Start the service
       await wsjtxService.start();
-      console.log('WSJT-X service started');
+      console.log('✅ WSJT-X service started and event listeners set up');
+    } else {
+      console.log('⚠️ WSJT-X service disabled in settings, but event listeners are ready');
     }
   } catch (error) {
-    console.error('Error initializing WSJT-X service:', error);
+    console.error('💥 Error initializing WSJT-X service:', error);
   }
 }
 
