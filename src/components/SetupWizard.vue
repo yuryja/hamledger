@@ -81,8 +81,7 @@ export default {
           return (
             !this.wizardData.enableCat ||
             (this.wizardData.rigctldPath.trim() !== '' && 
-             !this.validationErrors.rigctldPath && 
-             (this.hamlibStatus.inPath || this.hamlibStatus.success))
+             !this.validationErrors.rigctldPath)
           );
         default:
           return false;
@@ -151,8 +150,14 @@ export default {
 
       this.isValidating = true;
       try {
-        let result;
         const rigctldPath = this.wizardData.rigctldPath.trim();
+        
+        if (!rigctldPath) {
+          this.validationErrors.rigctldPath = 'rigctld path is required';
+          return false;
+        }
+        
+        let result;
         
         if (this.isWindows) {
           // Check if it's an absolute path (contains : or starts with \ or /)
@@ -168,14 +173,15 @@ export default {
           result = await window.electronAPI.executeCommand(`which ${rigctldPath}`);
         }
 
-        if (result.success && result.data.trim()) {
+        if (result.success && result.data && result.data.trim()) {
           delete this.validationErrors.rigctldPath;
           return true;
         } else {
           this.validationErrors.rigctldPath = 'rigctld not found in the specified path';
           return false;
         }
-      } catch {
+      } catch (error) {
+        console.error('Error checking rigctld path:', error);
         this.validationErrors.rigctldPath = 'Error checking rigctld path';
         return false;
       } finally {
@@ -382,6 +388,8 @@ export default {
       } else if (this.wizardData.enableCat && this.isLinux) {
         // Check dialout group membership on Linux
         this.checkDialoutGroup();
+        // Also test rigctld path on Linux
+        this.testRigctldPath();
       } else if (!this.wizardData.enableCat) {
         // Clear validation errors when CAT is disabled
         delete this.validationErrors.rigctldPath;
