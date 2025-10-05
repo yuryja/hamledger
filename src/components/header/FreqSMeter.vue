@@ -50,6 +50,9 @@ export default {
     splitActive() {
       return this.rigStore.rigState.split;
     },
+    showSMeter() {
+      return this.rigStore.isConnected;
+    },
     selectedMode: {
       get() {
         return this.rigStore.currentMode;
@@ -116,7 +119,7 @@ export default {
         </div>
       </div>
 
-      <div class="s-meter">
+      <div v-if="showSMeter" class="s-meter">
         <div class="s-meter-inner">
           <template v-for="(majorTick, index) in majorTicks" :key="'major-' + index">
             <div class="tick major-tick" :class="{ active: (index * 5) < activeTicks }">
