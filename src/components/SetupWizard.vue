@@ -48,6 +48,11 @@ export default {
         isChecking: false,
         inPath: false,
       },
+      dialoutStatus: {
+        isChecking: false,
+        inGroup: false,
+        error: null as string | null,
+      },
       availableBands: BAND_RANGES.filter(band =>
         ['160', '80', '60', '40', '30', '20', '17', '15', '12', '10', '6', '2', '70'].includes(
           band.shortName
@@ -194,6 +199,27 @@ export default {
         this.validationErrors.rigctldPath = 'Error checking rigctld availability';
       } finally {
         this.hamlibStatus.isChecking = false;
+      }
+    },
+    async checkDialoutGroup() {
+      if (!this.isLinux) return;
+
+      this.dialoutStatus.isChecking = true;
+      this.dialoutStatus.error = null;
+      
+      try {
+        const result = await window.electronAPI.executeCommand('groups');
+        if (result.success && result.data) {
+          const groups = result.data.trim().split(/\s+/);
+          this.dialoutStatus.inGroup = groups.includes('dialout');
+        } else {
+          this.dialoutStatus.error = 'Failed to check user groups';
+        }
+      } catch (error) {
+        console.error('Error checking dialout group:', error);
+        this.dialoutStatus.error = 'Error checking dialout group membership';
+      } finally {
+        this.dialoutStatus.isChecking = false;
       }
     },
     async downloadAndInstallHamlib() {
@@ -353,11 +379,16 @@ export default {
       if (this.wizardData.enableCat && this.isWindows) {
         // Automatically check rigctld when CAT is enabled on Windows
         this.checkRigctldInPath();
+      } else if (this.wizardData.enableCat && this.isLinux) {
+        // Check dialout group membership on Linux
+        this.checkDialoutGroup();
       } else if (!this.wizardData.enableCat) {
         // Clear validation errors when CAT is disabled
         delete this.validationErrors.rigctldPath;
         this.hamlibStatus.inPath = false;
         this.hamlibStatus.success = false;
+        this.dialoutStatus.inGroup = false;
+        this.dialoutStatus.error = null;
       }
     },
     async completeSetup() {
@@ -724,11 +755,11 @@ export default {
               <div class="command-section">
                 <p class="command-label">For Ubuntu/Debian:</p>
                 <div class="command-box">
-                  <code class="command-text">apt install libhamlib-utils</code>
+                  <code class="command-text">sudo apt install libhamlib-utils</code>
                   <button
                     type="button"
                     class="copy-btn"
-                    @click="copyToClipboard('apt install libhamlib-utils')"
+                    @click="copyToClipboard('sudo apt install libhamlib-utils')"
                     title="Copy to clipboard"
                   >
                     📋
@@ -738,17 +769,87 @@ export default {
               <div class="command-section">
                 <p class="command-label">For RPM based distributions:</p>
                 <div class="command-box">
-                  <code class="command-text">rpm install libhamlib-utils</code>
+                  <code class="command-text">sudo dnf install hamlib</code>
                   <button
                     type="button"
                     class="copy-btn"
-                    @click="copyToClipboard('rpm install libhamlib-utils')"
+                    @click="copyToClipboard('sudo dnf install hamlib')"
                     title="Copy to clipboard"
                   >
                     📋
                   </button>
                 </div>
               </div>
+            </div>
+          </div>
+
+          <!-- Linux Dialout Group Check -->
+          <div v-if="wizardData.enableCat && isLinux" class="dialout-section">
+            <div class="dialout-controls">
+              <button
+                type="button"
+                @click="checkDialoutGroup"
+                :disabled="dialoutStatus.isChecking"
+                class="btn btn-small"
+              >
+                <span v-if="!dialoutStatus.isChecking">Check dialout group</span>
+                <span v-else class="loading-text">
+                  <span class="spinner"></span>
+                  Checking...
+                </span>
+              </button>
+            </div>
+
+            <!-- Dialout Group Success -->
+            <div v-if="dialoutStatus.inGroup" class="success-message">
+              ✅ User is in dialout group - serial port access available!
+            </div>
+
+            <!-- Dialout Group Warning -->
+            <div v-if="!dialoutStatus.inGroup && !dialoutStatus.isChecking && !dialoutStatus.error" class="warning-box">
+              <div class="warning-icon">⚠️</div>
+              <div class="warning-content">
+                <p class="warning-title">Serial Port Access Required</p>
+                <p class="warning-text">
+                  Your user needs to be in the 'dialout' group to access serial ports for CAT control.
+                </p>
+                <div class="command-section">
+                  <p class="command-label">Add user to dialout group:</p>
+                  <div class="command-box">
+                    <code class="command-text">sudo usermod -a -G dialout $USER</code>
+                    <button
+                      type="button"
+                      class="copy-btn"
+                      @click="copyToClipboard('sudo usermod -a -G dialout $USER')"
+                      title="Copy to clipboard"
+                    >
+                      📋
+                    </button>
+                  </div>
+                </div>
+                <div class="command-section">
+                  <p class="command-label">Then reload groups (or logout/login):</p>
+                  <div class="command-box">
+                    <code class="command-text">newgrp dialout</code>
+                    <button
+                      type="button"
+                      class="copy-btn"
+                      @click="copyToClipboard('newgrp dialout')"
+                      title="Copy to clipboard"
+                    >
+                      📋
+                    </button>
+                  </div>
+                </div>
+                <p class="warning-text">
+                  <strong>Note:</strong> After running these commands, you may need to restart HamLedger.
+                </p>
+              </div>
+            </div>
+
+            <!-- Dialout Group Error -->
+            <div v-if="dialoutStatus.error" class="error-message">
+              ❌ Error checking dialout group: {{ dialoutStatus.error }}
             </div>
           </div>
 
@@ -1257,5 +1358,16 @@ export default {
   margin-top: 0.5rem;
   font-size: 0.85rem;
   color: var(--gray-color);
+}
+
+.dialout-section {
+  margin: 1rem 0;
+}
+
+.dialout-controls {
+  display: flex;
+  gap: 1rem;
+  margin: 1rem 0;
+  align-items: center;
 }
 </style>
