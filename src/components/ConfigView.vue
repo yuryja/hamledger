@@ -87,6 +87,9 @@ export default {
     },
   },
   async mounted() {
+    await configHelper.initSettings();
+    this.configFields = configHelper.flattenConfig();
+    
     // Automatically check system requirements when component mounts
     if (this.isLinux) {
       await this.checkDialoutGroup();
@@ -467,19 +470,25 @@ export default {
           };
         }
         
-        // Add firewall exceptions when enabling CAT control on Windows
-        if (actualKey === 'rig' && enabled && this.isWindows) {
-          try {
-            const firewallResult = await window.electronAPI.addFirewallExceptions();
-            if (firewallResult.success) {
-              console.log('Firewall exceptions added for CAT control');
-            } else if (firewallResult.userCancelled) {
-              console.warn('User cancelled firewall configuration for CAT control');
-            } else {
-              console.warn('Failed to add firewall exceptions:', firewallResult.error);
+        // Check system requirements when enabling CAT control
+        if (actualKey === 'rig' && enabled) {
+          if (this.isWindows) {
+            await this.checkRigctldInPath();
+            try {
+              const firewallResult = await window.electronAPI.addFirewallExceptions();
+              if (firewallResult.success) {
+                console.log('Firewall exceptions added for CAT control');
+              } else if (firewallResult.userCancelled) {
+                console.warn('User cancelled firewall configuration for CAT control');
+              } else {
+                console.warn('Failed to add firewall exceptions:', firewallResult.error);
+              }
+            } catch (firewallError) {
+              console.warn('Failed to add firewall exceptions:', firewallError);
             }
-          } catch (firewallError) {
-            console.warn('Failed to add firewall exceptions:', firewallError);
+          } else if (this.isLinux) {
+            await this.checkDialoutGroup();
+            await this.checkRigctldAvailability();
           }
         }
       }
