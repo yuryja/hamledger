@@ -246,7 +246,8 @@ export default {
 
     async checkWSJTXSettings() {
       await configHelper.initSettings();
-      this.wsjtxEnabled = configHelper.getSetting(['wsjtx'], 'enabled') || false;
+      // Don't automatically enable WSJT-X mode, just check if it's allowed
+      this.wsjtxEnabled = false;
     },
 
 
