@@ -1153,11 +1153,13 @@ async function initializeWSJTX(): Promise<void> {
 // Handle WSJT-X QSO logging
 async function handleWSJTXQSO(wsjtxQSO: WSJTXLoggedQSO): Promise<void> {
   try {
+    console.log('Processing WSJT-X QSO:', wsjtxQSO);
+    
     // Convert WSJT-X QSO to HamLedger format
     const band = getBandFromFrequency(wsjtxQSO.txFrequency);
     
     const qso: QsoEntry = {
-      callsign: wsjtxQSO.dxCall,
+      callsign: wsjtxQSO.dxCall.toUpperCase(), // Ensure uppercase
       datetime: wsjtxQSO.dateTimeOn.toISOString(), // Use dateTimeOn instead of dateTimeOff
       band: band ? band.name : 'Unknown',
       freqRx: wsjtxQSO.txFrequency / 1000000, // Convert Hz to MHz
@@ -1170,15 +1172,19 @@ async function handleWSJTXQSO(wsjtxQSO: WSJTXLoggedQSO): Promise<void> {
       _id: `wsjtx-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
     };
     
+    console.log('Converted QSO for saving:', qso);
+    
     // Save to database
     const result = await databaseService.saveQso(qso);
     
     if (result.ok) {
-      console.log('WSJT-X QSO auto-logged:', qso.callsign);
+      console.log('WSJT-X QSO saved to database:', qso.callsign);
       
       // Notify renderer about new QSO
       const windows = BrowserWindow.getAllWindows();
+      console.log(`Notifying ${windows.length} windows about new QSO`);
       windows.forEach(window => {
+        console.log('Sending wsjtx:qso-logged event to renderer');
         window.webContents.send('wsjtx:qso-logged', qso);
       });
     } else {
