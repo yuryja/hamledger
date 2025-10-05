@@ -366,6 +366,8 @@ export default {
           </button>
         </template>
         
+        <button class="settings-btn" @click="showConnectionSettings">Settings</button>
+        
         <!-- Hand over to WSJT-X button (only show when CAT is connected and WSJT-X is enabled in settings) -->
         <button
           v-if="!wsjtxEnabled && isConnected && wsjtxAllowed"
@@ -375,8 +377,6 @@ export default {
         >
           Hand over to WSJT-X
         </button>
-        
-        <button class="settings-btn" @click="showConnectionSettings">Settings</button>
       </div>
     </div>
 
