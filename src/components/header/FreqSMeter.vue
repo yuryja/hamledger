@@ -270,11 +270,11 @@ export default {
 }
 
 .s-meter::before {
-  top: 1px;
+  top: 3px;
 }
 
 .s-meter::after {
-  bottom: 1px;
+  bottom: 4px;
 }
 
 .s-meter-inner {
@@ -301,7 +301,7 @@ export default {
 
 .tick-line {
   position: absolute;
-  top: -15px;
+  top: -17px;
   width: 1px;
   height: 4px;
   left: 50%;
