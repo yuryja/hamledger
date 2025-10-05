@@ -896,6 +896,24 @@ export default {
                 </a>
               </p>
             </div>
+
+            <!-- Windows Core Isolation Warning -->
+            <div class="info-box core-isolation-warning">
+              <div class="warning-icon">⚠️</div>
+              <div class="warning-content">
+                <p class="warning-title">Windows Security Notice</p>
+                <p class="info-text">
+                  <strong>Core Isolation (Memory Integrity)</strong> is a Windows security feature that may interfere with Hamlib's operation.
+                  If you experience strange CAT behavior or complete non-functionality, you may need to disable this feature.
+                </p>
+                <p class="info-text">
+                  To check/disable: Windows Security → Device Security → Core Isolation Details → Memory Integrity (turn off)
+                </p>
+                <p class="info-text">
+                  <em>Note: Disabling this feature may reduce system security. Only disable if necessary for CAT control.</em>
+                </p>
+              </div>
+            </div>
           </div>
 
           <!-- Linux Hamlib Warning -->
@@ -1532,5 +1550,31 @@ export default {
 
 .qrz-section {
   margin-top: 1rem;
+}
+
+.core-isolation-warning {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  background: rgba(255, 193, 7, 0.1);
+  border: 1px solid rgba(255, 193, 7, 0.3);
+  margin-top: 1rem;
+}
+
+.core-isolation-warning .warning-icon {
+  font-size: 1.2rem;
+  flex-shrink: 0;
+  margin-top: 0.1rem;
+}
+
+.core-isolation-warning .warning-content {
+  flex: 1;
+}
+
+.core-isolation-warning .warning-title {
+  color: #ffc107;
+  font-weight: bold;
+  margin: 0 0 0.5rem;
+  font-size: 0.95rem;
 }
 </style>
