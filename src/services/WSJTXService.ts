@@ -184,38 +184,100 @@ export class WSJTXService extends EventEmitter {
       console.log(`Parsing logged QSO, buffer length: ${buffer.length}, starting offset: ${offset}`);
       console.log('Buffer hex dump:', buffer.toString('hex'));
       
-      // Parse according to WSJT-X protocol v2.6.x Type 5
-      // Type 5: QSO Logged contains: id (string) + adif (string)
+      // Parse according to WSJT-X protocol v2.6.x Type 5 (based on Python QSOLoggedPacket)
+      // Fields: id, datetime_off, call, grid, frequency, mode, report_sent, report_recv, 
+      //         tx_power, comments, name, datetime_on, op_call, my_call, my_grid, exchange_sent, exchange_recv
+      
       const { value: id, newOffset: idOffset } = this.readQStringWithOffset(buffer, offset);
       offset = idOffset;
       console.log(`Read id: "${id}", new offset: ${offset}`);
       
-      const { value: adif, newOffset: adifOffset } = this.readQStringWithOffset(buffer, offset);
-      offset = adifOffset;
-      console.log(`Read ADIF: "${adif}", new offset: ${offset}`);
+      const { date: dateTimeOff, newOffset: dateTimeOffOffset } = this.readQDateTime(buffer, offset);
+      offset = dateTimeOffOffset;
+      console.log(`Read dateTimeOff: ${dateTimeOff}, new offset: ${offset}`);
       
-      // Parse ADIF string to extract structured data
-      const parsedAdif = parseAdifString(adif);
-      console.log('Parsed ADIF fields:', parsedAdif);
+      const { value: dxCall, newOffset: dxCallOffset } = this.readQStringWithOffset(buffer, offset);
+      offset = dxCallOffset;
+      console.log(`Read dxCall: "${dxCall}", new offset: ${offset}`);
+      
+      const { value: dxGrid, newOffset: dxGridOffset } = this.readQStringWithOffset(buffer, offset);
+      offset = dxGridOffset;
+      console.log(`Read dxGrid: "${dxGrid}", new offset: ${offset}`);
+      
+      // Read frequency (64-bit integer)
+      if (offset + 8 > buffer.length) {
+        throw new Error(`Buffer too small to read frequency at offset ${offset}`);
+      }
+      const txFrequency = Number(buffer.readBigInt64BE(offset));
+      offset += 8;
+      console.log(`Read txFrequency: ${txFrequency}, new offset: ${offset}`);
+      
+      const { value: mode, newOffset: modeOffset } = this.readQStringWithOffset(buffer, offset);
+      offset = modeOffset;
+      console.log(`Read mode: "${mode}", new offset: ${offset}`);
+      
+      const { value: reportSent, newOffset: reportSentOffset } = this.readQStringWithOffset(buffer, offset);
+      offset = reportSentOffset;
+      console.log(`Read reportSent: "${reportSent}", new offset: ${offset}`);
+      
+      const { value: reportReceived, newOffset: reportReceivedOffset } = this.readQStringWithOffset(buffer, offset);
+      offset = reportReceivedOffset;
+      console.log(`Read reportReceived: "${reportReceived}", new offset: ${offset}`);
+      
+      const { value: txPower, newOffset: txPowerOffset } = this.readQStringWithOffset(buffer, offset);
+      offset = txPowerOffset;
+      console.log(`Read txPower: "${txPower}", new offset: ${offset}`);
+      
+      const { value: comments, newOffset: commentsOffset } = this.readQStringWithOffset(buffer, offset);
+      offset = commentsOffset;
+      console.log(`Read comments: "${comments}", new offset: ${offset}`);
+      
+      const { value: name, newOffset: nameOffset } = this.readQStringWithOffset(buffer, offset);
+      offset = nameOffset;
+      console.log(`Read name: "${name}", new offset: ${offset}`);
+      
+      const { date: dateTimeOn, newOffset: dateTimeOnOffset } = this.readQDateTime(buffer, offset);
+      offset = dateTimeOnOffset;
+      console.log(`Read dateTimeOn: ${dateTimeOn}, new offset: ${offset}`);
+      
+      const { value: operatorCall, newOffset: operatorCallOffset } = this.readQStringWithOffset(buffer, offset);
+      offset = operatorCallOffset;
+      console.log(`Read operatorCall: "${operatorCall}", new offset: ${offset}`);
+      
+      const { value: myCall, newOffset: myCallOffset } = this.readQStringWithOffset(buffer, offset);
+      offset = myCallOffset;
+      console.log(`Read myCall: "${myCall}", new offset: ${offset}`);
+      
+      const { value: myGrid, newOffset: myGridOffset } = this.readQStringWithOffset(buffer, offset);
+      offset = myGridOffset;
+      console.log(`Read myGrid: "${myGrid}", new offset: ${offset}`);
+      
+      const { value: exchangeSent, newOffset: exchangeSentOffset } = this.readQStringWithOffset(buffer, offset);
+      offset = exchangeSentOffset;
+      console.log(`Read exchangeSent: "${exchangeSent}", new offset: ${offset}`);
+      
+      const { value: exchangeReceived, newOffset: exchangeReceivedOffset } = this.readQStringWithOffset(buffer, offset);
+      offset = exchangeReceivedOffset;
+      console.log(`Read exchangeReceived: "${exchangeReceived}", new offset: ${offset}`);
       
       return {
         id,
-        dateTimeOff: parsedAdif.qso_date_off ? new Date(parsedAdif.qso_date_off + 'T' + (parsedAdif.time_off || '00:00:00') + 'Z') : new Date(),
-        dxCall: parsedAdif.call || '',
-        dxGrid: parsedAdif.gridsquare || '',
-        txFrequency: parsedAdif.freq ? Math.round(parseFloat(parsedAdif.freq) * 1000000) : 0, // Convert MHz to Hz
-        mode: parsedAdif.mode || '',
-        reportSent: parsedAdif.rst_sent || '',
-        reportReceived: parsedAdif.rst_rcvd || '',
-        txPower: parsedAdif.tx_pwr || '',
-        comments: parsedAdif.comment || '',
-        name: parsedAdif.name || '',
-        dateTimeOn: parsedAdif.qso_date ? new Date(parsedAdif.qso_date + 'T' + (parsedAdif.time_on || '00:00:00') + 'Z') : new Date(),
-        operatorCall: parsedAdif.operator || '',
-        myCall: parsedAdif.station_callsign || '',
-        myGrid: parsedAdif.my_gridsquare || '',
-        exchangeSent: parsedAdif.stx_string || '',
-        exchangeReceived: parsedAdif.srx_string || '',
+        dateTimeOff,
+        dxCall,
+        dxGrid,
+        txFrequency,
+        mode,
+        reportSent,
+        reportReceived,
+        txPower,
+        comments,
+        name,
+        dateTimeOn,
+        operatorCall,
+        myCall,
+        myGrid,
+        exchangeSent,
+        exchangeReceived,
       };
     } catch (error) {
       console.error('Error parsing logged QSO:', error);
@@ -295,48 +357,76 @@ export class WSJTXService extends EventEmitter {
 
 
   private readQDateTime(buffer: Buffer, offset: number): Date {
-    // Check if we have enough bytes to read the datetime
-    if (offset + 8 > buffer.length) {
+    // Check if we have enough bytes to read the datetime (8 bytes for Julian day + milliseconds, 1 byte for spec, potentially 4 more for offset)
+    if (offset + 9 > buffer.length) {
       throw new Error(`Buffer too small to read datetime at offset ${offset}`);
     }
     
-    // Qt QDateTime is stored as milliseconds since Qt epoch (1970-01-01T00:00:00 UTC)
-    // But it's stored as a 64-bit value with special encoding
-    // First 4 bytes: Julian day number since Qt epoch
-    // Second 4 bytes: milliseconds since midnight
+    // Qt QDateTime format based on Python decoder:
+    // - 8 bytes: Julian day number (64-bit)
+    // - 4 bytes: milliseconds since midnight  
+    // - 1 byte: time spec
+    // - 4 bytes: offset (if spec == 2)
     
-    const julianDay = buffer.readUInt32BE(offset);
-    const msecsSinceMidnight = buffer.readUInt32BE(offset + 4);
+    const julianDay = Number(buffer.readBigInt64BE(offset));
+    const msecsSinceMidnight = buffer.readUInt32BE(offset + 8);
+    const spec = buffer.readUInt8(offset + 12);
     
-    console.log(`QDateTime raw: julianDay=${julianDay}, msecs=${msecsSinceMidnight}`);
+    let totalOffset = 13; // Base offset after spec
+    let timezoneOffset = 0;
     
-    // Handle special values
-    if (julianDay === 0 || julianDay === 0xFFFFFFFF) {
-      console.log('Invalid QDateTime detected, using current time');
-      return new Date(); // Return current time for invalid dates
+    if (spec === 2) {
+      if (offset + 17 > buffer.length) {
+        throw new Error(`Buffer too small to read timezone offset at offset ${offset + 13}`);
+      }
+      timezoneOffset = buffer.readInt32BE(offset + 13);
+      totalOffset = 17;
     }
     
-    // Convert Julian day to JavaScript Date
-    // Qt Julian day 2440588 = 1970-01-01 (Unix epoch)
-    const qtEpochJulianDay = 2440588;
-    const daysSinceUnixEpoch = julianDay - qtEpochJulianDay;
+    console.log(`QDateTime raw: julianDay=${julianDay}, msecs=${msecsSinceMidnight}, spec=${spec}, tzOffset=${timezoneOffset}`);
     
-    // Create date from days since Unix epoch
-    const date = new Date(1970, 0, 1); // January 1, 1970
-    date.setUTCDate(date.getUTCDate() + daysSinceUnixEpoch);
+    // Handle special values
+    if (julianDay === 0 || julianDay === -1) {
+      console.log('Invalid QDateTime detected, using current time');
+      return new Date();
+    }
+    
+    // Convert Julian day to JavaScript Date using Meeus algorithm (from Python code)
+    const jdNum = julianDay + 0.5;
+    const Z = Math.floor(jdNum);
+    const F = jdNum - Z;
+    
+    let A: number;
+    if (Z < 2299161) { // Julian calendar
+      A = Z;
+    } else { // Gregorian calendar
+      const alpha = Math.floor((Z - 1867216.25) / 36524.25);
+      A = Z + 1 + alpha - Math.floor(alpha / 4.0);
+    }
+    
+    const B = A + 1524;
+    const C = Math.floor((B - 122.1) / 365.25);
+    const D = Math.floor(365.25 * C);
+    const E = Math.floor((B - D) / 30.6001);
+    
+    const day = Math.floor(B - D - Math.floor(30.6001 * E) + F);
+    const month = E < 14 ? E - 1 : E - 13;
+    const year = month > 2 ? C - 4716 : C - 4715;
+    
+    // Create the date
+    const date = new Date(year, month - 1, day); // month is 0-based in JS
     
     // Add milliseconds since midnight
     if (msecsSinceMidnight < 86400000) { // Valid milliseconds in a day
-      date.setUTCMilliseconds(msecsSinceMidnight);
+      const hours = Math.floor(msecsSinceMidnight / 3600000);
+      const minutes = Math.floor((msecsSinceMidnight % 3600000) / 60000);
+      const seconds = Math.floor((msecsSinceMidnight % 60000) / 1000);
+      const milliseconds = msecsSinceMidnight % 1000;
+      
+      date.setUTCHours(hours, minutes, seconds, milliseconds);
     }
     
     console.log(`Parsed QDateTime: ${date}`);
-    
-    // Check if the date is reasonable (between 1990 and 2050)
-    if (date.getFullYear() < 1990 || date.getFullYear() > 2050) {
-      console.warn(`Suspicious date parsed: ${date}, julianDay=${julianDay}, msecs=${msecsSinceMidnight}`);
-      return new Date(); // Return current time for suspicious dates
-    }
     
     return date;
   }
