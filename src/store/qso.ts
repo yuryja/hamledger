@@ -381,7 +381,8 @@ export const useQsoStore = defineStore('qso', {
           this.stationInfo.geodata.lat !== undefined &&
           this.stationInfo.geodata.lon !== undefined
         ) {
-          const localGrid = configHelper.getSetting(['station'], 'grid');
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const localGrid = configHelper.getSetting(['station'], 'grid') as any;
           if (localGrid) {
             try {
               const localCoords = MaidenheadLocator.gridToLatLon(localGrid);
