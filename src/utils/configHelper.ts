@@ -227,7 +227,6 @@ export class ConfigHelper {
    * Migrate settings by adding missing properties from schema with default values
    */
   private async migrateSettings(): Promise<void> {
-    let hasChanges = false;
     const migratedSettings = this.deepClone(this.settings);
 
     // Generate default settings structure from schema
@@ -238,7 +237,6 @@ export class ConfigHelper {
     
     // Check if there are any changes
     if (JSON.stringify(this.settings) !== JSON.stringify(mergedSettings)) {
-      hasChanges = true;
       console.log('Settings migration: Adding new default values from schema');
       
       // Save the migrated settings
@@ -286,6 +284,7 @@ export class ConfigHelper {
     const result = this.deepClone(defaults);
 
     for (const key in existing) {
+      ##AI! Do not access Object.prototype method 'hasOwnProperty' from target object.
       if (existing.hasOwnProperty(key)) {
         if (existing[key] && typeof existing[key] === 'object' && !Array.isArray(existing[key])) {
           // Recursively merge nested objects
