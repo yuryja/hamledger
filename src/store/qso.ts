@@ -480,14 +480,21 @@ export const useQsoStore = defineStore('qso', {
         });
 
         // Listen for WSJT-X QSO add requests
-        console.log('Setting up WSJT-X event listeners...');
+        console.log('🔧 Setting up WSJT-X event listeners...');
         
-        window.electronAPI.onWSJTXAddQSO((qso: QsoEntry) => {
-          console.log('🎯 WSJT-X QSO received in store:', qso);
-          this.addWSJTXQso(qso);
-        });
-        
-        console.log('WSJT-X event listeners set up successfully');
+        // Check if the API exists
+        if (window.electronAPI && window.electronAPI.onWSJTXAddQSO) {
+          console.log('✅ onWSJTXAddQSO API found, setting up listener');
+          window.electronAPI.onWSJTXAddQSO((qso: QsoEntry) => {
+            console.log('🎯 WSJT-X QSO received in store:', qso);
+            console.log('📋 QSO details:', JSON.stringify(qso, null, 2));
+            this.addWSJTXQso(qso);
+          });
+          console.log('✅ WSJT-X event listeners set up successfully');
+        } else {
+          console.error('❌ onWSJTXAddQSO API not found in electronAPI');
+          console.log('Available electronAPI methods:', Object.keys(window.electronAPI || {}));
+        }
       } catch (error) {
         console.error('Error initializing WSJT-X:', error);
       }
@@ -527,6 +534,7 @@ export const useQsoStore = defineStore('qso', {
     async addWSJTXQso(qso: QsoEntry) {
       try {
         console.log('🚀 Adding WSJT-X QSO to store:', qso);
+        console.log('📋 Store state before adding - currentSession length:', this.currentSession.length);
         
         // Create QSO entry with proper ID and current timestamp
         const wsjtxQso: QsoEntry = {
@@ -539,18 +547,29 @@ export const useQsoStore = defineStore('qso', {
 
         // Send to main process to save
         const response = await window.electronAPI.addQso(wsjtxQso);
+        console.log('📤 Database save response:', response);
 
         if (response.ok) {
           // Add to current session and all QSOs immediately
+          console.log('📝 Adding to currentSession and allQsos arrays');
           this.currentSession.unshift(wsjtxQso);
           this.allQsos.unshift(wsjtxQso);
           console.log('✅ WSJT-X QSO successfully added to store and database:', wsjtxQso.callsign);
-          console.log('📊 Current session count:', this.currentSession.length);
+          console.log('📊 Current session count after adding:', this.currentSession.length);
+          console.log('📊 All QSOs count after adding:', this.allQsos.length);
+          
+          // Force reactivity update
+          this.$patch({
+            currentSession: [...this.currentSession],
+            allQsos: [...this.allQsos]
+          });
+          
         } else {
           console.error('❌ Failed to save WSJT-X QSO to database:', response.error);
         }
       } catch (error) {
         console.error('💥 Error adding WSJT-X QSO:', error);
+        console.error('💥 Error stack:', error instanceof Error ? error.stack : 'No stack trace');
       }
     },
   },

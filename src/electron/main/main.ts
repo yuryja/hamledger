@@ -1179,7 +1179,17 @@ async function handleWSJTXQSO(wsjtxQSO: WSJTXLoggedQSO): Promise<void> {
     
     windows.forEach((window, index) => {
       console.log(`📨 Sending wsjtx:add-qso to window ${index + 1}`);
+      console.log(`📋 QSO data being sent:`, JSON.stringify(qso, null, 2));
+      
+      // Send the event
       window.webContents.send('wsjtx:add-qso', qso);
+      
+      // Verify the window is ready
+      if (window.webContents.isLoading()) {
+        console.warn(`⚠️ Window ${index + 1} is still loading, event may be lost`);
+      } else {
+        console.log(`✅ Event sent to ready window ${index + 1}`);
+      }
     });
   } catch (error) {
     console.error('💥 Error handling WSJT-X QSO:', error);

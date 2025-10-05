@@ -44,6 +44,11 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.on('wsjtx:qso-logged', (_, qso) => callback(qso));
   },
   onWSJTXAddQSO: (callback: (qso: QsoEntry) => void) => {
-    ipcRenderer.on('wsjtx:add-qso', (_, qso) => callback(qso));
+    console.log('🔧 Setting up wsjtx:add-qso IPC listener in preload');
+    ipcRenderer.on('wsjtx:add-qso', (_, qso) => {
+      console.log('📨 Received wsjtx:add-qso in preload:', qso);
+      callback(qso);
+    });
+    console.log('✅ wsjtx:add-qso IPC listener set up in preload');
   },
 });
