@@ -270,11 +270,11 @@ export default {
 }
 
 .s-meter::before {
-  top: 0;
+  top: 2px;
 }
 
 .s-meter::after {
-  bottom: 0;
+  bottom: 2px;
 }
 
 .s-meter-inner {
