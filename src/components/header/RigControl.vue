@@ -25,6 +25,7 @@ export default {
       rigModel: '',
       rigPort: '',
       showConnectionDialog: false,
+      showWSJTXDialog: false,
       rigModels: [] as RigModel[],
       loadingModels: false,
       wsjtxEnabled: false,
@@ -34,6 +35,12 @@ export default {
         model: undefined,
         device: undefined,
       } as ConnectionForm,
+      wsjtxForm: {
+        enabled: false,
+        port: 2237,
+        autoLog: false,
+        logOnlyConfirmed: false,
+      },
     };
   },
   async mounted() {
@@ -192,11 +199,37 @@ export default {
     },
 
     showConnectionSettings() {
-      this.showConnectionDialog = true;
+      if (this.wsjtxEnabled) {
+        this.loadWSJTXSettings();
+        this.showWSJTXDialog = true;
+      } else {
+        this.showConnectionDialog = true;
+      }
     },
 
     closeConnectionDialog() {
       this.showConnectionDialog = false;
+    },
+
+    closeWSJTXDialog() {
+      this.showWSJTXDialog = false;
+    },
+
+    async loadWSJTXSettings() {
+      await configHelper.initSettings();
+      this.wsjtxForm.enabled = configHelper.getSetting(['wsjtx'], 'enabled') || false;
+      this.wsjtxForm.port = configHelper.getSetting(['wsjtx'], 'port') || 2237;
+      this.wsjtxForm.autoLog = configHelper.getSetting(['wsjtx'], 'autoLog') || false;
+      this.wsjtxForm.logOnlyConfirmed = configHelper.getSetting(['wsjtx'], 'logOnlyConfirmed') || false;
+    },
+
+    async saveWSJTXSettings() {
+      await configHelper.updateSetting(['wsjtx'], 'enabled', this.wsjtxForm.enabled);
+      await configHelper.updateSetting(['wsjtx'], 'port', this.wsjtxForm.port);
+      await configHelper.updateSetting(['wsjtx'], 'autoLog', this.wsjtxForm.autoLog);
+      await configHelper.updateSetting(['wsjtx'], 'logOnlyConfirmed', this.wsjtxForm.logOnlyConfirmed);
+      
+      this.closeWSJTXDialog();
     },
 
     async saveConnectionSettings() {
@@ -451,6 +484,60 @@ export default {
         </form>
       </div>
     </div>
+
+    <!-- WSJT-X Settings Dialog -->
+    <div
+      v-if="showWSJTXDialog"
+      class="connection-dialog-overlay"
+      @click="closeWSJTXDialog"
+    >
+      <div class="connection-dialog" @click.stop>
+        <h3>WSJT-X Settings</h3>
+        <form @submit.prevent="saveWSJTXSettings">
+          <div class="form-group">
+            <label>
+              <input
+                v-model="wsjtxForm.enabled"
+                type="checkbox"
+              />
+              Enable WSJT-X Integration
+            </label>
+          </div>
+          <div class="form-group">
+            <label for="wsjtx-port">UDP Port:</label>
+            <input
+              id="wsjtx-port"
+              v-model.number="wsjtxForm.port"
+              type="number"
+              placeholder="2237"
+              required
+            />
+          </div>
+          <div class="form-group">
+            <label>
+              <input
+                v-model="wsjtxForm.autoLog"
+                type="checkbox"
+              />
+              Automatically log QSOs from WSJT-X
+            </label>
+          </div>
+          <div class="form-group">
+            <label>
+              <input
+                v-model="wsjtxForm.logOnlyConfirmed"
+                type="checkbox"
+              />
+              Log only confirmed QSOs (not all decodes)
+            </label>
+          </div>
+          <div class="dialog-buttons">
+            <button type="button" @click="closeWSJTXDialog">Cancel</button>
+            <button type="submit" class="connect-btn">Save</button>
+          </div>
+        </form>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -688,6 +775,11 @@ export default {
 .form-group select:focus {
   outline: none;
   border-color: #007bff;
+}
+
+.form-group label input[type="checkbox"] {
+  width: auto;
+  margin-right: 0.5rem;
 }
 
 .form-group select {
