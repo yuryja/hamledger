@@ -1125,10 +1125,14 @@ async function initializeWSJTX(): Promise<void> {
       const settings = loadSettings() as any;
       const wsjtxSettings = settings?.wsjtx || { enabled: false, port: 2237, autoLog: true };
       
-      if (wsjtxSettings.autoLog) {
+      console.log('📋 WSJT-X settings:', wsjtxSettings);
+      
+      // Always handle QSO logging for now (can be made configurable later)
+      if (wsjtxSettings.autoLog !== false) {
+        console.log('✅ Processing WSJT-X QSO (auto-log enabled or default)');
         await handleWSJTXQSO(qso);
       } else {
-        console.log('⚠️ WSJT-X auto-log is disabled, skipping QSO handling');
+        console.log('⚠️ WSJT-X auto-log is explicitly disabled, skipping QSO handling');
       }
     });
     
