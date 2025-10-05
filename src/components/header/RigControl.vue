@@ -26,6 +26,7 @@ export default {
       rigPort: '',
       showConnectionDialog: false,
       showWSJTXDialog: false,
+      showTakeBackDialog: false,
       rigModels: [] as RigModel[],
       loadingModels: false,
       wsjtxEnabled: false,
@@ -215,6 +216,19 @@ export default {
       this.showWSJTXDialog = false;
     },
 
+    showTakeBackConfirmation() {
+      this.showTakeBackDialog = true;
+    },
+
+    closeTakeBackDialog() {
+      this.showTakeBackDialog = false;
+    },
+
+    confirmTakeBack() {
+      this.closeTakeBackDialog();
+      this.takeBackFromWSJTX();
+    },
+
     async loadWSJTXSettings() {
       await configHelper.initSettings();
       this.wsjtxForm.enabled = configHelper.getSetting(['wsjtx'], 'enabled') || false;
@@ -394,7 +408,7 @@ export default {
           <button
             v-if="wsjtxStatus.running"
             class="wsjtx-active-btn"
-            @click="takeBackFromWSJTX"
+            @click="showTakeBackConfirmation"
             :disabled="rigStore.isLoading"
           >
             Take Back CAT Control
@@ -536,6 +550,31 @@ export default {
             <button type="submit" class="connect-btn">Save</button>
           </div>
         </form>
+      </div>
+    </div>
+
+    <!-- Take Back CAT Control Confirmation Dialog -->
+    <div
+      v-if="showTakeBackDialog"
+      class="connection-dialog-overlay"
+      @click="closeTakeBackDialog"
+    >
+      <div class="connection-dialog" @click.stop>
+        <h3>⚠️ CAT Control Warning</h3>
+        <div class="warning-content">
+          <p>
+            Please make sure you've closed WSJT-X or you've disabled WSJT-X's built-in CAT control!
+          </p>
+          <p>
+            Leaving it on would cause undesired side effects!
+          </p>
+        </div>
+        <div class="dialog-buttons">
+          <button type="button" @click="closeTakeBackDialog">Cancel</button>
+          <button type="button" class="connect-btn" @click="confirmTakeBack">
+            I understand, take back control
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -828,5 +867,15 @@ export default {
 .dialog-buttons .connect-btn {
   background: #28a745;
   color: white;
+}
+
+.warning-content {
+  color: #ffc107;
+  margin: 1rem 0;
+  line-height: 1.5;
+}
+
+.warning-content p {
+  margin: 0.5rem 0;
 }
 </style>
