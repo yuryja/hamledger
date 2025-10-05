@@ -84,6 +84,9 @@ export default {
 
       return result;
     },
+    wsjtxAllowed(): boolean {
+      return configHelper.getSetting(['wsjtx'], 'enabled') || false;
+    },
   },
   methods: {
     async loadRigConfig() {
@@ -246,9 +249,6 @@ export default {
       this.wsjtxEnabled = configHelper.getSetting(['wsjtx'], 'enabled') || false;
     },
 
-    get wsjtxAllowed() {
-      return configHelper.getSetting(['wsjtx'], 'enabled') || false;
-    },
 
     async handOverToWSJTX() {
       try {
