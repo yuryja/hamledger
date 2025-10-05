@@ -19,6 +19,8 @@ export class ConfigHelper {
       const settings = await window.electronAPI.loadSettings();
       if (settings) {
         this.settings = settings;
+        // Migrate settings to add any new defaults from schema
+        await this.migrateSettings();
       } else {
         // No settings found, throw error to trigger setup wizard
         throw new Error('No settings found');
@@ -219,6 +221,105 @@ export class ConfigHelper {
       default:
         return undefined;
     }
+  }
+
+  /**
+   * Migrate settings by adding missing properties from schema with default values
+   */
+  private async migrateSettings(): Promise<void> {
+    let hasChanges = false;
+    const migratedSettings = this.deepClone(this.settings);
+
+    // Generate default settings structure from schema
+    const defaultSettings = this.generateDefaultSettingsFromSchema();
+    
+    // Merge defaults with existing settings
+    const mergedSettings = this.deepMerge(defaultSettings, migratedSettings);
+    
+    // Check if there are any changes
+    if (JSON.stringify(this.settings) !== JSON.stringify(mergedSettings)) {
+      hasChanges = true;
+      console.log('Settings migration: Adding new default values from schema');
+      
+      // Save the migrated settings
+      await this.saveSettings(mergedSettings);
+      console.log('Settings migration completed successfully');
+    }
+  }
+
+  /**
+   * Generate complete default settings structure from schema
+   */
+  private generateDefaultSettingsFromSchema(): any {
+    return this.generateDefaultsFromSchemaObject(this.schema);
+  }
+
+  /**
+   * Recursively generate defaults from schema object
+   */
+  private generateDefaultsFromSchemaObject(schemaObj: any): any {
+    if (!schemaObj.properties) {
+      return {};
+    }
+
+    const defaults: any = {};
+
+    for (const [key, property] of Object.entries(schemaObj.properties)) {
+      const prop = property as any;
+      
+      if (prop.type === 'object' && prop.properties) {
+        // Recursively handle nested objects
+        defaults[key] = this.generateDefaultsFromSchemaObject(prop);
+      } else {
+        // Generate default value for primitive types
+        defaults[key] = this.getDefaultValueFromProperty(prop);
+      }
+    }
+
+    return defaults;
+  }
+
+  /**
+   * Deep merge two objects, with existing values taking precedence
+   */
+  private deepMerge(defaults: any, existing: any): any {
+    const result = this.deepClone(defaults);
+
+    for (const key in existing) {
+      if (existing.hasOwnProperty(key)) {
+        if (existing[key] && typeof existing[key] === 'object' && !Array.isArray(existing[key])) {
+          // Recursively merge nested objects
+          result[key] = this.deepMerge(result[key] || {}, existing[key]);
+        } else {
+          // Use existing value (including arrays and primitives)
+          result[key] = existing[key];
+        }
+      }
+    }
+
+    return result;
+  }
+
+  /**
+   * Deep clone an object
+   */
+  private deepClone(obj: any): any {
+    if (obj === null || typeof obj !== 'object') {
+      return obj;
+    }
+    
+    if (Array.isArray(obj)) {
+      return obj.map(item => this.deepClone(item));
+    }
+    
+    const cloned: any = {};
+    for (const key in obj) {
+      if (obj.hasOwnProperty(key)) {
+        cloned[key] = this.deepClone(obj[key]);
+      }
+    }
+    
+    return cloned;
   }
 }
 
