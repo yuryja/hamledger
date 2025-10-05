@@ -487,6 +487,22 @@ export const useQsoStore = defineStore('qso', {
           console.log('WSJT-X QSO auto-logged to store:', qso.callsign);
           console.log('Current session count:', this.currentSession.length);
         });
+
+        // Listen for WSJT-X QSO add requests to use store's addQso method
+        window.electronAPI.onWSJTXAddQSO?.((qso: QsoEntry) => {
+          console.log('Received WSJT-X QSO for store addQso:', qso);
+          // Set the QSO form with WSJT-X data and call addQso
+          this.qsoForm.callsign = qso.callsign;
+          this.qsoForm.band = qso.band;
+          this.qsoForm.mode = qso.mode;
+          this.qsoForm.rstr = qso.rstr;
+          this.qsoForm.rstt = qso.rstt;
+          this.qsoForm.remark = qso.remark;
+          this.qsoForm.notes = qso.notes;
+          
+          // Call the store's addQso method
+          this.addQso();
+        });
       } catch (error) {
         console.error('Error initializing WSJT-X:', error);
       }

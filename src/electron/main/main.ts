@@ -1174,22 +1174,13 @@ async function handleWSJTXQSO(wsjtxQSO: WSJTXLoggedQSO): Promise<void> {
     
     console.log('Converted QSO for saving:', qso);
     
-    // Save to database first
-    const result = await databaseService.saveQso(qso);
-    
-    if (result.ok) {
-      console.log('WSJT-X QSO saved to database:', qso.callsign);
-      
-      // Notify renderer to add to store using the same mechanism as manual QSO entry
-      const windows = BrowserWindow.getAllWindows();
-      console.log(`Notifying ${windows.length} windows to add WSJT-X QSO to store`);
-      windows.forEach(window => {
-        console.log('Sending wsjtx:qso-logged event to renderer for store update');
-        window.webContents.send('wsjtx:qso-logged', qso);
-      });
-    } else {
-      console.error('Failed to save WSJT-X QSO:', result.error);
-    }
+    // Notify renderer to add QSO using store's addQso method
+    const windows = BrowserWindow.getAllWindows();
+    console.log(`Notifying ${windows.length} windows to add WSJT-X QSO via store addQso`);
+    windows.forEach(window => {
+      console.log('Sending wsjtx:add-qso event to renderer for store addQso');
+      window.webContents.send('wsjtx:add-qso', qso);
+    });
   } catch (error) {
     console.error('Error handling WSJT-X QSO:', error);
   }
