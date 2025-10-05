@@ -371,10 +371,11 @@ export default {
         <button class="settings-btn" @click="showConnectionSettings">
           {{ wsjtxEnabled ? 'WSJT-X Settings' : 'Settings' }}
         </button>
-        
-        <!-- Hand over to WSJT-X button (only show when CAT is connected and WSJT-X is enabled in settings) -->
+      </div>
+
+      <!-- Hand over to WSJT-X button in separate row -->
+      <div v-if="!wsjtxEnabled && isConnected && wsjtxAllowed" class="handover-section">
         <button
-          v-if="!wsjtxEnabled && isConnected && wsjtxAllowed"
           class="handover-btn"
           @click="handOverToWSJTX"
           :disabled="rigStore.isLoading"
@@ -527,6 +528,12 @@ export default {
   align-items: center;
   gap: 0.5rem;
   flex-wrap: wrap;
+}
+
+.handover-section {
+  margin-top: 0.5rem;
+  display: flex;
+  align-items: center;
 }
 
 /* Connect (green) */
