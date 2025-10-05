@@ -1159,11 +1159,11 @@ async function handleWSJTXQSO(wsjtxQSO: WSJTXLoggedQSO): Promise<void> {
     const band = getBandFromFrequency(wsjtxQSO.txFrequency);
     
     const qso: QsoEntry = {
-      callsign: wsjtxQSO.dxCall.toUpperCase(), // Ensure uppercase
-      datetime: wsjtxQSO.dateTimeOn.toISOString(), // Use dateTimeOn instead of dateTimeOff
+      callsign: wsjtxQSO.dxCall.toUpperCase(),
+      datetime: wsjtxQSO.dateTimeOn.toISOString(),
       band: band ? band.name : 'Unknown',
       freqRx: wsjtxQSO.txFrequency / 1000000, // Convert Hz to MHz
-      freqTx: wsjtxQSO.txFrequency / 1000000, // Same frequency for digital modes
+      freqTx: wsjtxQSO.txFrequency / 1000000,
       mode: wsjtxQSO.mode,
       rstr: wsjtxQSO.reportReceived || '---',
       rstt: wsjtxQSO.reportSent || '---',
@@ -1171,13 +1171,9 @@ async function handleWSJTXQSO(wsjtxQSO: WSJTXLoggedQSO): Promise<void> {
       notes: `Grid: ${wsjtxQSO.dxGrid || 'Unknown'}${wsjtxQSO.name ? `, Name: ${wsjtxQSO.name}` : ''}`,
     };
     
-    console.log('Converted QSO for store addQso:', qso);
-    
-    // Send to renderer to add QSO using store's addQso method (no database save needed here)
+    // Send to renderer to add QSO using store's addQso method
     const windows = BrowserWindow.getAllWindows();
-    console.log(`Notifying ${windows.length} windows to add WSJT-X QSO via store addQso`);
     windows.forEach(window => {
-      console.log('Sending wsjtx:add-qso event to renderer for store addQso');
       window.webContents.send('wsjtx:add-qso', qso);
     });
   } catch (error) {
