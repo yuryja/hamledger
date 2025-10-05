@@ -8,11 +8,10 @@ export class SMeterHelper {
       { label: 'S1', color: 'white' },
       { label: 'S3', color: 'white' },
       { label: 'S5', color: 'white' },
-      { label: 'S7', color: 'white' },
       { label: 'S9', color: 'gray' },
-      { label: '+10', color: '#ffa500' },
       { label: '+20', color: '#ffa500' },
-      { label: '+30', color: '#ffa500' },
+      { label: '+40', color: '#ffa500' },
+      { label: '+60', color: '#ffa500' },
     ];
   }
 
@@ -100,12 +99,16 @@ export class SMeterHelper {
     const { sUnit, isOverS9, overS9Value } = this.strengthToSMeter(strength, manufacturer);
     
     if (!isOverS9) {
-      // Each S-unit has 5 ticks (1 major + 4 minor)
-      return Math.max(0, (sUnit - 1) * 5 + 5);
+      // Map S-units to tick positions: S1=5, S3=10, S5=15, S9=20
+      if (sUnit <= 1) return Math.max(0, sUnit * 5);
+      if (sUnit <= 3) return 5 + Math.max(0, (sUnit - 1) * 2.5);
+      if (sUnit <= 5) return 10 + Math.max(0, (sUnit - 3) * 2.5);
+      if (sUnit <= 9) return 15 + Math.max(0, (sUnit - 5) * 1.25);
+      return 20;
     } else {
-      // S9 + over S9 ticks
-      const s9Ticks = 9 * 5; // 45 ticks for S1-S9
-      const overS9Ticks = Math.min(3, Math.floor(overS9Value / 20)) * 5; // +20, +40, +60
+      // S9 + over S9 ticks: +20=25, +40=30, +60=35
+      const s9Ticks = 20; // 20 ticks for S1-S9
+      const overS9Ticks = Math.min(15, Math.floor(overS9Value / 20) * 5); // +20, +40, +60
       return s9Ticks + overS9Ticks;
     }
   }
