@@ -1158,7 +1158,7 @@ async function handleWSJTXQSO(wsjtxQSO: WSJTXLoggedQSO): Promise<void> {
     
     const qso: QsoEntry = {
       callsign: wsjtxQSO.dxCall,
-      datetime: wsjtxQSO.dateTimeOff.toISOString(),
+      datetime: wsjtxQSO.dateTimeOn.toISOString(), // Use dateTimeOn instead of dateTimeOff
       band: band ? band.name : 'Unknown',
       freqRx: wsjtxQSO.txFrequency / 1000000, // Convert Hz to MHz
       freqTx: wsjtxQSO.txFrequency / 1000000, // Same frequency for digital modes
