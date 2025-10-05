@@ -246,6 +246,10 @@ export default {
       this.wsjtxEnabled = configHelper.getSetting(['wsjtx'], 'enabled') || false;
     },
 
+    get wsjtxAllowed() {
+      return configHelper.getSetting(['wsjtx'], 'enabled') || false;
+    },
+
     async handOverToWSJTX() {
       try {
         // First disconnect from rigctld
@@ -254,8 +258,7 @@ export default {
           await this.rigStore.handleDisconnect();
         }
 
-        // Enable WSJT-X in settings
-        await configHelper.updateSetting(['wsjtx'], 'enabled', true);
+        // Set WSJT-X mode active (but don't change the enabled setting)
         this.wsjtxEnabled = true;
 
         // Start WSJT-X service
@@ -277,8 +280,7 @@ export default {
         // Stop WSJT-X service
         await this.qsoStore.stopWSJTX();
 
-        // Disable WSJT-X in settings
-        await configHelper.updateSetting(['wsjtx'], 'enabled', false);
+        // Set WSJT-X mode inactive (but don't change the enabled setting)
         this.wsjtxEnabled = false;
 
         // Reconnect to rigctld
@@ -363,9 +365,9 @@ export default {
           </button>
         </template>
         
-        <!-- Hand over to WSJT-X button (only show when CAT is connected and WSJT-X is available) -->
+        <!-- Hand over to WSJT-X button (only show when CAT is connected and WSJT-X is enabled in settings) -->
         <button
-          v-if="!wsjtxEnabled && isConnected"
+          v-if="!wsjtxEnabled && isConnected && wsjtxAllowed"
           class="handover-btn"
           @click="handOverToWSJTX"
           :disabled="rigStore.isLoading"
