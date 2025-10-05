@@ -270,9 +270,7 @@ export const useQsoStore = defineStore('qso', {
 
           return { success: true };
         } else {
-          ##AI! Type '{}' is not assignable to type 'string'.ts(2322)
-qso.ts(254, 65): The expected type comes from property 'error' which is declared here on type '{ success: boolean; error?: string | undefined; }'
-          return { success: false, error: response.error || 'Delete failed' };
+          return { success: false, error: (response.error as string) || 'Delete failed' };
         }
       } catch (error) {
         console.error('Failed to delete QSO:', error);
