@@ -450,17 +450,17 @@ export default {
         document.body.removeChild(textArea);
       }
     },
-    onCatToggle() {
+    async onCatToggle() {
       if (this.wizardData.enableCat && this.isWindows) {
         // Automatically check rigctld when CAT is enabled on Windows
-        this.checkRigctldInPath();
+        await this.checkRigctldInPath();
       } else if (this.wizardData.enableCat && this.isLinux) {
         // Check dialout group membership on Linux
-        this.checkDialoutGroup();
+        await this.checkDialoutGroup();
         // Check rigctld availability on Linux
-        this.checkRigctldAvailability();
+        await this.checkRigctldAvailability();
         // Also test rigctld path on Linux
-        this.testRigctldPath();
+        await this.testRigctldPath();
       } else if (!this.wizardData.enableCat) {
         // Clear validation errors when CAT is disabled
         delete this.validationErrors.rigctldPath;
@@ -899,7 +899,7 @@ export default {
           </div>
 
           <!-- Linux Hamlib Warning -->
-          <div v-if="wizardData.enableCat && isLinux && !rigctldStatus.found && !rigctldStatus.isChecking" class="warning-box">
+          <div v-if="wizardData.enableCat && isLinux && !rigctldStatus.found && !rigctldStatus.isChecking && rigctldStatus.error === null" class="warning-box">
             <div class="warning-icon">⚠️</div>
             <div class="warning-content">
               <p class="warning-title">Linux Users</p>
