@@ -77,6 +77,7 @@ export class WSJTXService extends EventEmitter {
         case 5: {// Logged QSO message
           const loggedQSO = this.parseLoggedQSO(buffer);
           if (loggedQSO) {
+            console.log('🚀 Emitting QSO event from WSJTXService:', loggedQSO.dxCall);
             this.emit('qso', loggedQSO);
           }
           break;

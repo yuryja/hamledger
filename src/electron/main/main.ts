@@ -1124,8 +1124,11 @@ async function initializeWSJTX(): Promise<void> {
       
       // Set up event listeners
       wsjtxService.on('qso', async (qso: WSJTXLoggedQSO) => {
+        console.log('🎯 WSJT-X QSO event received in main process:', qso.dxCall);
         if (wsjtxSettings.autoLog) {
           await handleWSJTXQSO(qso);
+        } else {
+          console.log('⚠️ WSJT-X auto-log is disabled, skipping QSO handling');
         }
       });
       
