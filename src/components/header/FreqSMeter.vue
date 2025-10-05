@@ -139,11 +139,6 @@ export default {
             </template>
           </template>
         </div>
-        <div class="s-meter-value">
-          <span v-if="!smeterInfo.isOverS9">S{{ smeterInfo.sUnit }}</span>
-          <span v-else>S9+{{ smeterInfo.overS9Value }}dB</span>
-          <span class="raw-value">({{ signalStrength }}/255)</span>
-        </div>
       </div>
 
       <div class="rig-mode-badges">
@@ -291,17 +286,17 @@ export default {
 }
 
 .s-meter::before {
-  top: 4px;
+  top: 0;
 }
 
 .s-meter::after {
-  bottom: 5px;
+  bottom: 0;
 }
 
 .s-meter-inner {
   display: inline-flex;
   align-items: flex-end;
-  padding: 4px;
+  padding: 2px;
 }
 
 .tick {
@@ -343,16 +338,4 @@ export default {
   box-shadow: 0 0 3px rgba(255, 255, 255, 0.5);
 }
 
-.s-meter-value {
-  margin-top: 0.5rem;
-  font-size: 0.9rem;
-  color: var(--main-color);
-  text-align: center;
-}
-
-.raw-value {
-  font-size: 0.8rem;
-  color: #999;
-  margin-left: 0.5rem;
-}
 </style>
