@@ -63,6 +63,16 @@ export class ConfigHelper {
 
     for (const pathPart of path) {
       if (!current[pathPart]) {
+        // Provide default values for wsjtx settings if they don't exist
+        if (path.join('.') === 'wsjtx') {
+          const wsjtxDefaults = {
+            enabled: false,
+            port: 2237,
+            autoLog: true,
+            logOnlyConfirmed: false
+          };
+          return wsjtxDefaults[key as keyof typeof wsjtxDefaults];
+        }
         return undefined;
       }
       current = current[pathPart];
