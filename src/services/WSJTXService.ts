@@ -356,9 +356,9 @@ export class WSJTXService extends EventEmitter {
   }
 
 
-  private readQDateTime(buffer: Buffer, offset: number): Date {
-    // Check if we have enough bytes to read the datetime (8 bytes for Julian day + milliseconds, 1 byte for spec, potentially 4 more for offset)
-    if (offset + 9 > buffer.length) {
+  private readQDateTime(buffer: Buffer, offset: number): { date: Date; newOffset: number } {
+    // Check if we have enough bytes to read the datetime (8 bytes for Julian day + 4 bytes for milliseconds + 1 byte for spec)
+    if (offset + 13 > buffer.length) {
       throw new Error(`Buffer too small to read datetime at offset ${offset}`);
     }
     
@@ -372,7 +372,7 @@ export class WSJTXService extends EventEmitter {
     const msecsSinceMidnight = buffer.readUInt32BE(offset + 8);
     const spec = buffer.readUInt8(offset + 12);
     
-    let totalOffset = 13; // Base offset after spec
+    let newOffset = offset + 13; // Base offset after spec
     let timezoneOffset = 0;
     
     if (spec === 2) {
@@ -380,7 +380,7 @@ export class WSJTXService extends EventEmitter {
         throw new Error(`Buffer too small to read timezone offset at offset ${offset + 13}`);
       }
       timezoneOffset = buffer.readInt32BE(offset + 13);
-      totalOffset = 17;
+      newOffset = offset + 17;
     }
     
     console.log(`QDateTime raw: julianDay=${julianDay}, msecs=${msecsSinceMidnight}, spec=${spec}, tzOffset=${timezoneOffset}`);
@@ -388,7 +388,7 @@ export class WSJTXService extends EventEmitter {
     // Handle special values
     if (julianDay === 0 || julianDay === -1) {
       console.log('Invalid QDateTime detected, using current time');
-      return new Date();
+      return { date: new Date(), newOffset };
     }
     
     // Convert Julian day to JavaScript Date using Meeus algorithm (from Python code)
@@ -428,7 +428,7 @@ export class WSJTXService extends EventEmitter {
     
     console.log(`Parsed QDateTime: ${date}`);
     
-    return date;
+    return { date, newOffset };
   }
 }
 
