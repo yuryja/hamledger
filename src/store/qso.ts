@@ -480,10 +480,14 @@ export const useQsoStore = defineStore('qso', {
         });
 
         // Listen for WSJT-X QSO add requests to use store's addQso method
-        window.electronAPI.onWSJTXAddQSO?.((qso: QsoEntry) => {
-          console.log('Received WSJT-X QSO for store addQso:', qso);
-          this.addWSJTXQso(qso);
-        });
+        if (window.electronAPI.onWSJTXAddQSO) {
+          window.electronAPI.onWSJTXAddQSO((qso: QsoEntry) => {
+            console.log('Received WSJT-X QSO for store addQso:', qso);
+            this.addWSJTXQso(qso);
+          });
+        } else {
+          console.warn('onWSJTXAddQSO not available in electronAPI');
+        }
       } catch (error) {
         console.error('Error initializing WSJT-X:', error);
       }
@@ -524,25 +528,23 @@ export const useQsoStore = defineStore('qso', {
       try {
         console.log('Adding WSJT-X QSO to store:', qso);
         
-        // Temporarily save current form state
-        const originalForm = { ...this.qsoForm };
-        
-        // Set the QSO form with WSJT-X data
-        this.qsoForm.callsign = qso.callsign;
-        this.qsoForm.band = qso.band;
-        this.qsoForm.mode = qso.mode;
-        this.qsoForm.rstr = qso.rstr;
-        this.qsoForm.rstt = qso.rstt;
-        this.qsoForm.remark = qso.remark;
-        this.qsoForm.notes = qso.notes;
-        
-        // Call the store's addQso method (this will save to database and update store)
-        await this.addQso();
-        
-        // Restore original form state
-        this.qsoForm = originalForm;
-        
-        console.log('WSJT-X QSO successfully added via addQso:', qso.callsign);
+        // Create QSO entry with proper ID
+        const wsjtxQso: QsoEntry = {
+          ...qso,
+          _id: new Date().toISOString(),
+        };
+
+        // Send to main process to save
+        const response = await window.electronAPI.addQso(wsjtxQso);
+
+        if (response.ok) {
+          // Add to current session and all QSOs
+          this.currentSession.unshift(wsjtxQso);
+          this.allQsos.unshift(wsjtxQso);
+          console.log('WSJT-X QSO successfully added to store:', wsjtxQso.callsign);
+        } else {
+          console.error('Failed to save WSJT-X QSO to database:', response.error);
+        }
       } catch (error) {
         console.error('Error adding WSJT-X QSO:', error);
       }
