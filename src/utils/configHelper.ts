@@ -3,6 +3,7 @@ import { ConfigField, ConfigCategory } from '../types/config';
 import schema_json from '../settings.schema.json';
 import defaultSettings from '../settings.json';
 import '../types/electron';
+import { IARURegion } from './bands';
 
 export class ConfigHelper {
   private schema: any;
@@ -70,13 +71,9 @@ export class ConfigHelper {
     return current[key];
   }
 
-  public getIARURegion(): 'IARU1' | 'IARU2' | 'IARU3' {
-    const region = this.getSetting(['station'], 'iaruRegion');
-    // Type guard to ensure the region is a valid IARU region
-    if (region === 'IARU1' || region === 'IARU2' || region === 'IARU3') {
-      return region;
-    }
-    return 'IARU1';
+  public getIARURegion(): IARURegion {
+    const region = this.getSetting(['station'], 'iaruRegion') as IARURegion;
+    return region || 'IARU1' as IARURegion;
   }
 
   public flattenConfig(obj: any = this.settings, path: string[] = []): ConfigField[] {
