@@ -59,6 +59,9 @@ export default {
     showSMeter() {
       return this.rigStore.isConnected;
     },
+    currentVfo() {
+      return this.rigStore.currentVfo;
+    },
     selectedMode: {
       get() {
         return this.rigStore.currentMode;
@@ -125,7 +128,6 @@ export default {
           </div>
           <div class="freq-info">
             <span class="freq-unit">{{ unit }}</span>
-            ##AI! Property 'currentVfo' does not exist on type 'CreateComponentPublicInstanceWithMixins<ToResolvedProps<{}, {}>, {}, { rigStore: Store<"rig", { connection: RigctldConnection; capabilities: RigCapabilities | null; ... 5 more ...; pollingInterval: Timeout | null; }, { ...; }, { ...; }>; isEditing: boolean; isTxEditing: boolean; unit: string; smeterHelper: SMeterHel...'.ts-plugin(2339)
             <span v-if="showSMeter && currentVfo" class="vfo-indicator">{{ currentVfo }}</span>
           </div>
         </div>
