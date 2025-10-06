@@ -15,7 +15,6 @@ export default {
       smeterHelper: smeterHelper,
     };
   },
-  computed: {
     majorTicks(): MajorTick[] {
       return this.smeterHelper.getMajorTicks();
     },
@@ -38,6 +37,9 @@ export default {
         this.rigStore.setFrequencyFromString(value);
       },
     },
+    frequencyParts() {
+      return this.rigStore.currentFrequencyParts;
+    },
     txFrequency: {
       get() {
         return this.rigStore.splitFrequency || '0';
@@ -46,6 +48,9 @@ export default {
         const frequency = parseFloat(value) * 1000000; // Convert MHz to Hz
         this.rigStore.setSplitFrequency(frequency);
       },
+    },
+    txFrequencyParts() {
+      return this.rigStore.splitFrequencyParts;
     },
     splitActive() {
       return this.rigStore.rigState.split;
@@ -93,7 +98,8 @@ export default {
               class="freq-input"
             />
             <template v-else>
-              <span>{{ frequency }}</span>
+              <span class="freq-main-part">{{ frequencyParts.main }}</span>
+              <span class="freq-hz-part">{{ frequencyParts.hz }}</span>
               <template v-if="splitActive">
                 <span class="tx-freq" @click.stop="isTxEditing = true">
                   <input
@@ -110,7 +116,10 @@ export default {
                       width: 60px;
                     "
                   />
-                  <span v-else>({{ txFrequency }})</span>
+                  <span v-else>
+                    (<span class="freq-main-part">{{ txFrequencyParts?.main || '0.000' }}</span>
+                    <span class="freq-hz-part">{{ txFrequencyParts?.hz || '000' }}</span>)
+                  </span>
                 </span>
               </template>
             </template>
@@ -270,6 +279,17 @@ export default {
 
 .freq-unit {
   font-size: 2rem;
+}
+
+.freq-main-part {
+  font-size: 3rem;
+  font-weight: bold;
+}
+
+.freq-hz-part {
+  font-size: 1.5rem;
+  font-weight: normal;
+  opacity: 0.8;
 }
 
 .freq-input {

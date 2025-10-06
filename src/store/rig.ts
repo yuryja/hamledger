@@ -56,8 +56,24 @@ export const useRigStore = defineStore('rig', {
     isConnected: state => state.connection.connected,
     currentFrequency: state => {
       const freqMHz = state.rigState.frequency / 1000000;
-      // Format to 3 decimal places for kHz precision
-      return freqMHz.toFixed(3);
+      // Format to 6 decimal places for Hz precision
+      return freqMHz.toFixed(6);
+    },
+    currentFrequencyParts: state => {
+      const freqMHz = state.rigState.frequency / 1000000;
+      const fullFreq = freqMHz.toFixed(6);
+      const parts = fullFreq.split('.');
+      const wholePart = parts[0];
+      const decimalPart = parts[1];
+      
+      // Split decimal part: first 3 digits (kHz) and last 3 digits (Hz)
+      const kHzPart = decimalPart.substring(0, 3);
+      const hzPart = decimalPart.substring(3, 6);
+      
+      return {
+        main: `${wholePart}.${kHzPart}`, // MHz.kHz part
+        hz: hzPart // Hz part
+      };
     },
     currentMode: state => state.rigState.mode,
     currentBand: state => {
@@ -71,8 +87,25 @@ export const useRigStore = defineStore('rig', {
     splitFrequency: state => {
       if (!state.rigState.splitFreq) return undefined;
       const freqMHz = state.rigState.splitFreq / 1000000;
-      // Format to 3 decimal places for kHz precision
-      return freqMHz.toFixed(3);
+      // Format to 6 decimal places for Hz precision
+      return freqMHz.toFixed(6);
+    },
+    splitFrequencyParts: state => {
+      if (!state.rigState.splitFreq) return undefined;
+      const freqMHz = state.rigState.splitFreq / 1000000;
+      const fullFreq = freqMHz.toFixed(6);
+      const parts = fullFreq.split('.');
+      const wholePart = parts[0];
+      const decimalPart = parts[1];
+      
+      // Split decimal part: first 3 digits (kHz) and last 3 digits (Hz)
+      const kHzPart = decimalPart.substring(0, 3);
+      const hzPart = decimalPart.substring(3, 6);
+      
+      return {
+        main: `${wholePart}.${kHzPart}`, // MHz.kHz part
+        hz: hzPart // Hz part
+      };
     },
     rigModel: state => state.capabilities?.modelName || 'Unknown',
     selectedMode: state => state.rigState.mode,
