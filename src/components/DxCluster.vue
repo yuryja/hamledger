@@ -76,7 +76,13 @@ export default defineComponent({
           const decimalPart = parts[1];
           const firstPart = decimalPart.substring(0, 3);
           const secondPart = decimalPart.substring(3);
-          return `${integerPart}.${firstPart}.<span style="color: rgba(255, 255, 255, 0.6)">${secondPart}</span> MHz`;
+          
+          // If thousands fraction is all zeros, don't display it
+          if (secondPart === '000') {
+            return `${integerPart}.${firstPart} MHz`;
+          }
+          
+          return `${integerPart}.${firstPart}.<span style="color: white; font-size: 0.7em">${secondPart}</span> MHz`;
         }
         return `${formatted} MHz`;
       }
