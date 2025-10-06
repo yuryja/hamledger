@@ -126,10 +126,8 @@ export default {
               </template>
             </template>
           </div>
-          <div class="freq-info">
-            <span class="freq-unit">{{ unit }}</span>
-            <span v-if="showSMeter && currentVfo" class="vfo-indicator">{{ currentVfo }}</span>
-          </div>
+          <span class="freq-unit">{{ unit }}</span>
+          <span v-if="showSMeter && currentVfo" class="vfo-indicator">{{ currentVfo }}</span>
         </div>
       </div>
 
@@ -281,13 +279,6 @@ export default {
   cursor: pointer;
 }
 
-.freq-info {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.2rem;
-}
-
 .freq-unit {
   font-size: 2rem;
 }
@@ -299,6 +290,7 @@ export default {
   padding: 0.1rem 0.3rem;
   background: rgba(255, 255, 255, 0.1);
   border-radius: 3px;
+  margin-left: 0.5rem;
 }
 
 .freq-main-part {
