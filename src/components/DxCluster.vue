@@ -74,8 +74,9 @@ export default defineComponent({
         if (parts[1] && parts[1].length >= 3) {
           const integerPart = parts[0];
           const decimalPart = parts[1];
-          const formattedDecimal = decimalPart.substring(0, 3) + '.' + decimalPart.substring(3);
-          return `${integerPart}.${formattedDecimal} MHz`;
+          const firstPart = decimalPart.substring(0, 3);
+          const secondPart = decimalPart.substring(3);
+          return `${integerPart}.${firstPart}.<span style="color: rgba(255, 255, 255, 0.6)">${secondPart}</span> MHz`;
         }
         return `${formatted} MHz`;
       }
@@ -436,7 +437,7 @@ export default defineComponent({
           >
             <div class="spot-info">
               <div class="spot-call">{{ spot.DXCall }}</div>
-              <div class="spot-freq">{{ formatFrequency(spot.Frequency, true) }}</div>
+              <div class="spot-freq" v-html="formatFrequency(spot.Frequency, true)"></div>
               <div class="spot-details">
                 <span class="spot-mode">{{ spot.Mode }}</span>
                 <span class="spot-time">{{ formatTime(spot.Time, spot.Date) }}</span>
