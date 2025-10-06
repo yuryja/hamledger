@@ -15,6 +15,7 @@ export default {
       smeterHelper: smeterHelper,
     };
   },
+  computed: {
     majorTicks(): MajorTick[] {
       return this.smeterHelper.getMajorTicks();
     },
