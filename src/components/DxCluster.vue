@@ -82,7 +82,7 @@ export default defineComponent({
             return `${integerPart}.${firstPart} MHz`;
           }
           
-          return `${integerPart}.${firstPart}.<span style="color: white; font-size: 0.7em">${secondPart}</span> MHz`;
+          return `${integerPart}.${firstPart}<span style="color: white; font-size: 0.7rem;">.${secondPart}</span> MHz`;
         }
         return `${formatted} MHz`;
       }
