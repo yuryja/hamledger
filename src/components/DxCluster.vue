@@ -66,9 +66,9 @@ export default defineComponent({
     formatFrequency(freqStr: string, showHz: boolean = false): string {
       const freq = parseFloat(freqStr);
       if (showHz) {
-        // For magnifier: show frequency in MHz with decimal separator
+        // For magnifier: show frequency in MHz with decimal dot
         const freqMHz = freq / 1000;
-        return `${freqMHz.toLocaleString('hu-HU', { minimumFractionDigits: 3, maximumFractionDigits: 3 })} MHz`;
+        return `${freqMHz.toFixed(3)} MHz`;
       }
       if (freq >= 1000) {
         return `${(freq / 1000).toFixed(3)} MHz`;
