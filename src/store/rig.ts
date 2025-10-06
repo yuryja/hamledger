@@ -76,6 +76,7 @@ export const useRigStore = defineStore('rig', {
       };
     },
     currentMode: state => state.rigState.mode,
+    currentVfo: state => state.rigState.vfo,
     currentBand: state => {
       const band = getBandFromFrequency(state.rigState.frequency);
       return band ? band.shortName : null;
