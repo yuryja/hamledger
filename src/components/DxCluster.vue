@@ -991,8 +991,8 @@ export default defineComponent({
 }
 
 .freq-hz {
-  color: white;
-  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.6rem;
 }
 
 @media (max-width: 768px) {
