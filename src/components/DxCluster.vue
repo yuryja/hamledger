@@ -66,17 +66,18 @@ export default defineComponent({
     formatFrequency(freqStr: string, showHz: boolean = false): string {
       const freq = parseFloat(freqStr);
       if (showHz) {
-        // For magnifier: show frequency in MHz with Hz fractions if non-zero
-        const freqHz = freq * 1000;
-        const wholeMHz = Math.floor(freq / 1000);
-        const remainderHz = freqHz - (wholeMHz * 1000000);
-        
-        if (remainderHz === 0) {
-          return `${wholeMHz}.000000 MHz`;
-        } else {
-          const freqMHz = freq / 1000;
-          return `${freqMHz.toFixed(6)} MHz`;
+        // For magnifier: show frequency in MHz with thousands separator (dot)
+        const freqMHz = freq / 1000;
+        const formatted = freqMHz.toFixed(6);
+        // Insert dot as thousands separator: 3.573700 -> 3.573.700
+        const parts = formatted.split('.');
+        if (parts[1] && parts[1].length >= 3) {
+          const integerPart = parts[0];
+          const decimalPart = parts[1];
+          const formattedDecimal = decimalPart.substring(0, 3) + '.' + decimalPart.substring(3);
+          return `${integerPart}.${formattedDecimal} MHz`;
         }
+        return `${formatted} MHz`;
       }
       if (freq >= 1000) {
         return `${(freq / 1000).toFixed(3)} MHz`;
