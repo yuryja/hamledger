@@ -66,26 +66,27 @@ export default defineComponent({
     formatFrequency(freqStr: string, showHz: boolean = false): string {
       const freq = parseFloat(freqStr);
       if (showHz) {
-        // For magnifier: show frequency in MHz with thousands separator (dot)
+        // For magnifier: show frequency in MHz with Hz precision
         const freqMHz = freq / 1000;
         const formatted = freqMHz.toFixed(6);
-        // Insert dot as thousands separator: 3.573700 -> 3.573.700
         const parts = formatted.split('.');
+        
         if (parts[1] && parts[1].length >= 3) {
           const integerPart = parts[0];
           const decimalPart = parts[1];
-          const firstPart = decimalPart.substring(0, 3);
-          const secondPart = decimalPart.substring(3);
+          const mainPart = decimalPart.substring(0, 3);
+          const hzPart = decimalPart.substring(3);
           
-          // If thousands fraction is all zeros, don't display it
-          if (secondPart === '000') {
-            return `${integerPart}.${firstPart} MHz`;
+          // If Hz part is all zeros, don't show it
+          if (hzPart === '000') {
+            return `${integerPart}.${mainPart} MHz`;
           }
           
-          return `${integerPart}.${firstPart}.<span class="freq-thousands">${secondPart}</span> MHz`;
+          return `${integerPart}.${mainPart}.<span class="freq-hz">${hzPart}</span> MHz`;
         }
         return `${formatted} MHz`;
       }
+      
       if (freq >= 1000) {
         return `${(freq / 1000).toFixed(3)} MHz`;
       }
@@ -989,10 +990,9 @@ export default defineComponent({
   color: white;
 }
 
-.freq-thousands {
+.freq-hz {
   color: white;
   font-size: 0.7rem;
-  
 }
 
 @media (max-width: 768px) {
