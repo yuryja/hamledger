@@ -291,6 +291,7 @@ export default {
   background: rgba(255, 255, 255, 0.1);
   border-radius: 3px;
   margin-left: 0.5rem;
+  margin-top: -0.5rem;
 }
 
 .freq-main-part {
