@@ -63,8 +63,13 @@ export default defineComponent({
   },
 
   methods: {
-    formatFrequency(freqStr: string): string {
+    formatFrequency(freqStr: string, showHz: boolean = false): string {
       const freq = parseFloat(freqStr);
+      if (showHz) {
+        // For magnifier: show frequency in Hz with decimal separator
+        const freqHz = freq * 1000;
+        return `${freqHz.toLocaleString('hu-HU', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} Hz`;
+      }
       if (freq >= 1000) {
         return `${(freq / 1000).toFixed(3)} MHz`;
       }
@@ -422,7 +427,7 @@ export default defineComponent({
           >
             <div class="spot-info">
               <div class="spot-call">{{ spot.DXCall }}</div>
-              <div class="spot-freq">{{ formatFrequency(spot.Frequency) }}</div>
+              <div class="spot-freq">{{ formatFrequency(spot.Frequency, true) }}</div>
               <div class="spot-details">
                 <span class="spot-mode">{{ spot.Mode }}</span>
                 <span class="spot-time">{{ formatTime(spot.Time, spot.Date) }}</span>
