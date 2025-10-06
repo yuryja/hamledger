@@ -99,8 +99,7 @@ export default {
               class="freq-input"
             />
             <template v-else>
-              <span class="freq-main-part">{{ frequencyParts.main }}</span>
-              <span class="freq-hz-part">{{ frequencyParts.hz }}</span>
+              <span class="freq-main-part">{{ frequencyParts.main }}</span><span class="freq-decimal-dot">.</span><span class="freq-hz-part">{{ frequencyParts.hz }}</span>
               <template v-if="splitActive">
                 <span class="tx-freq" @click.stop="isTxEditing = true">
                   <input
@@ -118,8 +117,7 @@ export default {
                     "
                   />
                   <span v-else>
-                    (<span class="freq-main-part">{{ txFrequencyParts?.main || '0.000' }}</span>
-                    <span class="freq-hz-part">{{ txFrequencyParts?.hz || '000' }}</span>)
+                    (<span class="freq-main-part">{{ txFrequencyParts?.main || '0.000' }}</span><span class="freq-decimal-dot">.</span><span class="freq-hz-part">{{ txFrequencyParts?.hz || '000' }}</span>)
                   </span>
                 </span>
               </template>
@@ -283,6 +281,11 @@ export default {
 }
 
 .freq-main-part {
+  font-size: 3rem;
+  font-weight: bold;
+}
+
+.freq-decimal-dot {
   font-size: 3rem;
   font-weight: bold;
 }
