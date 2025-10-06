@@ -990,9 +990,9 @@ export default defineComponent({
   color: white;
 }
 
-.freq-hz {
-  color: rgba(255, 255, 255, 0.7);
-  font-size: 0.6rem;
+:deep(.freq-hz) {
+  color: rgba(255, 255, 255, 0.7) !important;
+  font-size: 0.6rem !important;
 }
 
 @media (max-width: 768px) {
