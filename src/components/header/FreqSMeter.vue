@@ -239,7 +239,7 @@ export default {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1rem;
+  gap: 0.5rem;
 }
 
 .freq-controls {
@@ -252,7 +252,7 @@ export default {
   display: flex;
   align-items: center;
   gap: 1rem;
-  margin-bottom: 1rem;
+  margin-bottom: 0.5rem;
 }
 
 .rig-frequency {
@@ -291,7 +291,7 @@ export default {
 }
 
 .freq-hz-part {
-  font-size: 1.5rem;
+  font-size: 1.2rem;
   font-weight: normal;
   opacity: 0.8;
 }
