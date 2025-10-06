@@ -992,6 +992,7 @@ export default defineComponent({
 .freq-thousands {
   color: white;
   font-size: 0.7rem;
+  
 }
 
 @media (max-width: 768px) {
