@@ -992,7 +992,7 @@ export default defineComponent({
 
 :deep(.freq-hz) {
   color: rgba(255, 255, 255, 0.7) !important;
-  font-size: 0.6rem !important;
+  font-size: 0.7rem !important;
 }
 
 @media (max-width: 768px) {

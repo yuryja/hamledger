@@ -19,9 +19,15 @@ export default {
     };
   },
   computed: {
+    kIndexColor() {
+      const aIndex = this.propStore.propData.kIndex;
+      if (aIndex <= 2.25) return '#4ade80'; // green
+      if (aIndex <= 5.4) return '#fb923c'; // orange
+      return '#ef4444'; // red
+    },
     aIndexColor() {
       const aIndex = this.propStore.propData.aIndex;
-      if (aIndex <= 5) return '#4ade80'; // green
+      if (aIndex <= 10) return '#4ade80'; // green
       if (aIndex <= 12) return '#fb923c'; // orange
       return '#ef4444'; // red
     },
@@ -100,7 +106,8 @@ export default {
           </div>
           <div class="prop-item">
             <span class="prop-label">K</span>
-            <span class="prop-value">{{ propStore.propData.kIndex }}</span>
+            <span class="prop-value" :style="{ color: kIndexColor }">
+              {{ propStore.propData.kIndex }}</span>
           </div>
           <div v-if="propStore.propData.aurora !== undefined" class="prop-item">
             <span class="prop-label">Aurora</span>

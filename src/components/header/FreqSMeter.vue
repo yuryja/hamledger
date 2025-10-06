@@ -267,7 +267,6 @@ export default {
 .freq-main {
   display: flex;
   align-items: baseline;
-  gap: 0.5rem;
 }
 
 .tx-freq {
@@ -286,8 +285,8 @@ export default {
 }
 
 .freq-decimal-dot {
-  font-size: 3rem;
-  font-weight: bold;
+  font-size: 2rem;
+  font-weight: normal;
 }
 
 .freq-hz-part {
