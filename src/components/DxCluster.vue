@@ -82,7 +82,7 @@ export default defineComponent({
             return `${integerPart}.${firstPart} MHz`;
           }
           
-          return `${integerPart}.${firstPart}<span style="color: white; font-size: 0.7rem;">.${secondPart}</span> MHz`;
+          return `${integerPart}.${firstPart}.<span class="freq-thousands">${secondPart}</span> MHz`;
         }
         return `${formatted} MHz`;
       }
@@ -987,6 +987,11 @@ export default defineComponent({
 .badge.eqsl {
   background: #f59e0b;
   color: white;
+}
+
+.freq-thousands {
+  color: white;
+  font-size: 0.7rem;
 }
 
 @media (max-width: 768px) {
