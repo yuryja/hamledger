@@ -66,6 +66,12 @@ export default {
         found: false,
         error: null as string | null,
       },
+      firewallStatus: {
+        isConfiguring: false,
+        success: false,
+        error: null as string | null,
+        userCancelled: false,
+      },
       availableBands: BAND_RANGES.filter(band =>
         ['160', '80', '60', '40', '30', '20', '17', '15', '12', '10', '6', '2', '70'].includes(
           band.shortName
@@ -474,6 +480,32 @@ export default {
         document.body.removeChild(textArea);
       }
     },
+    async addFirewallExceptions() {
+      this.firewallStatus.isConfiguring = true;
+      this.firewallStatus.error = null;
+      this.firewallStatus.success = false;
+      this.firewallStatus.userCancelled = false;
+
+      try {
+        const result = await window.electronAPI.addFirewallExceptions();
+        
+        if (result.success) {
+          this.firewallStatus.success = true;
+          console.log('Firewall exceptions added successfully');
+        } else if (result.userCancelled) {
+          this.firewallStatus.userCancelled = true;
+          console.warn('User cancelled firewall configuration');
+        } else {
+          this.firewallStatus.error = result.error || 'Unknown error occurred';
+          console.error('Failed to add firewall exceptions:', result.error);
+        }
+      } catch (error) {
+        console.error('Error adding firewall exceptions:', error);
+        this.firewallStatus.error = 'An unexpected error occurred';
+      } finally {
+        this.firewallStatus.isConfiguring = false;
+      }
+    },
     async onCatToggle() {
       if (this.wizardData.enableCat && this.isWindows) {
         // Automatically check rigctld when CAT is enabled on Windows
@@ -494,6 +526,9 @@ export default {
         this.dialoutStatus.error = null;
         this.rigctldStatus.found = false;
         this.rigctldStatus.error = null;
+        this.firewallStatus.success = false;
+        this.firewallStatus.error = null;
+        this.firewallStatus.userCancelled = false;
       }
     },
     async completeSetup() {
@@ -927,6 +962,48 @@ export default {
                   hamlib.sourceforge.net/snapshots/
                 </a>
               </p>
+            </div>
+
+            <!-- Firewall Configuration -->
+            <div class="firewall-section">
+              <div class="info-box">
+                <p class="info-text">
+                  <strong>Firewall Configuration:</strong> HamLedger and rigctld need firewall exceptions to communicate properly.
+                </p>
+              </div>
+              
+              <div class="firewall-controls">
+                <button
+                  type="button"
+                  @click="addFirewallExceptions"
+                  :disabled="firewallStatus.isConfiguring"
+                  class="btn btn-small"
+                >
+                  <span v-if="!firewallStatus.isConfiguring">Add Firewall Exceptions</span>
+                  <span v-else class="loading-text">
+                    <span class="spinner"></span>
+                    Configuring...
+                  </span>
+                </button>
+              </div>
+
+              <!-- Firewall Success -->
+              <div v-if="firewallStatus.success" class="success-message">
+                ✅ Firewall exceptions added successfully!
+              </div>
+
+              <!-- Firewall Error -->
+              <div v-if="firewallStatus.error" class="error-message">
+                ❌ Firewall configuration failed: {{ firewallStatus.error }}
+                <p class="error-help">
+                  You may need to manually add HamLedger and rigctld to your firewall exceptions.
+                </p>
+              </div>
+
+              <!-- User Cancelled -->
+              <div v-if="firewallStatus.userCancelled" class="warning-message">
+                ⚠️ Firewall configuration was cancelled. You may need to manually configure firewall exceptions for proper CAT control operation.
+              </div>
             </div>
 
             <!-- Windows Core Isolation Warning -->
@@ -1612,6 +1689,17 @@ export default {
 
 .dialout-section {
   margin: 1rem 0;
+}
+
+.firewall-section {
+  margin: 1rem 0;
+}
+
+.firewall-controls {
+  display: flex;
+  gap: 1rem;
+  margin: 1rem 0;
+  align-items: center;
 }
 
 .qrz-section {
