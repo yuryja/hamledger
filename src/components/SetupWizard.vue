@@ -54,6 +54,7 @@ export default {
         success: false,
         isChecking: false,
         inPath: false,
+        installedPath: null as string | null,
       },
       dialoutStatus: {
         isChecking: false,
@@ -333,7 +334,9 @@ export default {
 
         if (result.success) {
           this.hamlibStatus.success = true;
-          this.hamlibStatus.inPath = true;
+          this.hamlibStatus.installedPath = result.path;
+          // Set rigctld path to the installed location
+          this.wizardData.rigctldPath = `${result.path}/rigctld.exe`;
           delete this.validationErrors.rigctldPath;
           console.log('Hamlib installed successfully:', result.message);
 
@@ -906,6 +909,9 @@ export default {
             <!-- Installation Success -->
             <div v-if="hamlibStatus.success || hamlibStatus.inPath" class="success-message">
               ✅ Hamlib is available and ready to use!
+              <div v-if="hamlibStatus.success && hamlibStatus.installedPath" class="info-text">
+                Installed at: {{ hamlibStatus.installedPath }}
+              </div>
             </div>
 
             <!-- Installation Error -->

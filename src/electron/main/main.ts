@@ -780,8 +780,6 @@ ipcMain.handle('hamlib:downloadAndInstall', async event => {
 
     // Check if already installed
     if (fs.existsSync(join(hamlibBinPath, 'rigctld.exe'))) {
-      // Add to PATH if not already there
-      await addToSystemPath(hamlibBinPath);
       return { success: true, message: 'Hamlib already installed', path: hamlibBinPath };
     }
 
@@ -879,8 +877,6 @@ ipcMain.handle('hamlib:downloadAndInstall', async event => {
       throw new Error('rigctld.exe not found after extraction');
     }
 
-    // Add bin directory to system PATH
-    await addToSystemPath(hamlibBinPath);
     sendProgress(90);
 
     // Add firewall exceptions
@@ -891,7 +887,7 @@ ipcMain.handle('hamlib:downloadAndInstall', async event => {
     sendProgress(100);
 
     console.log('Hamlib installation completed');
-    console.log('Added to PATH:', hamlibBinPath);
+    console.log('Hamlib installed at:', hamlibBinPath);
     return { success: true, message: 'Hamlib installed successfully', path: hamlibBinPath };
   } catch (error) {
     console.error('Hamlib installation error:', error);
@@ -980,61 +976,6 @@ async function addFirewallExceptions(): Promise<{
   });
 }
 
-// Add directory to user PATH on Windows
-async function addToSystemPath(dirPath: string): Promise<void> {
-  return new Promise((resolve, reject) => {
-    // Ensure we're adding the bin directory specifically
-    const binPath = dirPath.endsWith('bin') ? dirPath : join(dirPath, 'bin');
-
-    // Use PowerShell to add to user PATH (no elevation needed)
-    const psCommand = `
-      try {
-        $binPath = '${binPath.replace(/\\/g, '\\\\')}'
-        $currentPath = [Environment]::GetEnvironmentVariable('PATH', 'User')
-        if ($currentPath -eq $null) { $currentPath = '' }
-        
-        Write-Output "Current PATH: $currentPath"
-        Write-Output "Adding bin path: $binPath"
-        
-        if ($currentPath -notlike "*$binPath*") {
-          if ($currentPath -ne '' -and -not $currentPath.EndsWith(';')) {
-            $currentPath += ';'
-          }
-          $newPath = $currentPath + $binPath
-          [Environment]::SetEnvironmentVariable('PATH', $newPath, 'User')
-          Write-Output 'User PATH updated successfully with bin directory'
-        } else {
-          Write-Output 'User PATH already contains bin directory'
-        }
-      } catch {
-        Write-Error "Failed to update user PATH: $($_.Exception.Message)"
-        exit 1
-      }
-    `;
-
-    // Run PowerShell command directly (no elevation needed for user PATH)
-    const command = `powershell -Command "${psCommand}"`;
-
-    exec(command, { timeout: 15000 }, (error, stdout, stderr) => {
-      if (error) {
-        console.error('Error adding to user PATH:', error);
-        reject(
-          new Error(
-            'Failed to update user PATH. Please add the Hamlib bin directory to your user PATH manually.'
-          )
-        );
-        return;
-      }
-
-      if (stderr) {
-        console.warn('User PATH update stderr:', stderr);
-      }
-
-      console.log('User PATH update result:', stdout);
-      resolve();
-    });
-  });
-}
 
 // Settings file path
 const userSettingsPath = join(app.getPath('userData'), 'settings.json');
