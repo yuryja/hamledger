@@ -14,18 +14,19 @@ It just works.
 
 ## Description
 
-Hamledger is a feature-rich amateur radio logging application designed for ham radio operators. It provides a modern, intuitive interface for logging QSOs (radio contacts), managing station information, and tracking various operating achievements.
+Hamledger is a feature-rich amateur radio logging application designed for ham radio operators. It provides a modern, intuitive interface for logging QSOs (radio contacts), managing station information, and tracking various operating achievements. This is not a contest-grade logger (Hamledger Contest is in the making), but rather an everyday logger tool.
 
 ## Features
 
-- **Real-time Rig Control**: Interface with popular amateur radio transceivers
-- **QSO Logging**: Easy and efficient contact logging with auto-fill capabilities
-- **Band & Mode Tracking**: Support for all amateur radio bands and modes
+- **Real-time Rig Control**: Interface with popular amateur radio transceivers (Hamlib)
+- **QSO Logging**: Easy and efficient contact logging with auto-fill capabilities, ADIF import-export
+- **DX Cluster**: Quick and seamless selection of stations
 - **S-Meter Display**: Real-time signal strength visualization
 - **Propagation Data**: Current solar and propagation condition monitoring
 - **UTC Clock**: Integrated UTC time display for accurate logging
 - **Weather Information**: Local weather conditions display
 - **Remote Station Info**: Quick access to contacted station details
+- **WSJT-X Integration**: Can automatically log QSOs from WSJT-X
 - **Modern UI**: Clean, intuitive interface built with Vue 3
 
 ## Technical Stack
@@ -38,18 +39,7 @@ Hamledger is a feature-rich amateur radio logging application designed for ham r
 
 ## Installation
 
-- Download the .deb or .rpm file from the [Releases](https://github.com/valibali/hamledger/releases).
-- In Debian/Ubuntu-based OS:
-  ```bash
-  sudo dpkg -i hamledger_*_amd64.deb
-  ```
-- In CentOS/Fedora-bases OS:
-  ```bash
-  sudo sudo rpm -i hamledger_*_amd64.rpm
-  ```
-- Windows: upcoming
-- MacOS: upcoming
-- iOS/Android: upcoming
+See INSTALL.md
 
 ## Getting Started with Development
 
