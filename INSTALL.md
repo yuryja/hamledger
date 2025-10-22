@@ -139,8 +139,8 @@ rigctld --version
 
 #### 1. Install HamLedger
 
-1. Download the latest Windows version from the [Releases](https://github.com/valibali/hamledger/releases) page
-2. Run the `HamLedger_1.2.2_macos_arm64.dmg` installer (For Apple Silicon) or `HamLedger_1.2.2_macos_x64.dmg` (For Intel)
+1. Download the latest Mac version from the [Releases](https://github.com/valibali/hamledger/releases) page
+2. Run the `HamLedger_x.x.x_macos_arm64.dmg` installer (For Apple Silicon) or `HamLedger_x.x.x_macos_x64.dmg` (For Intel)
 3. Follow the installation wizard instructions
 4. Launch HamLedger after installation
 
